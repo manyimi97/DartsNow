@@ -878,8 +878,9 @@ function updatePhoneDisplay(){
 
 async function submitManual(){
   if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Nem a te köröd!');return;}
-  const val=parseInt(phoneBuffer);
-  if(isNaN(val)||val<0||val>180){setErr('game01-error','Érvénytelen pontszám (0–180)!');return;}
+  // Ha üres a bevitel, 0-nak számít (nem dobott semmit)
+  const val=parseInt(phoneBuffer)||0;
+  if(val<0||val>180){setErr('game01-error','Érvénytelen pontszám (0–180)!');return;}
   const pd=gameState.players[myId];
   const newScore=pd.score-val;
   setErr('game01-error','');
@@ -1414,23 +1415,21 @@ function showWinner(room){
 }
 
 async function leaveGame(){
-  stopPolling();
   if(!offlineMode&&roomId){
     const leavingName=myName||gameState?.players?.[myId]?.name||'Valaki';
     if(isHost){
-      // Host kilép: töröljük a szobát és értesítjük a többieket
       await fbUpdate('rooms/'+roomId,{status:'disbanded',disbandedBy:leavingName});
-      setTimeout(()=>fbDel('rooms/'+roomId),3000);
+      setTimeout(()=>fbDel('rooms/'+roomId),5000);
     } else {
-      // Játékos kilép: értesítjük a többieket
       await fbUpdate('rooms/'+roomId,{leftPlayer:leavingName,leftAt:Date.now()});
       await fbDel('rooms/'+roomId+'/players/'+myId);
     }
   }
+  stopPolling();
   roomId=null;gameState=null;currentThrows=[];cricketThrows=[];isHost=false;
   offlineMode=false;myId='p_'+Math.random().toString(36).slice(2,9);
   localPlayerIds=[];
-  turnHistory=[];winsTracker={};roundHistory=[];phoneBuffer='';legNumber=0;
+  turnHistory=[];winsTracker={};roundHistory=[];phoneBuffer='';legNumber=0;lastSeenLeftPlayer=null;
   document.getElementById('turn-banner-01').style.display='none';
   document.getElementById('turn-banner-cr').style.display='none';
   show('home');checkConn();
