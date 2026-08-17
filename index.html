@@ -122,6 +122,23 @@ input[type=text]:focus{border-color:#1D9E75}
 .ingame-wins{display:inline-block;background:#1D9E75;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:12px;margin-left:5px;vertical-align:middle}
 .mode-toggle-btn{padding:7px 12px;font-size:12px;font-weight:600;border:1px solid #444;border-radius:8px;background:transparent;color:#aaa;cursor:pointer;transition:all .15s}
 .mode-toggle-btn.active{border-color:#1D9E75;color:#1D9E75;background:rgba(29,158,117,0.1)}
+/* Cricket 3-oszlopos gomb grid */
+.cbt-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:4px}
+.cbt-new{padding:12px 4px;font-size:15px;font-weight:600;border:1px solid #2a2a2a;border-radius:8px;background:#1a1a1a;color:#f0f0f0;cursor:pointer;transition:all .1s;text-align:center}
+.cbt-new:active{background:#2a2a2a;transform:scale(0.95)}
+.cbt-new.closed{opacity:0.2;pointer-events:none;text-decoration:line-through}
+.cbt-new.pending{border-color:#4a9eff;background:rgba(74,158,255,0.12);color:#4a9eff}
+/* Cricket tábla fejléc — nagyobb nevek kerettel */
+.cricket-player-header{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:8px 6px;text-align:center;font-size:16px;font-weight:700;color:#f0f0f0;text-transform:uppercase}
+.cricket-player-header.active-header{border-color:#1D9E75;background:rgba(29,158,117,0.1);color:#1D9E75}
+.active-dot{display:inline-block;width:8px;height:8px;background:#1D9E75;border-radius:50%;margin-left:6px;vertical-align:middle;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+/* 01 winner result */
+.winner-01-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1a1a1a;border-radius:10px;margin-bottom:6px;border:1px solid #2a2a2a}
+.winner-01-row.winner-row-hl{border-color:#1D9E75;background:rgba(29,158,117,0.1)}
+.winner-01-name{font-size:15px;font-weight:700;text-transform:uppercase;color:#f0f0f0}
+.winner-01-score{font-size:13px;color:#888;text-align:right;line-height:1.6}
+.winner-01-checkout{color:#1D9E75;font-weight:600}
 /* Telefon billentyűzet */
 .phone-numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
 .phone-btn{padding:16px 8px;font-size:20px;font-weight:600;border:1px solid #2a2a2a;border-radius:12px;background:#1a1a1a;color:#f0f0f0;cursor:pointer;transition:all .1s;text-align:center}
@@ -335,11 +352,14 @@ input[type=text]:focus{border-color:#1D9E75}
     <div class="ls-right">
       <div id="cricket-controls">
         <div class="throw-info" id="cricket-throw-info">Válassz célpontot</div>
-        <div class="cbt-grid" id="cricket-targets"></div>
-        <div class="mult-row">
-          <button class="mult-btn on" id="c-mult-1" onclick="setCricketMult(1)">Szimpla</button>
-          <button class="mult-btn" id="c-mult-2" onclick="setCricketMult(2)">Dupla</button>
-          <button class="mult-btn" id="c-mult-3" onclick="setCricketMult(3)">Tripla</button>
+        <!-- Cricket gombok: 3 oszlop (S/D/T) x 7 sor (15-20+Bull) -->
+        <div style="margin-bottom:6px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:4px">
+            <div style="text-align:center;font-size:11px;color:#555;font-weight:600;text-transform:uppercase;padding:2px">Szimpla</div>
+            <div style="text-align:center;font-size:11px;color:#555;font-weight:600;text-transform:uppercase;padding:2px">Dupla</div>
+            <div style="text-align:center;font-size:11px;color:#555;font-weight:600;text-transform:uppercase;padding:2px">Tripla</div>
+          </div>
+          <div id="cricket-btn-grid"></div>
         </div>
         <div class="action-row-3">
           <button class="btn btn-danger btn-sm" onclick="undoCricket()" style="flex:1">↩ Törlés</button>
@@ -363,6 +383,10 @@ input[type=text]:focus{border-color:#1D9E75}
   <div id="winner-cricket-result" style="display:none;margin-bottom:14px">
     <div style="font-size:13px;font-weight:600;color:#888;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Végeredmény</div>
     <table id="winner-result-table" style="width:100%;border-collapse:collapse"></table>
+  </div>
+  <div id="winner-01-result" style="display:none;margin-bottom:14px">
+    <div style="font-size:13px;font-weight:600;color:#888;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Végeredmény</div>
+    <div id="winner-01-list"></div>
   </div>
   <div id="winner-wins-table" style="display:none;margin-bottom:14px">
     <div style="font-size:13px;font-weight:600;color:#888;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Összes győzelem</div>
@@ -780,8 +804,36 @@ function refreshNumpadLabels(){
   });
 }
 function setMult(m){currentMult=m;[1,2,3].forEach(i=>document.getElementById('mult-'+i).classList.toggle('on',i===m));refreshNumpadLabels();}
-function setCricketMult(m){cricketMult=m;[1,2,3].forEach(i=>document.getElementById('c-mult-'+i).classList.toggle('on',i===m));}
+function setCricketMult(m){cricketMult=m;[1,2,3].forEach(i=>document.getElementById('c-mult-'+i)?.classList.toggle('on',i===m));}
 function resetMults(){setMult(1);setCricketMult(1);}
+
+// Új cricket gomb — szorzó beépítve a gombba
+function hitCricketDirect(target, mult){
+  if(!gameState||gameState.currentPlayer!==myId){setErr('cricket-error','Nem a te köröd!');return;}
+  if(cricketThrows.length>=3){setErr('cricket-error','3 nyíl elhasználva — küldd be vagy töröld');return;}
+  cricketThrows.push({target,mult});
+  updateCricketInfo();
+  renderCricketTable(gameState);
+  setErr('cricket-error','');
+  updateCricketBtnStates();
+}
+
+function updateCricketBtnStates(){
+  const used=cricketThrows.length;
+  CTGTS.forEach(t=>{
+    [1,2,3].forEach(m=>{
+      const btn=document.getElementById(`cbt-${t}-${m}`);
+      if(!btn)return;
+      const allClosed=(gameState?.playerOrder||[]).every(pid=>((gameState?.players[pid]?.marks||{})[t]||0)>=3);
+      const myMarks=(gameState?.players[myId]?.marks||{})[t]||0;
+      // Pending marks
+      const pendingExtra=cricketThrows.filter(th=>th.target===t).reduce((s,th)=>s+th.mult,0);
+      const effectiveMarks=Math.min(3,myMarks+pendingExtra);
+      btn.classList.toggle('closed', allClosed||(effectiveMarks>=3&&myMarks>=3));
+      btn.classList.toggle('pending', pendingExtra>0&&!allClosed);
+    });
+  });
+}
 
 // ── Checkout táblázat (170-ig) ─────────────────────────────
 const CHECKOUTS={
@@ -1160,9 +1212,17 @@ function updateGame01UI(room){
 
 // ── Cricket ────────────────────────────────────────────────
 function buildCricketBtns(){
-  document.getElementById('cricket-targets').innerHTML=CTGTS.map(t=>
-    `<button class="cbt" id="ct-${t}" onclick="hitCricket('${t}')">${t==='B'?'BULL':t}</button>`
-  ).join('');
+  const grid=document.getElementById('cricket-btn-grid');
+  if(!grid)return;
+  // 7 sor (15,16,17,18,19,20,B) x 3 oszlop (S,D,T)
+  grid.innerHTML=CTGTS.map(t=>{
+    const label=t==='B'?'Bull':t;
+    return `<div class="cbt-row">
+      <button class="cbt-new" id="cbt-${t}-1" onclick="hitCricketDirect('${t}',1)">${label}</button>
+      <button class="cbt-new" id="cbt-${t}-2" onclick="hitCricketDirect('${t}',2)">${label}</button>
+      <button class="cbt-new" id="cbt-${t}-3" onclick="hitCricketDirect('${t}',3)">${label}</button>
+    </div>`;
+  }).join('');
 }
 
 function hitCricket(target){
@@ -1292,12 +1352,12 @@ function renderCricketTable(room){
     const s0=getScore(pO[0]),s1=getScore(pO[1]);
     document.getElementById('cricket-table').innerHTML=
       `<thead><tr>
-        <th style="font-size:15px;font-weight:700;color:#f0f0f0;padding:10px 4px">${uc(p0.name)}${winsBadge(p0.name)}</th>
+        <th><div class="cricket-player-header ${pO[0]===room.currentPlayer?'active-header':''}">${uc(p0.name)}${winsBadge(p0.name)}${pO[0]===room.currentPlayer?'<span class="active-dot"></span>':''}</div></th>
         <th class="tgt-col">Célpont</th>
-        <th style="font-size:15px;font-weight:700;color:#f0f0f0;padding:10px 4px">${uc(p1.name)}${winsBadge(p1.name)}</th>
+        <th><div class="cricket-player-header ${pO[1]===room.currentPlayer?'active-header':''}">${uc(p1.name)}${winsBadge(p1.name)}${pO[1]===room.currentPlayer?'<span class="active-dot"></span>':''}</div></th>
       </tr></thead><tbody>${rows}</tbody>`;
   }else{
-    const heads=pO.map(pid=>`<th style="font-size:15px;font-weight:700;color:#f0f0f0;padding:10px 4px">${uc(room.players[pid].name)}${winsBadge(room.players[pid].name)}</th>`).join('');
+    const heads=pO.map(pid=>`<th><div class="cricket-player-header ${pid===room.currentPlayer?'active-header':''}">${uc(room.players[pid].name)}${winsBadge(room.players[pid].name)}${pid===room.currentPlayer?'<span class="active-dot"></span>':''}</div></th>`).join('');
     const rows=CTGTS.map(t=>`<tr>${pO.map(pid=>{const r=getMarks(pid,t);return `<td style="font-size:18px">${markStr(r.confirmed,r.extra)}</td>`}).join('')}<td class="tgt-col">${t==='B'?'BULL':t}</td></tr>`).join('');
     document.getElementById('cricket-table').innerHTML=`<thead><tr>${heads}<th class="tgt-col">Célpont</th></tr></thead><tbody>${rows}</tbody>`;
   }
@@ -1324,7 +1384,7 @@ function updateCricketUI(room){
     const ctrl=document.getElementById('cricket-controls');
     ctrl.style.opacity=isMyTurn?'1':'0.3';ctrl.style.pointerEvents=isMyTurn?'auto':'none';
   }
-  if(isMyTurn||offlineMode)updateCricketInfo();
+  if(isMyTurn||offlineMode){updateCricketInfo();updateCricketBtnStates();}
   refreshUndoBtn();
 }
 
@@ -1396,6 +1456,32 @@ function showWinner(room){
     document.getElementById('winner-result-table').className='result-table';
   } else {
     cricketDiv.style.display='none';
+  }
+
+  // ── 01 végeredmény tábla ──
+  const result01Div=document.getElementById('winner-01-result');
+  const result01List=document.getElementById('winner-01-list');
+  if((room.mode==='501'||room.mode==='301')&&room.players&&result01Div){
+    result01Div.style.display='block';
+    const pO=room.playerOrder||[];
+    const startScore=parseInt(room.mode);
+    result01List.innerHTML=pO.map(pid=>{
+      const p=room.players[pid];
+      const isWinner=pid===winnerPid;
+      // Kiszálló: startScore - maradék = dobott összeg
+      // A győztes maradéka 0, a többieké az aktuális score
+      const remaining=isWinner?0:p.score;
+      const thrown=startScore-remaining;
+      return `<div class="winner-01-row ${isWinner?'winner-row-hl':''}">
+        <span class="winner-01-name">${isWinner?'🏆 ':''}${uc(p.name)}${winsBadge(p.name)}</span>
+        <span class="winner-01-score">
+          ${isWinner?`<span class="winner-01-checkout">Kiszálló: ${thrown}</span><br>`:''}
+          Maradt: ${remaining} pont
+        </span>
+      </div>`;
+    }).join('');
+  } else if(result01Div){
+    result01Div.style.display='none';
   }
 
   // ── Győzelmek számlálója ──
