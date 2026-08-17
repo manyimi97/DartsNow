@@ -463,6 +463,8 @@ function isLocalPlayer(pid){
   return localPlayerIds.length>0 ? localPlayerIds.includes(pid) : pid===myId;
 }
 
+let lastSeenLeftPlayer=null; // megjegyezzük az utolsó látott kilépőt
+
 function onRoomUpdate(room,code){
   if(!room)return;
   // Szoba megszűnt (host kilépett)
@@ -470,8 +472,9 @@ function onRoomUpdate(room,code){
     showLeftPopup(uc(room.disbandedBy||'A szoba gazdája')+' KILÉPETT', true);
     return;
   }
-  // Játékos kilépett értesítés (csak friss, 5mp-en belüli)
-  if(room.leftPlayer&&room.leftAt&&(Date.now()-room.leftAt)<5000){
+  // Játékos kilépett értesítés — csak ha új kilépő (még nem láttuk)
+  if(room.leftPlayer && room.leftPlayer!==lastSeenLeftPlayer){
+    lastSeenLeftPlayer=room.leftPlayer;
     showLeftPopup(uc(room.leftPlayer)+' KILÉPETT A JÁTÉKBÓL', false);
   }
   if(room.status==='lobby'){updateLobbyUI(room,code);return;}
@@ -514,7 +517,8 @@ function handleLeftOk(mustLeave){
   stopPolling();
   roomId=null;gameState=null;currentThrows=[];cricketThrows=[];isHost=false;
   offlineMode=false;myId='p_'+Math.random().toString(36).slice(2,9);
-  localPlayerIds=[];turnHistory=[];winsTracker={};roundHistory=[];phoneBuffer='';legNumber=0;
+  localPlayerIds=[];turnHistory=[];winsTracker={};roundHistory=[];phoneBuffer='';legNumber=0;lastSeenLeftPlayer=null;
+  lastSeenLeftPlayer=null;
   document.getElementById('turn-banner-01').style.display='none';
   document.getElementById('turn-banner-cr').style.display='none';
   show('home');checkConn();
