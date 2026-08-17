@@ -323,10 +323,8 @@ input[type=text]:focus{border-color:#1D9E75}
       <p id="game01-error" class="error"></p>
     </div>
   </div>
-  <button class="btn" onclick="leaveGame()" style="margin-top:8px;color:#555;font-size:13px">Kilépés a játékból</button>
+  <button class="btn" onclick="confirmLeave()" style="margin-top:8px;color:#555;font-size:13px">Kilépés a játékból</button>
 </div>
-
-<!-- GAME CRICKET -->
 <div id="screen-cricket" class="screen">
   <div id="turn-banner-cr" class="turn-banner" style="display:none"></div>
   <div id="cricket-status" class="status-bar"></div>
@@ -352,7 +350,7 @@ input[type=text]:focus{border-color:#1D9E75}
       <p id="cricket-error" class="error"></p>
     </div>
   </div>
-  <button class="btn" onclick="leaveGame()" style="margin-top:8px;color:#555;font-size:13px">Kilépés a játékból</button>
+  <button class="btn" onclick="confirmLeave()" style="margin-top:8px;color:#555;font-size:13px">Kilépés a játékból</button>
 </div>
 
 <!-- WINNER -->
@@ -372,7 +370,7 @@ input[type=text]:focus{border-color:#1D9E75}
   </div>
   <button class="btn btn-primary" id="winner-continue-btn" onclick="playAgain()">▶ Folytatás (következő leg)</button>
   <div id="winner-wait-msg" style="display:none;text-align:center;padding:14px;color:#888;font-size:14px">⏳ Várakozás a szoba gazdájára...</div>
-  <button class="btn" onclick="leaveGame()">Vissza a főmenübe</button>
+  <button class="btn" onclick="confirmLeave()">Vissza a főmenübe</button>
 </div>
 
 <script>
@@ -1412,6 +1410,41 @@ function showWinner(room){
   }
 
   show('winner');
+}
+
+function confirmLeave(){
+  document.getElementById('leave-popup')?.remove();
+  const popup=document.createElement('div');
+  popup.id='leave-popup';
+  popup.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  popup.innerHTML=`
+    <div style="background:#1e1e1e;border:1px solid #333;border-radius:16px;padding:24px;max-width:300px;width:100%;text-align:center">
+      <div style="font-size:36px;margin-bottom:12px">🤔</div>
+      <div style="font-size:17px;font-weight:600;color:#f0f0f0;margin-bottom:20px">Biztosan ki akarsz lépni?</div>
+      <div style="display:flex;gap:10px">
+        <button onclick="confirmLeave2()" style="flex:1;padding:13px;background:#c0392b;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">Igen</button>
+        <button onclick="document.getElementById('leave-popup').remove()" style="flex:1;padding:13px;background:#1D9E75;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">Nem</button>
+      </div>
+    </div>`;
+  document.body.appendChild(popup);
+}
+
+function confirmLeave2(){
+  document.getElementById('leave-popup')?.remove();
+  const popup=document.createElement('div');
+  popup.id='leave-popup';
+  popup.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  popup.innerHTML=`
+    <div style="background:#1e1e1e;border:1px solid #333;border-radius:16px;padding:24px;max-width:300px;width:100%;text-align:center">
+      <div style="font-size:36px;margin-bottom:12px">😅</div>
+      <div style="font-size:17px;font-weight:600;color:#f0f0f0;margin-bottom:8px">De tényleg biztos vagy benne?</div>
+      <div style="font-size:13px;color:#888;margin-bottom:20px">Mert ha igen, akkor vége a bulinak...</div>
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('leave-popup').remove();leaveGame()" style="flex:1;padding:13px;background:#c0392b;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">Igen, kilépek</button>
+        <button onclick="document.getElementById('leave-popup').remove()" style="flex:1;padding:13px;background:#1D9E75;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">Maradok! 🎯</button>
+      </div>
+    </div>`;
+  document.body.appendChild(popup);
 }
 
 async function leaveGame(){
