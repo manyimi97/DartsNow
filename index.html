@@ -384,8 +384,9 @@ let roomId=null, gameState=null, myName='', selectedMode='501';
 let currentThrows=[], currentMult=2, cricketMult=1, cricketThrows=[];
 let isHost=false, pollTimer=null, lastSig=null;
 let offlineMode=false, selectedOfflineMode='501';
-let localPlayerIds=[]; // az eszközön lévő összes játékos ID-ja (multi-join esetén több)
-let winsTracker={}; // { playerName: count } — session-szintű számlálás
+let localPlayerIds=[];
+let winsTracker={};
+let legNumber=0; // hányadik leg — a kezdő játékos rotálásához
 
 // Mindig nagybetűs név
 function uc(name){return (name||'').toUpperCase();}
@@ -613,13 +614,15 @@ function startOfflineGame(){
   offlineMode=true;turnHistory=[];
   const playerOrder=names.map((_,i)=>'op'+i);
   const mode=selectedOfflineMode;
-  let gd={status:'playing',mode,currentPlayer:playerOrder[0],playerOrder,players:{},round:1};
+  // Leg rotáció: legNumber % játékosok száma = kezdő index
+  const startIdx=legNumber % playerOrder.length;
+  let gd={status:'playing',mode,currentPlayer:playerOrder[startIdx],playerOrder,players:{},round:1};
   if(mode==='501'||mode==='301'){
     playerOrder.forEach((pid,i)=>{gd.players[pid]={name:names[i],score:parseInt(mode),lastScore:null,totalThrown:0,rounds:0};});
   }else{
     playerOrder.forEach((pid,i)=>{const marks={};CTGTS.forEach(t=>marks[t]=0);gd.players[pid]={name:names[i],score:0,marks};});
   }
-  gameState=gd;myId=playerOrder[0];
+  gameState=gd;myId=playerOrder[startIdx];
   startGameUI(gd);
 }
 
@@ -1146,7 +1149,14 @@ function calcPendingMarks(){
 
 async function submitCricketTurn(){
   if(!gameState||gameState.currentPlayer!==myId){setErr('cricket-error','Nem a te köröd!');return;}
-  if(!cricketThrows.length){setErr('cricket-error','Válassz legalább egy célpontot!');return;}
+  // Ha nincs dobás, csak átpasszoljuk a kört
+  if(!cricketThrows.length){
+    saveSnapshot();
+    cricketThrows=[];updateCricketInfo();resetMults();
+    if(offlineMode){offlinePassTurn();}
+    else{await passTurnOnline();}
+    return;
+  }
 
   saveSnapshot(); // save BEFORE applying changes
 
@@ -1275,8 +1285,9 @@ function showWinner(room){
   const winnerPid=room.winner;
   const name=room.winnerName||room.players?.[winnerPid]?.name||'Valaki';
 
-  // Update wins tracker
+  // Update wins tracker és leg számláló
   winsTracker[name]=(winsTracker[name]||0)+1;
+  legNumber++; // következő legnél a következő játékos kezd
 
   document.getElementById('winner-name').textContent='🎉 '+uc(name)+' nyert!';
   document.getElementById('winner-sub').textContent=`${(room.mode||'').toUpperCase()} · ${Object.keys(room.players||{}).length} játékos`;
@@ -1357,7 +1368,7 @@ async function leaveGame(){
   roomId=null;gameState=null;currentThrows=[];cricketThrows=[];isHost=false;
   offlineMode=false;myId='p_'+Math.random().toString(36).slice(2,9);
   localPlayerIds=[];
-  turnHistory=[];winsTracker={};roundHistory=[];phoneBuffer='';
+  turnHistory=[];winsTracker={};roundHistory=[];phoneBuffer='';legNumber=0;
   document.getElementById('turn-banner-01').style.display='none';
   document.getElementById('turn-banner-cr').style.display='none';
   show('home');checkConn();
@@ -1432,7 +1443,9 @@ function playAgain(){
       }
     });
 
-    const newGd={status:'playing',mode:prevMode,currentPlayer:prevOrder[0],playerOrder:prevOrder,players:newPlayers,round:1};
+    // Leg rotáció: legNumber már növelve van a showWinner-ben
+    const startIdx=legNumber % prevOrder.length;
+    const newGd={status:'playing',mode:prevMode,currentPlayer:prevOrder[startIdx],playerOrder:prevOrder,players:newPlayers,round:1,legNumber:legNumber};
 
     turnHistory=[];roundHistory=[];currentThrows=[];cricketThrows=[];
     gameState=newGd;
