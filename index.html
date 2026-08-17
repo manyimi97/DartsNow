@@ -1046,12 +1046,20 @@ function updateThrowDisplay(){
 
 async function submitTurn(){
   if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Nem a te köröd!');return;}
-  // Ha nincs dobás, csak átpasszoljuk a kört
+  // Ha nincs dobás: 0-nak számít, stats és história frissül
   if(!currentThrows.length){
     saveSnapshot();
+    const pd=gameState.players[myId];
+    gameState.players[myId].lastScore=0;
+    gameState.players[myId].totalThrown=(pd.totalThrown||0);
+    gameState.players[myId].rounds=(pd.rounds||0)+1;
+    saveRoundScore(myId,0);
+    renderRoundHistoryFromRoom(gameState);
+    updateAvgDisplay(myId);
+    const statsUpdate={lastScore:0,totalThrown:gameState.players[myId].totalThrown,rounds:gameState.players[myId].rounds,scoreHistory:gameState.players[myId].scoreHistory||[]};
     currentThrows=[];updateThrowDisplay();resetMults();updateLiveScore();
     if(offlineMode){offlinePassTurn();}
-    else{await passTurnOnline();}
+    else{await fbUpdate('rooms/'+roomId+'/players/'+myId,statsUpdate);await passTurnOnline();}
     return;
   }
   const thrown=currentThrows.reduce((s,t)=>s+t.points,0);
