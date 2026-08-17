@@ -465,6 +465,15 @@ function isLocalPlayer(pid){
 
 function onRoomUpdate(room,code){
   if(!room)return;
+  // Szoba megszűnt (host kilépett)
+  if(room.status==='disbanded'){
+    showLeftPopup(uc(room.disbandedBy||'A szoba gazdája')+' KILÉPETT', true);
+    return;
+  }
+  // Játékos kilépett értesítés (csak friss, 5mp-en belüli)
+  if(room.leftPlayer&&room.leftAt&&(Date.now()-room.leftAt)<5000){
+    showLeftPopup(uc(room.leftPlayer)+' KILÉPETT A JÁTÉKBÓL', false);
+  }
   if(room.status==='lobby'){updateLobbyUI(room,code);return;}
   if(room.status==='playing'){
     const wasOnWinner=document.getElementById('screen-winner').classList.contains('active');
@@ -473,17 +482,42 @@ function onRoomUpdate(room,code){
       lastSig=null;
     }
     gameState=room;
-    // Multi-join: myId legyen a soron következő helyi játékos
-    if(!offlineMode && localPlayerIds.length>1 && isLocalPlayer(room.currentPlayer)){
+    if(!offlineMode&&localPlayerIds.length>1&&isLocalPlayer(room.currentPlayer)){
       myId=room.currentPlayer;
     }
     const onLobby=document.getElementById('screen-lobby').classList.contains('active');
     if(onLobby||wasOnWinner) startGameUI(room);
     else updateGameUI(room);
   }
-  if(room.status==='winner'){
-    showWinner(room);
-  }
+  if(room.status==='winner') showWinner(room);
+}
+
+function showLeftPopup(message, mustLeave){
+  if(document.getElementById('screen-home').classList.contains('active')) return;
+  document.getElementById('left-popup')?.remove();
+  const popup=document.createElement('div');
+  popup.id='left-popup';
+  popup.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  popup.innerHTML=`
+    <div style="background:#1e1e1e;border:1px solid #333;border-radius:16px;padding:24px;max-width:320px;width:100%;text-align:center">
+      <div style="font-size:40px;margin-bottom:12px">🚪</div>
+      <div style="font-size:16px;font-weight:600;color:#f0f0f0;margin-bottom:8px">${message}</div>
+      <div style="font-size:13px;color:#888;margin-bottom:20px">${mustLeave?'A szoba megszűnt.':'A játék folytatható a maradék játékosokkal.'}</div>
+      <button onclick="handleLeftOk(${mustLeave})" style="width:100%;padding:13px;background:#1D9E75;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">OK — Vissza a menübe</button>
+      ${!mustLeave?`<button onclick="document.getElementById('left-popup').remove()" style="width:100%;padding:10px;background:transparent;color:#888;border:1px solid #333;border-radius:10px;font-size:13px;cursor:pointer;margin-top:8px">Folytatás</button>`:''}
+    </div>`;
+  document.body.appendChild(popup);
+}
+
+function handleLeftOk(mustLeave){
+  document.getElementById('left-popup')?.remove();
+  stopPolling();
+  roomId=null;gameState=null;currentThrows=[];cricketThrows=[];isHost=false;
+  offlineMode=false;myId='p_'+Math.random().toString(36).slice(2,9);
+  localPlayerIds=[];turnHistory=[];winsTracker={};roundHistory=[];phoneBuffer='';legNumber=0;
+  document.getElementById('turn-banner-01').style.display='none';
+  document.getElementById('turn-banner-cr').style.display='none';
+  show('home');checkConn();
 }
 
 // ── UI ─────────────────────────────────────────────────────
@@ -579,9 +613,11 @@ async function startGame(){
   const players=room.players||{};
   const playerOrder=Object.keys(players).sort((a,b)=>players[a].joined-players[b].joined);
   const mode=room.mode;
-  let gd={status:'playing',mode,currentPlayer:playerOrder[0],playerOrder,players:{},round:1};
+  const currentLeg=room.legNumber||0;
+  const startIdx=currentLeg % playerOrder.length;
+  let gd={status:'playing',mode,currentPlayer:playerOrder[startIdx],playerOrder,players:{},round:1,legNumber:currentLeg};
   if(mode==='501'||mode==='301'){
-    playerOrder.forEach(pid=>{gd.players[pid]={name:players[pid].name,score:parseInt(mode),lastScore:null,totalThrown:0,rounds:0};});
+    playerOrder.forEach(pid=>{gd.players[pid]={name:players[pid].name,score:parseInt(mode),lastScore:null,totalThrown:0,rounds:0,scoreHistory:[]};});
   }else{
     playerOrder.forEach(pid=>{const marks={};CTGTS.forEach(t=>marks[t]=0);gd.players[pid]={name:players[pid].name,score:0,marks};});
   }
@@ -1287,7 +1323,11 @@ function showWinner(room){
 
   // Update wins tracker és leg számláló
   winsTracker[name]=(winsTracker[name]||0)+1;
-  legNumber++; // következő legnél a következő játékos kezd
+  legNumber++;
+  // Online módban mentsük a legNumber-t Firebase-re hogy playAgain helyesen rotáljon
+  if(!offlineMode&&roomId){
+    fbUpdate('rooms/'+roomId,{legNumber:legNumber}).catch(()=>{});
+  }
 
   document.getElementById('winner-name').textContent='🎉 '+uc(name)+' nyert!';
   document.getElementById('winner-sub').textContent=`${(room.mode||'').toUpperCase()} · ${Object.keys(room.players||{}).length} játékos`;
@@ -1364,7 +1404,18 @@ function showWinner(room){
 
 async function leaveGame(){
   stopPolling();
-  if(!offlineMode&&roomId){if(isHost)await fbDel('rooms/'+roomId);else await fbDel('rooms/'+roomId+'/players/'+myId);}
+  if(!offlineMode&&roomId){
+    const leavingName=myName||gameState?.players?.[myId]?.name||'Valaki';
+    if(isHost){
+      // Host kilép: töröljük a szobát és értesítjük a többieket
+      await fbUpdate('rooms/'+roomId,{status:'disbanded',disbandedBy:leavingName});
+      setTimeout(()=>fbDel('rooms/'+roomId),3000);
+    } else {
+      // Játékos kilép: értesítjük a többieket
+      await fbUpdate('rooms/'+roomId,{leftPlayer:leavingName,leftAt:Date.now()});
+      await fbDel('rooms/'+roomId+'/players/'+myId);
+    }
+  }
   roomId=null;gameState=null;currentThrows=[];cricketThrows=[];isHost=false;
   offlineMode=false;myId='p_'+Math.random().toString(36).slice(2,9);
   localPlayerIds=[];
@@ -1443,9 +1494,10 @@ function playAgain(){
       }
     });
 
-    // Leg rotáció: legNumber már növelve van a showWinner-ben
-    const startIdx=legNumber % prevOrder.length;
-    const newGd={status:'playing',mode:prevMode,currentPlayer:prevOrder[startIdx],playerOrder:prevOrder,players:newPlayers,round:1,legNumber:legNumber};
+    // Leg rotáció: legNumber a Firebase-ről jön (showWinner mentette)
+    const currentLeg=legNumber; // már növelve van showWinner-ben
+    const startIdx=currentLeg % prevOrder.length;
+    const newGd={status:'playing',mode:prevMode,currentPlayer:prevOrder[startIdx],playerOrder:prevOrder,players:newPlayers,round:1,legNumber:currentLeg};
 
     turnHistory=[];roundHistory=[];currentThrows=[];cricketThrows=[];
     gameState=newGd;
