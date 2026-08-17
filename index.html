@@ -16,7 +16,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .screen.active{display:block}
 .logo{font-size:44px;text-align:center;margin:20px 0 4px}
 h1{font-size:24px;font-weight:600;text-align:center;margin-bottom:2px}
-.tagline{font-size:13px;color:#888;text-align:center;margin-bottom:20px}
+.tagline{font-size:13px;color:#888;text-align:center;margin-bottom:16px}
 .card{background:#1e1e1e;border:1px solid #2a2a2a;border-radius:14px;padding:16px;margin-bottom:12px}
 h3{font-size:15px;font-weight:600;margin-bottom:10px;color:#ccc}
 input[type=text]{width:100%;padding:12px 14px;border:1px solid #333;border-radius:10px;background:#161616;color:#f0f0f0;font-size:16px;margin-bottom:0;outline:none}
@@ -26,6 +26,7 @@ input[type=text]:focus{border-color:#1D9E75}
 .btn-primary{background:#1D9E75;color:#fff;border-color:#1D9E75}
 .btn-danger{background:#c0392b;color:#fff;border-color:#c0392b}
 .btn-sm{padding:11px 14px;font-size:14px;width:auto;display:inline-block;margin:0}
+.btn-outline{background:transparent;border-color:#444;color:#ccc}
 .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
 .mode-btn{padding:16px 8px;border:1px solid #333;border-radius:10px;background:transparent;color:#ccc;font-size:15px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s}
 .mode-btn.selected{border-color:#1D9E75;background:rgba(29,158,117,0.15);color:#1D9E75}
@@ -37,10 +38,10 @@ input[type=text]:focus{border-color:#1D9E75}
 .badge.you{background:rgba(29,158,117,0.2);color:#1D9E75}
 .status-bar{font-size:14px;color:#888;padding:12px;background:#1a1a1a;border-radius:10px;text-align:center;margin-bottom:14px;border:1px solid #2a2a2a}
 .status-bar.myturn{background:rgba(29,158,117,0.12);color:#1D9E75;font-weight:600;border-color:rgba(29,158,117,0.3)}
-.players-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.pscard{padding:14px 10px;border:1px solid #2a2a2a;border-radius:12px;text-align:center;background:#1a1a1a}
+.players-bar{display:grid;gap:8px;margin-bottom:14px}
+.pscard{padding:12px 10px;border:1px solid #2a2a2a;border-radius:12px;text-align:center;background:#1a1a1a}
 .pscard.active-turn{border-color:#1D9E75;background:rgba(29,158,117,0.08)}
-.score-big{font-size:52px;font-weight:700;text-align:center;line-height:1;color:#f0f0f0}
+.score-big{font-size:46px;font-weight:700;text-align:center;line-height:1;color:#f0f0f0}
 .score-lbl{font-size:12px;color:#666;text-align:center;margin-top:4px}
 .throw-display{display:flex;gap:8px;margin-bottom:12px}
 .throw-slot{flex:1;padding:12px;text-align:center;border:1px dashed #333;border-radius:10px;font-size:16px;font-weight:600;color:#555}
@@ -73,36 +74,77 @@ input[type=text]:focus{border-color:#1D9E75}
 .dot.ok{background:#1D9E75}
 .action-row{display:flex;gap:8px}
 .copy-hint{font-size:11px;color:#555;text-align:center;margin-top:-8px;margin-bottom:10px}
+/* Home mode tabs */
+.home-tabs{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:16px;border:1px solid #2a2a2a;border-radius:12px;overflow:hidden}
+.home-tab{padding:14px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;background:#1a1a1a;color:#666;border:none;transition:all .15s}
+.home-tab.active{background:#1D9E75;color:#fff}
+.htab-panel{display:none}
+.htab-panel.active{display:block}
+/* offline player list */
+.opl-item{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.opl-item input{flex:1;margin-bottom:0}
+.opl-remove{padding:10px 14px;background:#1a1a1a;border:1px solid #333;border-radius:10px;color:#888;cursor:pointer;font-size:16px;flex-shrink:0}
+.turn-banner{background:#1D9E75;color:#fff;border-radius:12px;padding:14px;text-align:center;margin-bottom:14px;font-size:18px;font-weight:700}
 </style>
 </head>
 <body>
 
+<!-- HOME -->
 <div id="screen-home" class="screen active">
   <div class="logo">🎯</div>
   <h1>DartsNow</h1>
   <p class="tagline">Free multiplayer · no subscription needed</p>
-  <div class="conn"><span class="dot" id="conn-dot"></span><span id="conn-txt">Checking connection...</span></div>
-  <div class="card">
-    <h3>Your name</h3>
-    <input type="text" id="player-name" placeholder="Enter your name" maxlength="16" autocomplete="off">
+
+  <div class="home-tabs">
+    <button class="home-tab active" onclick="switchHomeTab('online')">📶 Online</button>
+    <button class="home-tab" onclick="switchHomeTab('offline')">📵 Local / Offline</button>
   </div>
-  <div class="card">
-    <h3>Game mode</h3>
-    <div class="mode-grid">
-      <button class="mode-btn selected" data-mode="501" onclick="selectMode('501')">501</button>
-      <button class="mode-btn" data-mode="301" onclick="selectMode('301')">301</button>
-      <button class="mode-btn mode-btn-full" data-mode="cricket" onclick="selectMode('cricket')">Cricket</button>
+
+  <!-- ONLINE TAB -->
+  <div class="htab-panel active" id="htab-online">
+    <div class="conn"><span class="dot" id="conn-dot"></span><span id="conn-txt">Checking connection...</span></div>
+    <div class="card">
+      <h3>Your name</h3>
+      <input type="text" id="player-name" placeholder="Enter your name" maxlength="16" autocomplete="off">
     </div>
+    <div class="card">
+      <h3>Game mode</h3>
+      <div class="mode-grid">
+        <button class="mode-btn selected" data-mode="501" onclick="selectMode('501')">501</button>
+        <button class="mode-btn" data-mode="301" onclick="selectMode('301')">301</button>
+        <button class="mode-btn mode-btn-full" data-mode="cricket" onclick="selectMode('cricket')">Cricket</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="createRoom()">🆕 Create room &amp; invite friend</button>
+    <div class="separator">or join with a code</div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <input type="text" id="join-code" placeholder="ROOM CODE" maxlength="6" style="text-transform:uppercase;flex:1;letter-spacing:4px;font-weight:700;font-size:18px">
+      <button class="btn btn-sm btn-primary" style="flex:0 0 auto" onclick="joinRoom()">Join →</button>
+    </div>
+    <p id="home-error" class="error"></p>
   </div>
-  <button class="btn btn-primary" onclick="createRoom()">🆕 Create room &amp; invite friend</button>
-  <div class="separator">or join with a code</div>
-  <div style="display:flex;gap:8px;margin-top:10px">
-    <input type="text" id="join-code" placeholder="ROOM CODE" maxlength="6" style="text-transform:uppercase;flex:1;letter-spacing:4px;font-weight:700;font-size:18px">
-    <button class="btn btn-sm btn-primary" style="flex:0 0 auto" onclick="joinRoom()">Join →</button>
+
+  <!-- OFFLINE TAB -->
+  <div class="htab-panel" id="htab-offline">
+    <div class="card">
+      <h3>Players <span style="font-size:12px;color:#666;font-weight:400">(up to 8)</span></h3>
+      <div id="opl-list"></div>
+      <button class="btn btn-outline" onclick="addOfflinePlayer()" style="margin-top:4px;padding:10px">+ Add player</button>
+    </div>
+    <div class="card">
+      <h3>Game mode</h3>
+      <div class="mode-grid">
+        <button class="mode-btn selected" data-omode="501" onclick="selectOfflineMode('501')">501</button>
+        <button class="mode-btn" data-omode="301" onclick="selectOfflineMode('301')">301</button>
+        <button class="mode-btn mode-btn-full" data-omode="cricket" onclick="selectOfflineMode('cricket')">Cricket</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="startOfflineGame()">▶ Start local game</button>
+    <p id="offline-error" class="error"></p>
   </div>
-  <p id="home-error" class="error"></p>
 </div>
 
+<!-- LOBBY (online only) -->
 <div id="screen-lobby" class="screen">
   <h1 style="text-align:center;margin-bottom:4px">Room</h1>
   <p style="text-align:center;font-size:13px;color:#666;margin-bottom:8px">Share this code with your friend</p>
@@ -114,7 +156,9 @@ input[type=text]:focus{border-color:#1D9E75}
   <button class="btn" onclick="leaveGame()">Leave room</button>
 </div>
 
+<!-- GAME 01 (shared online+offline) -->
 <div id="screen-game01" class="screen">
+  <div id="turn-banner-01" class="turn-banner" style="display:none"></div>
   <div class="players-bar" id="game01-players"></div>
   <div id="game01-status" class="status-bar"></div>
   <div class="throw-display">
@@ -136,7 +180,9 @@ input[type=text]:focus{border-color:#1D9E75}
   <button class="btn" onclick="leaveGame()" style="margin-top:12px;color:#555;font-size:13px">Leave game</button>
 </div>
 
+<!-- GAME CRICKET (shared online+offline) -->
 <div id="screen-cricket" class="screen">
+  <div id="turn-banner-cr" class="turn-banner" style="display:none"></div>
   <div id="cricket-status" class="status-bar"></div>
   <table class="cricket-table" id="cricket-table"></table>
   <div id="cricket-controls">
@@ -156,6 +202,7 @@ input[type=text]:focus{border-color:#1D9E75}
   <button class="btn" onclick="leaveGame()" style="margin-top:12px;color:#555;font-size:13px">Leave game</button>
 </div>
 
+<!-- WINNER -->
 <div id="screen-winner" class="screen">
   <div class="winner-banner">
     <div class="trophy">🏆</div>
@@ -167,14 +214,18 @@ input[type=text]:focus{border-color:#1D9E75}
 </div>
 
 <script>
+// ── Constants ──────────────────────────────────────────────
 const DB = 'https://dartsmost-default-rtdb.firebaseio.com';
 const CTGTS = ['15','16','17','18','19','20','B'];
 
+// ── Shared state ───────────────────────────────────────────
 let myId = 'p_' + Math.random().toString(36).slice(2,9);
 let roomId=null, gameState=null, myName='', selectedMode='501';
 let currentThrows=[], currentMult=2, cricketMult=1, cricketThrows=[];
 let isHost=false, pollTimer=null, lastSig=null;
+let offlineMode=false, selectedOfflineMode='501';
 
+// ── Firebase helpers ───────────────────────────────────────
 async function fbSet(p,d){try{const r=await fetch(`${DB}/${p}.json`,{method:'PUT',body:JSON.stringify(d),headers:{'Content-Type':'application/json'}});return r.ok}catch(e){return false}}
 async function fbUpdate(p,d){try{const r=await fetch(`${DB}/${p}.json`,{method:'PATCH',body:JSON.stringify(d),headers:{'Content-Type':'application/json'}});return r.ok}catch(e){return false}}
 async function fbGet(p){try{const r=await fetch(`${DB}/${p}.json`);if(!r.ok)return null;return r.json()}catch(e){return null}}
@@ -186,9 +237,10 @@ async function checkConn(){
     const r=await fetch(`${DB}/.json?shallow=true`);
     if(r.ok){dot.classList.add('ok');txt.textContent='Connected ✓';}
     else{dot.classList.remove('ok');txt.textContent='Firebase error '+r.status;}
-  }catch(e){dot.classList.remove('ok');txt.textContent='Cannot reach Firebase';}
+  }catch(e){dot.classList.remove('ok');txt.textContent='No connection (use Local mode)';}
 }
 
+// ── Polling ────────────────────────────────────────────────
 function startPolling(code){
   stopPolling();
   pollTimer=setInterval(async()=>{
@@ -213,8 +265,19 @@ function onRoomUpdate(room,code){
   if(room.status==='winner')showWinner(room);
 }
 
+// ── UI helpers ─────────────────────────────────────────────
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');window.scrollTo(0,0);}
-function selectMode(m){selectedMode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('selected',b.dataset.mode===m));}
+function setErr(id,msg){const el=document.getElementById(id);if(el)el.textContent=msg;}
+
+// ── Home tabs ──────────────────────────────────────────────
+function switchHomeTab(tab){
+  document.querySelectorAll('.home-tab').forEach((b,i)=>b.classList.toggle('active',(tab==='online'&&i===0)||(tab==='offline'&&i===1)));
+  document.getElementById('htab-online').classList.toggle('active',tab==='online');
+  document.getElementById('htab-offline').classList.toggle('active',tab==='offline');
+}
+
+// ── Online mode ────────────────────────────────────────────
+function selectMode(m){selectedMode=m;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('selected',b.dataset.mode===m));}
 function randomCode(){return Math.random().toString(36).slice(2,8).toUpperCase();}
 function copyCode(){
   const c=document.getElementById('lobby-code').textContent;
@@ -222,16 +285,15 @@ function copyCode(){
   else{navigator.clipboard?.writeText(c).catch(()=>{});}
   const el=document.getElementById('lobby-code');el.textContent='Copied!';setTimeout(()=>el.textContent=c,1500);
 }
-function setErr(id,msg){const el=document.getElementById(id);if(el)el.textContent=msg;}
 
 async function createRoom(){
   myName=document.getElementById('player-name').value.trim();
   if(!myName){setErr('home-error','Enter your name first');return;}
   setErr('home-error','Creating...');
-  const code=randomCode();roomId=code;isHost=true;
+  const code=randomCode();roomId=code;isHost=true;offlineMode=false;
   const room={host:myId,mode:selectedMode,status:'lobby',players:{[myId]:{name:myName,joined:Date.now()}}};
   const ok=await fbSet('rooms/'+code,room);
-  if(!ok){setErr('home-error','Connection failed — make sure you opened this page directly (not inside Claude)');return;}
+  if(!ok){setErr('home-error','Connection failed — try Local mode or check your Netlify URL');return;}
   setErr('home-error','');show('lobby');
   document.getElementById('lobby-code').textContent=code;
   updateLobbyUI(room,code);startPolling(code);
@@ -247,7 +309,7 @@ async function joinRoom(){
   if(!room){setErr('home-error','Room not found — check the code');return;}
   if(room.status!=='lobby'){setErr('home-error','Game already started');return;}
   if(Object.keys(room.players||{}).length>=4){setErr('home-error','Room is full (max 4)');return;}
-  roomId=code;selectedMode=room.mode;isHost=false;
+  roomId=code;selectedMode=room.mode;isHost=false;offlineMode=false;
   await fbUpdate('rooms/'+code+'/players/'+myId,{name:myName,joined:Date.now()});
   setErr('home-error','');show('lobby');
   document.getElementById('lobby-code').textContent=code;
@@ -280,15 +342,89 @@ async function startGame(){
   await fbUpdate('rooms/'+roomId,gd);
 }
 
-function startGameUI(room){
-  if(room.mode==='cricket'){show('cricket');buildCricketBtns();}
-  else{show('game01');buildNumpad();}
-}
-function updateGameUI(room){
-  if(!room||room.status!=='playing')return;
-  if(room.mode==='cricket')updateCricketUI(room);else updateGame01UI(room);
+// ── Offline mode ───────────────────────────────────────────
+let offlinePlayers=[{name:''}];
+
+function selectOfflineMode(m){
+  selectedOfflineMode=m;
+  document.querySelectorAll('[data-omode]').forEach(b=>b.classList.toggle('selected',b.dataset.omode===m));
 }
 
+function renderOfflinePlayerList(){
+  const list=document.getElementById('opl-list');
+  list.innerHTML=offlinePlayers.map((p,i)=>`
+    <div class="opl-item">
+      <input type="text" placeholder="Player ${i+1} name" maxlength="14" value="${p.name}"
+        oninput="offlinePlayers[${i}].name=this.value" autocomplete="off">
+      ${offlinePlayers.length>1?`<button class="opl-remove" onclick="removeOfflinePlayer(${i})">✕</button>`:''}
+    </div>`).join('');
+}
+
+function addOfflinePlayer(){
+  if(offlinePlayers.length>=8)return;
+  offlinePlayers.push({name:''});
+  renderOfflinePlayerList();
+}
+function removeOfflinePlayer(i){
+  offlinePlayers.splice(i,1);
+  renderOfflinePlayerList();
+}
+
+function startOfflineGame(){
+  const names=offlinePlayers.map(p=>p.name.trim()).filter(n=>n);
+  if(names.length<1){setErr('offline-error','Add at least one player name');return;}
+  setErr('offline-error','');
+  offlineMode=true;
+  const playerOrder=names.map((_,i)=>'op'+i);
+  const mode=selectedOfflineMode;
+  let gd={status:'playing',mode,currentPlayer:playerOrder[0],playerOrder,players:{}};
+  if(mode==='501'||mode==='301'){
+    playerOrder.forEach((pid,i)=>{gd.players[pid]={name:names[i],score:parseInt(mode)};});
+  }else{
+    playerOrder.forEach((pid,i)=>{const marks={};CTGTS.forEach(t=>marks[t]=0);gd.players[pid]={name:names[i],score:0,marks};});
+  }
+  gameState=gd;
+  myId=playerOrder[0]; // offline: myId tracks current player
+  startGameUI(gd);
+}
+
+// Offline: advance turn by updating local gameState and re-rendering
+function offlinePassTurn(){
+  const order=gameState.playerOrder;
+  const next=order[(order.indexOf(gameState.currentPlayer)+1)%order.length];
+  gameState.currentPlayer=next;
+  myId=next;
+  updateGameUI(gameState);
+  showTurnBanner();
+}
+
+function showTurnBanner(){
+  const name=gameState.players[gameState.currentPlayer]?.name||'?';
+  const mode=gameState.mode;
+  const b01=document.getElementById('turn-banner-01');
+  const bcr=document.getElementById('turn-banner-cr');
+  if(mode==='cricket'){b01.style.display='none';bcr.style.display='block';bcr.textContent='🎯 '+name+"'s turn — pass the phone!";}
+  else{bcr.style.display='none';b01.style.display='block';b01.textContent='🎯 '+name+"'s turn — pass the phone!";}
+}
+
+// ── Shared game logic ──────────────────────────────────────
+function startGameUI(room){
+  // set players-bar columns based on player count
+  const count=(room.playerOrder||[]).length;
+  document.getElementById('game01-players').style.gridTemplateColumns=count<=2?'1fr 1fr':count===3?'1fr 1fr 1fr':'1fr 1fr';
+  if(room.mode==='cricket'){show('cricket');buildCricketBtns();}
+  else{show('game01');buildNumpad();}
+  updateGameUI(room);
+  if(offlineMode) showTurnBanner();
+}
+
+function updateGameUI(room){
+  if(!room||room.status!=='playing')return;
+  if(room.mode==='cricket')updateCricketUI(room);
+  else updateGame01UI(room);
+}
+
+// ── 01 Game ────────────────────────────────────────────────
 function buildNumpad(){
   document.getElementById('numpad01').innerHTML=
     [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,'B'].map(n=>
@@ -296,6 +432,7 @@ function buildNumpad(){
     ).join('');
 }
 function setMult(m){currentMult=m;[1,2,3].forEach(i=>document.getElementById('mult-'+i).classList.toggle('on',i===m));}
+
 function addThrow(val){
   if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Not your turn!');return;}
   if(currentThrows.length>=3)return;
@@ -312,86 +449,147 @@ function updateThrowDisplay(){
     }else{el.textContent='—';el.classList.remove('filled');}
   }
 }
+
 async function submitTurn(){
   if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Not your turn!');return;}
   if(!currentThrows.length){setErr('game01-error','Enter at least one throw');return;}
   const thrown=currentThrows.reduce((s,t)=>s+t.points,0);
-  const pd=gameState.players[myId];const newScore=pd.score-thrown;
+  const pd=gameState.players[myId];
+  const newScore=pd.score-thrown;
   setErr('game01-error','');
-  if(newScore<0||newScore===1){setErr('game01-error','Bust! Score stays at '+pd.score);currentThrows=[];updateThrowDisplay();await passTurn();return;}
-  await fbUpdate('rooms/'+roomId+'/players/'+myId,{score:newScore});
-  if(newScore===0){await fbUpdate('rooms/'+roomId,{status:'winner',winner:myId,winnerName:pd.name});}
-  else await passTurn();
+
+  const bust=newScore<0||newScore===1;
+  if(!bust) gameState.players[myId].score=newScore;
+
+  if(bust){
+    setErr('game01-error','Bust! Score stays at '+pd.score);
+    currentThrows=[];updateThrowDisplay();
+    if(offlineMode){offlinePassTurn();}
+    else{await fbUpdate('rooms/'+roomId+'/players/'+myId,{score:pd.score});await passTurnOnline();}
+    return;
+  }
+
+  if(newScore===0){
+    currentThrows=[];updateThrowDisplay();
+    if(offlineMode){
+      gameState.status='winner';gameState.winner=myId;gameState.winnerName=pd.name;
+      showWinner(gameState);
+    }else{
+      await fbUpdate('rooms/'+roomId+'/players/'+myId,{score:0});
+      await fbUpdate('rooms/'+roomId,{status:'winner',winner:myId,winnerName:pd.name});
+    }
+    return;
+  }
+
   currentThrows=[];updateThrowDisplay();
+  if(offlineMode){updateGame01UI(gameState);offlinePassTurn();}
+  else{await fbUpdate('rooms/'+roomId+'/players/'+myId,{score:newScore});await passTurnOnline();}
 }
-async function passTurn(){
+
+async function passTurnOnline(){
   const order=gameState.playerOrder;
   const next=order[(order.indexOf(gameState.currentPlayer)+1)%order.length];
   await fbUpdate('rooms/'+roomId,{currentPlayer:next});
 }
+
 function updateGame01UI(room){
   const isMyTurn=room.currentPlayer===myId;
   const el=document.getElementById('game01-status');
   el.className='status-bar '+(isMyTurn?'myturn':'');
-  el.textContent=isMyTurn?'🎯 Your turn — enter your 3 throws':'⏳ '+(room.players[room.currentPlayer]?.name||'?')+"'s turn...";
+  const curName=room.players[room.currentPlayer]?.name||'?';
+  el.textContent=isMyTurn?(offlineMode?'🎯 Enter '+curName+"'s throws":'🎯 Your turn — enter your 3 throws'):'⏳ '+curName+"'s turn...";
+
   document.getElementById('game01-players').innerHTML=(room.playerOrder||[]).map(pid=>{
     const p=room.players[pid];
     return `<div class="pscard ${pid===room.currentPlayer?'active-turn':''}">
-      <div class="score-lbl">${p.name}${pid===myId?' (you)':''}</div>
+      <div class="score-lbl">${p.name}</div>
       <div class="score-big">${p.score}</div>
-      ${pid===room.currentPlayer?'<div class="score-lbl" style="color:#1D9E75;margin-top:2px">🎯 throwing</div>':''}
+      ${pid===room.currentPlayer?'<div class="score-lbl" style="color:#1D9E75;margin-top:2px">🎯</div>':''}
     </div>`;
   }).join('');
-  const np=document.getElementById('numpad01');
-  np.style.opacity=isMyTurn?'1':'0.3';np.style.pointerEvents=isMyTurn?'auto':'none';
-  document.querySelectorAll('#screen-game01 .mult-row .mult-btn').forEach(b=>{b.style.opacity=isMyTurn?'1':'0.3';b.style.pointerEvents=isMyTurn?'auto':'none';});
+
+  // In offline mode controls are always enabled (one device controls all)
+  if(!offlineMode){
+    const np=document.getElementById('numpad01');
+    np.style.opacity=isMyTurn?'1':'0.3';np.style.pointerEvents=isMyTurn?'auto':'none';
+    document.querySelectorAll('#screen-game01 .mult-row .mult-btn').forEach(b=>{
+      b.style.opacity=isMyTurn?'1':'0.3';b.style.pointerEvents=isMyTurn?'auto':'none';
+    });
+  }
 }
 
+// ── Cricket ────────────────────────────────────────────────
 function buildCricketBtns(){
   document.getElementById('cricket-targets').innerHTML=CTGTS.map(t=>
     `<button class="cbt" id="ct-${t}" onclick="hitCricket('${t}')">${t}</button>`
   ).join('');
 }
 function setCricketMult(m){cricketMult=m;[1,2,3].forEach(i=>document.getElementById('c-mult-'+i).classList.toggle('on',i===m));}
+
 function hitCricket(target){
   if(!gameState||gameState.currentPlayer!==myId){setErr('cricket-error','Not your turn!');return;}
-  const used=cricketThrows.reduce((s,t)=>s+t.mult,0);
-  if(used>=3){setErr('cricket-error','3 darts used — submit or undo');return;}
-  cricketThrows.push({target,mult:Math.min(cricketMult,3-used)});
+  if(cricketThrows.length>=3){setErr('cricket-error','3 darts used — submit or undo');return;}
+  cricketThrows.push({target,mult:cricketMult});
   updateCricketInfo();setErr('cricket-error','');
 }
 function updateCricketInfo(){
-  const used=cricketThrows.reduce((s,t)=>s+t.mult,0);
-  if(!cricketThrows.length){document.getElementById('cricket-throw-info').textContent='Select a target ('+cricketMult+' dart'+(cricketMult>1?'s':'')+' per tap)';return;}
+  if(!cricketThrows.length){document.getElementById('cricket-throw-info').textContent='Select a target — '+cricketMult+'x marks per dart';return;}
   const prev=cricketThrows.map(t=>(t.mult===3?'T':t.mult===2?'D':'')+t.target).join(', ');
-  document.getElementById('cricket-throw-info').textContent=`${prev} · ${used}/3 darts used`;
+  document.getElementById('cricket-throw-info').textContent=`${prev} · ${cricketThrows.length}/3 darts used`;
 }
 function undoCricket(){cricketThrows.pop();updateCricketInfo();setErr('cricket-error','');}
+
 async function submitCricketTurn(){
   if(!gameState||gameState.currentPlayer!==myId){setErr('cricket-error','Not your turn!');return;}
   if(!cricketThrows.length){setErr('cricket-error','Select at least one target');return;}
+
   const myMarks=Object.assign({},gameState.players[myId].marks);
   let myScore=gameState.players[myId].score;
+
   function allClosed(t){return(gameState.playerOrder||[]).every(pid=>(gameState.players[pid].marks[t]||0)>=3);}
+
   for(const t of cricketThrows){
-    const cur=myMarks[t.target]||0;const after=cur+t.mult;
+    const cur=myMarks[t.target]||0;
+    const after=cur+t.mult;
     myMarks[t.target]=Math.min(3,after);
-    if(after>3&&!allClosed(t.target)){myScore+=(t.target==='B'?50:parseInt(t.target))*Math.max(0,after-Math.max(3,cur));}
+    if(!allClosed(t.target)&&after>3){
+      const overflowMarks=after-Math.max(3,cur);
+      myScore+=(t.target==='B'?50:parseInt(t.target))*overflowMarks;
+    }
   }
-  await fbUpdate('rooms/'+roomId+'/players/'+myId,{marks:myMarks,score:myScore});
+
+  // update local state always (needed for offline, and for win check)
+  gameState.players[myId].marks=myMarks;
+  gameState.players[myId].score=myScore;
+
   const allDone=CTGTS.every(t=>(myMarks[t]||0)>=3);
-  if(allDone){
-    const others=(gameState.playerOrder||[]).filter(p=>p!==myId).map(p=>gameState.players[p].score);
-    if(others.every(s=>myScore>=s)){await fbUpdate('rooms/'+roomId,{status:'winner',winner:myId,winnerName:gameState.players[myId].name});cricketThrows=[];updateCricketInfo();return;}
+  const others=(gameState.playerOrder||[]).filter(p=>p!==myId).map(p=>gameState.players[p].score);
+  const won=allDone&&others.every(s=>myScore>=s);
+
+  cricketThrows=[];updateCricketInfo();
+
+  if(won){
+    if(offlineMode){gameState.status='winner';gameState.winner=myId;gameState.winnerName=gameState.players[myId].name;showWinner(gameState);}
+    else{await fbUpdate('rooms/'+roomId+'/players/'+myId,{marks:myMarks,score:myScore});await fbUpdate('rooms/'+roomId,{status:'winner',winner:myId,winnerName:gameState.players[myId].name});}
+    return;
   }
-  await passTurn();cricketThrows=[];updateCricketInfo();
+
+  if(offlineMode){offlinePassTurn();}
+  else{
+    await fbUpdate('rooms/'+roomId+'/players/'+myId,{marks:myMarks,score:myScore});
+    await passTurnOnline();
+  }
 }
+
 function markStr(m){return m===0?'':m===1?'/':m===2?'X':'⊗';}
+
 function updateCricketUI(room){
   const isMyTurn=room.currentPlayer===myId;
   const el=document.getElementById('cricket-status');
   el.className='status-bar '+(isMyTurn?'myturn':'');
-  el.textContent=isMyTurn?'🎯 Your turn — 3 darts':'⏳ '+(room.players[room.currentPlayer]?.name||'?')+"'s turn...";
+  const curName=room.players[room.currentPlayer]?.name||'?';
+  el.textContent=isMyTurn?(offlineMode?'🎯 Enter '+curName+"'s throws":'🎯 Your turn — 3 darts'):'⏳ '+curName+"'s turn...";
+
   const pO=room.playerOrder||[];
   if(pO.length===2){
     const p0=room.players[pO[0]],p1=room.players[pO[1]];
@@ -400,31 +598,54 @@ function updateCricketUI(room){
       return `<tr><td style="font-size:20px">${markStr(m0)}</td><td class="tgt-col" style="${closed?'opacity:.3;text-decoration:line-through':''}">${t}</td><td style="font-size:20px">${markStr(m1)}</td></tr>`;
     }).join('');
     document.getElementById('cricket-table').innerHTML=
-      `<thead><tr><th>${p0.name}${pO[0]===myId?' (you)':''}</th><th class="tgt-col">Target</th><th>${p1.name}${pO[1]===myId?' (you)':''}</th></tr>
+      `<thead><tr><th>${p0.name}</th><th class="tgt-col">Target</th><th>${p1.name}</th></tr>
       <tr><td style="text-align:center;font-weight:700;padding:6px;color:#1D9E75">${p0.score}pts</td><td></td><td style="text-align:center;font-weight:700;padding:6px;color:#1D9E75">${p1.score}pts</td></tr></thead><tbody>${rows}</tbody>`;
   }else{
     const heads=pO.map(pid=>`<th>${room.players[pid].name}</th>`).join('');
+    const scores=pO.map(pid=>`<td style="font-weight:700;color:#1D9E75;padding:4px;text-align:center">${room.players[pid].score}pts</td>`).join('');
     const rows=CTGTS.map(t=>`<tr>${pO.map(pid=>`<td>${markStr((room.players[pid].marks||{})[t]||0)}</td>`).join('')}<td class="tgt-col">${t}</td></tr>`).join('');
-    document.getElementById('cricket-table').innerHTML=`<thead><tr>${heads}<th class="tgt-col">Target</th></tr></thead><tbody>${rows}</tbody>`;
+    document.getElementById('cricket-table').innerHTML=`<thead><tr>${heads}<th class="tgt-col">Target</th></tr><tr>${scores}<td></td></tr></thead><tbody>${rows}</tbody>`;
   }
   CTGTS.forEach(t=>{const btn=document.getElementById('ct-'+t);if(!btn)return;btn.classList.toggle('closed',(room.playerOrder||[]).every(pid=>((room.players[pid]?.marks||{})[t]||0)>=3));});
-  const ctrl=document.getElementById('cricket-controls');
-  ctrl.style.opacity=isMyTurn?'1':'0.3';ctrl.style.pointerEvents=isMyTurn?'auto':'none';
-  if(isMyTurn)updateCricketInfo();
+
+  if(!offlineMode){
+    const ctrl=document.getElementById('cricket-controls');
+    ctrl.style.opacity=isMyTurn?'1':'0.3';ctrl.style.pointerEvents=isMyTurn?'auto':'none';
+  }
+  if(isMyTurn||offlineMode)updateCricketInfo();
 }
+
+// ── Winner ─────────────────────────────────────────────────
 function showWinner(room){
   stopPolling();
-  document.getElementById('winner-name').textContent=room.winner===myId?'🎉 You win!':`${room.winnerName} wins!`;
+  const name=room.winnerName||room.players?.[room.winner]?.name||'Someone';
+  document.getElementById('winner-name').textContent='🎉 '+name+' wins!';
   document.getElementById('winner-sub').textContent=`${(room.mode||'').toUpperCase()} · ${Object.keys(room.players||{}).length} players`;
   show('winner');
 }
+
 async function leaveGame(){
   stopPolling();
-  if(roomId){if(isHost)await fbDel('rooms/'+roomId);else await fbDel('rooms/'+roomId+'/players/'+myId);}
+  if(!offlineMode&&roomId){if(isHost)await fbDel('rooms/'+roomId);else await fbDel('rooms/'+roomId+'/players/'+myId);}
   roomId=null;gameState=null;currentThrows=[];cricketThrows=[];isHost=false;
+  offlineMode=false;myId='p_'+Math.random().toString(36).slice(2,9);
+  document.getElementById('turn-banner-01').style.display='none';
+  document.getElementById('turn-banner-cr').style.display='none';
   show('home');checkConn();
 }
-function playAgain(){leaveGame();}
+
+function playAgain(){
+  if(offlineMode){
+    // restart with same players and mode
+    const names=gameState.playerOrder.map(pid=>gameState.players[pid].name);
+    offlinePlayers=names.map(n=>({name:n}));
+    selectedOfflineMode=gameState.mode;
+    startOfflineGame();
+  }else{leaveGame();}
+}
+
+// ── Init ───────────────────────────────────────────────────
+renderOfflinePlayerList();
 checkConn();
 </script>
 </body>
