@@ -1,14 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hu">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="DartsNow">
-<meta name="theme-color" content="#111111">
+<meta name="theme-color" content="#1D9E75">
 <title>DartsNow</title>
 <link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>r.unregister());
+  });
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/DartsNow/sw.js').catch(()=>{});
+  });
+}
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  deferredInstallPrompt=e;
+  document.getElementById('install-btn')?.style.setProperty('display','block');
+});
+window.addEventListener('appinstalled',()=>{
+  document.getElementById('install-btn')?.style.setProperty('display','none');
+  deferredInstallPrompt=null;
+});
+function installApp(){
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(()=>{deferredInstallPrompt=null;});
+  }
+}
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#111;color:#f0f0f0;font-size:15px;min-height:100vh}
@@ -25,6 +52,7 @@ input[type=text]:focus{border-color:#1D9E75}
 .btn:active{transform:scale(0.97)}
 .btn-primary{background:#1D9E75;color:#fff;border-color:#1D9E75}
 .btn-danger{background:#c0392b;color:#fff;border-color:#c0392b}
+.btn-warn{background:#e67e22;color:#fff;border-color:#e67e22}
 .btn-sm{padding:11px 14px;font-size:14px;width:auto;display:inline-block;margin:0}
 .btn-outline{background:transparent;border-color:#444;color:#ccc}
 .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
@@ -73,18 +101,81 @@ input[type=text]:focus{border-color:#1D9E75}
 .dot{width:8px;height:8px;border-radius:50%;background:#e74c3c;display:inline-block}
 .dot.ok{background:#1D9E75}
 .action-row{display:flex;gap:8px}
+.action-row-3{display:flex;gap:8px;margin-bottom:8px}
 .copy-hint{font-size:11px;color:#555;text-align:center;margin-top:-8px;margin-bottom:10px}
-/* Home mode tabs */
 .home-tabs{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:16px;border:1px solid #2a2a2a;border-radius:12px;overflow:hidden}
 .home-tab{padding:14px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;background:#1a1a1a;color:#666;border:none;transition:all .15s}
 .home-tab.active{background:#1D9E75;color:#fff}
 .htab-panel{display:none}
 .htab-panel.active{display:block}
-/* offline player list */
 .opl-item{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .opl-item input{flex:1;margin-bottom:0}
 .opl-remove{padding:10px 14px;background:#1a1a1a;border:1px solid #333;border-radius:10px;color:#888;cursor:pointer;font-size:16px;flex-shrink:0}
-.turn-banner{background:#1D9E75;color:#fff;border-radius:12px;padding:14px;text-align:center;margin-bottom:14px;font-size:18px;font-weight:700}
+.turn-banner{background:#1D9E75;color:#fff;border-radius:12px;padding:14px;text-align:center;margin-bottom:14px;font-size:18px;font-weight:700;text-transform:uppercase}
+.undo-turn-btn{width:100%;padding:11px;border:1px solid #e67e22;border-radius:10px;background:transparent;color:#e67e22;font-size:13px;font-weight:600;cursor:pointer;text-align:center;margin-top:8px}
+.undo-turn-btn:disabled{opacity:0.3;pointer-events:none}
+/* Minden játékosnév nagybetűs */
+.score-lbl,.player-name-lbl,.badge,.wins-name{text-transform:uppercase}
+.cricket-table th{text-transform:uppercase}
+.status-bar{text-transform:uppercase;letter-spacing:.3px}
+/* Győzelmek a játék közben */
+.ingame-wins{display:inline-block;background:#1D9E75;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:12px;margin-left:5px;vertical-align:middle}
+.mode-toggle-btn{padding:7px 12px;font-size:12px;font-weight:600;border:1px solid #444;border-radius:8px;background:transparent;color:#aaa;cursor:pointer;transition:all .15s}
+.mode-toggle-btn.active{border-color:#1D9E75;color:#1D9E75;background:rgba(29,158,117,0.1)}
+/* Telefon billentyűzet */
+.phone-numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.phone-btn{padding:16px 8px;font-size:20px;font-weight:600;border:1px solid #2a2a2a;border-radius:12px;background:#1a1a1a;color:#f0f0f0;cursor:pointer;transition:all .1s;text-align:center}
+.phone-btn:active{background:#2a2a2a;transform:scale(0.95)}
+.phone-btn-del{background:#2a1a1a;color:#e74c3c;border-color:#3a2a2a}
+.phone-btn-ok{background:#1D9E75;color:#fff;border-color:#1D9E75;font-size:16px}
+.phone-btn-ok:active{background:#158a63}
+/* Kör história */
+.round-row{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:#1a1a1a;font-size:12px}
+.round-num{color:#555;font-weight:600;min-width:28px}
+.round-score{font-weight:700;color:#f0f0f0;min-width:32px;text-align:right}
+.round-name{color:#888;flex:1}
+/* pending (not yet submitted) cricket marks */
+.mark-pending{color:#4a9eff;opacity:0.85;font-style:normal}
+.score-pending{color:#4a9eff;font-size:12px;margin-top:2px}
+/* Winner result table */
+.result-table{width:100%;border-collapse:collapse}
+.result-table th{font-size:12px;font-weight:600;color:#666;padding:7px 6px;text-align:left;border-bottom:1px solid #2a2a2a;text-transform:uppercase;letter-spacing:.4px}
+.result-table td{padding:9px 6px;border-bottom:1px solid #1e1e1e;font-size:14px;vertical-align:middle}
+.result-table tr:last-child td{border-bottom:none}
+.result-table .winner-row td{color:#1D9E75;font-weight:600}
+.result-mark{font-size:13px;letter-spacing:1px}
+.wins-row{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#1a1a1a;border-radius:10px;margin-bottom:7px}
+.wins-name{font-size:15px;font-weight:600}
+.wins-badge{background:#1D9E75;color:#fff;font-size:13px;font-weight:700;padding:4px 12px;border-radius:20px;min-width:32px;text-align:center}
+/* ── Fekvő mód ── */
+@media (orientation:landscape){
+  .screen{max-width:100%;padding:8px 14px 14px}
+  .logo{font-size:30px;margin:6px 0 2px}
+  h1{font-size:19px}
+  .tagline{margin-bottom:8px}
+  .turn-banner{padding:10px;font-size:15px;margin-bottom:8px}
+  .status-bar{padding:8px;margin-bottom:8px;font-size:13px}
+  /* two-column wrapper for game screens */
+  .ls-wrap{display:flex;gap:16px;align-items:flex-start}
+  .ls-left{flex:1;min-width:0}
+  .ls-right{flex:1;min-width:0}
+  /* smaller player score cards in landscape */
+  .score-big{font-size:36px}
+  .pscard{padding:8px}
+  /* cricket table compact */
+  .cricket-table th{padding:5px 3px;font-size:11px}
+  .cricket-table td{padding:6px 3px;font-size:15px}
+  .tgt-col{font-size:14px}
+  /* numpad smaller */
+  .num-btn{padding:11px 4px;font-size:14px}
+  .cbt{padding:10px 4px;font-size:14px}
+  .mult-btn{padding:8px;font-size:13px}
+  .btn{padding:11px;font-size:14px}
+  .btn-sm{padding:9px 10px;font-size:13px}
+  .undo-turn-btn{padding:9px}
+  /* lobby/winner centred */
+  #screen-lobby,#screen-winner{max-width:520px;margin:0 auto}
+}
 </style>
 </head>
 <body>
@@ -93,33 +184,45 @@ input[type=text]:focus{border-color:#1D9E75}
 <div id="screen-home" class="screen active">
   <div class="logo">🎯</div>
   <h1>DartsNow</h1>
-  <p class="tagline">Free multiplayer · no subscription needed</p>
+  <p class="tagline">Ingyenes multiplayer · előfizetés nélkül</p>
+  <button id="install-btn" onclick="installApp()" style="display:none;width:100%;padding:12px;margin-bottom:12px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer">📲 Telepítés az eszközre</button>
 
   <div class="home-tabs">
     <button class="home-tab active" onclick="switchHomeTab('online')">📶 Online</button>
-    <button class="home-tab" onclick="switchHomeTab('offline')">📵 Local / Offline</button>
+    <button class="home-tab" onclick="switchHomeTab('offline')">📵 Helyi / Offline</button>
   </div>
 
   <!-- ONLINE TAB -->
   <div class="htab-panel active" id="htab-online">
-    <div class="conn"><span class="dot" id="conn-dot"></span><span id="conn-txt">Checking connection...</span></div>
+    <div class="conn"><span class="dot" id="conn-dot"></span><span id="conn-txt">Kapcsolat ellenőrzése...</span></div>
     <div class="card">
-      <h3>Your name</h3>
-      <input type="text" id="player-name" placeholder="Enter your name" maxlength="16" autocomplete="off">
+      <h3>A neved</h3>
+      <input type="text" id="player-name" placeholder="Írd be a neved" maxlength="16" autocomplete="off">
     </div>
     <div class="card">
-      <h3>Game mode</h3>
+      <h3>Játékmód</h3>
       <div class="mode-grid">
         <button class="mode-btn selected" data-mode="501" onclick="selectMode('501')">501</button>
         <button class="mode-btn" data-mode="301" onclick="selectMode('301')">301</button>
         <button class="mode-btn mode-btn-full" data-mode="cricket" onclick="selectMode('cricket')">Cricket</button>
       </div>
     </div>
-    <button class="btn btn-primary" onclick="createRoom()">🆕 Create room &amp; invite friend</button>
-    <div class="separator">or join with a code</div>
+    <button class="btn btn-primary" onclick="createRoom()">🆕 Szoba létrehozása &amp; meghívó</button>
+    <div class="separator">vagy csatlakozz kóddal</div>
     <div style="display:flex;gap:8px;margin-top:10px">
-      <input type="text" id="join-code" placeholder="ROOM CODE" maxlength="6" style="text-transform:uppercase;flex:1;letter-spacing:4px;font-weight:700;font-size:18px">
-      <button class="btn btn-sm btn-primary" style="flex:0 0 auto" onclick="joinRoom()">Join →</button>
+      <input type="text" id="join-code" placeholder="SZOBAKÓD" maxlength="6" style="text-transform:uppercase;flex:1;letter-spacing:4px;font-weight:700;font-size:18px">
+      <button class="btn btn-sm btn-primary" style="flex:0 0 auto" onclick="joinRoom()">Csatlakozás →</button>
+    </div>
+    <!-- Több játékos egy eszközről -->
+    <div style="margin-top:10px">
+      <button class="btn btn-outline" id="multi-join-toggle" onclick="toggleMultiJoin()" style="padding:10px;font-size:13px">
+        👥 Ketten csatlakozunk egy eszközről
+      </button>
+      <div id="multi-join-panel" style="display:none;margin-top:10px;background:#1a1a1a;border-radius:12px;padding:14px;border:1px solid #2a2a2a">
+        <p style="font-size:13px;color:#888;margin-bottom:10px">Add meg mindkét játékos nevét — passz-és-dobj módban játsztok</p>
+        <input type="text" id="join-name-2" placeholder="2. játékos neve" maxlength="16" autocomplete="off" style="margin-bottom:8px">
+        <input type="text" id="join-name-3" placeholder="3. játékos neve (opcionális)" maxlength="16" autocomplete="off">
+      </div>
     </div>
     <p id="home-error" class="error"></p>
   </div>
@@ -127,105 +230,196 @@ input[type=text]:focus{border-color:#1D9E75}
   <!-- OFFLINE TAB -->
   <div class="htab-panel" id="htab-offline">
     <div class="card">
-      <h3>Players <span style="font-size:12px;color:#666;font-weight:400">(up to 8)</span></h3>
+      <h3>Játékosok <span style="font-size:12px;color:#666;font-weight:400">(max 8)</span></h3>
       <div id="opl-list"></div>
-      <button class="btn btn-outline" onclick="addOfflinePlayer()" style="margin-top:4px;padding:10px">+ Add player</button>
+      <button class="btn btn-outline" onclick="addOfflinePlayer()" style="margin-top:4px;padding:10px">+ Játékos hozzáadása</button>
     </div>
     <div class="card">
-      <h3>Game mode</h3>
+      <h3>Játékmód</h3>
       <div class="mode-grid">
         <button class="mode-btn selected" data-omode="501" onclick="selectOfflineMode('501')">501</button>
         <button class="mode-btn" data-omode="301" onclick="selectOfflineMode('301')">301</button>
         <button class="mode-btn mode-btn-full" data-omode="cricket" onclick="selectOfflineMode('cricket')">Cricket</button>
       </div>
     </div>
-    <button class="btn btn-primary" onclick="startOfflineGame()">▶ Start local game</button>
+    <button class="btn btn-primary" onclick="startOfflineGame()">▶ Helyi játék indítása</button>
     <p id="offline-error" class="error"></p>
   </div>
 </div>
 
-<!-- LOBBY (online only) -->
+<!-- LOBBY -->
 <div id="screen-lobby" class="screen">
-  <h1 style="text-align:center;margin-bottom:4px">Room</h1>
-  <p style="text-align:center;font-size:13px;color:#666;margin-bottom:8px">Share this code with your friend</p>
+  <h1 style="text-align:center;margin-bottom:4px">Szoba</h1>
+  <p style="text-align:center;font-size:13px;color:#666;margin-bottom:8px">Küldd el ezt a kódot a barátodnak</p>
   <div class="room-code" id="lobby-code" onclick="copyCode()">------</div>
-  <p class="copy-hint">Tap to copy</p>
+  <p class="copy-hint">Koppints a másoláshoz</p>
   <div class="card" id="lobby-players"></div>
-  <div id="lobby-status" class="status-bar">Waiting for players...</div>
-  <button class="btn btn-primary" id="start-btn" style="display:none" onclick="startGame()">▶ Start game</button>
-  <button class="btn" onclick="leaveGame()">Leave room</button>
+  <div id="lobby-status" class="status-bar">Várakozás a játékosokra...</div>
+  <button class="btn btn-primary" id="start-btn" style="display:none" onclick="startGame()">▶ Játék indítása</button>
+  <button class="btn" onclick="leaveGame()">Kilépés a szobából</button>
 </div>
 
-<!-- GAME 01 (shared online+offline) -->
+<!-- GAME 01 -->
 <div id="screen-game01" class="screen">
   <div id="turn-banner-01" class="turn-banner" style="display:none"></div>
-  <div class="players-bar" id="game01-players"></div>
-  <div id="game01-status" class="status-bar"></div>
-  <div class="throw-display">
-    <div class="throw-slot" id="t0">—</div>
-    <div class="throw-slot" id="t1">—</div>
-    <div class="throw-slot" id="t2">—</div>
+  <div class="ls-wrap">
+    <div class="ls-left">
+      <div class="players-bar" id="game01-players"></div>
+      <div id="game01-status" class="status-bar"></div>
+      <!-- Checkout hint -->
+      <div id="checkout-hint" style="display:none;background:#1a1a1a;border:1px solid rgba(29,158,117,0.4);border-radius:10px;padding:10px 12px;margin-bottom:10px">
+        <div style="font-size:11px;color:#1D9E75;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🎯 Kiszálló</div>
+        <div id="checkout-combos" style="font-size:13px;color:#ccc;line-height:1.7"></div>
+      </div>
+      <!-- Round history -->
+      <div id="round-history" style="display:none">
+        <div style="font-size:11px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Körök</div>
+        <div id="round-history-list" style="max-height:180px;overflow-y:auto"></div>
+      </div>
+    </div>
+    <div class="ls-right">
+      <!-- Mode toggle -->
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+        <button class="mode-toggle-btn" id="input-mode-btn" onclick="toggleInputMode()">✏️ Kézi bevitel</button>
+      </div>
+      <!-- Throw display -->
+      <div class="throw-display">
+        <div class="throw-slot" id="t0">—</div>
+        <div class="throw-slot" id="t1">—</div>
+        <div class="throw-slot" id="t2">—</div>
+      </div>
+      <!-- NUMPAD MODE -->
+      <div id="numpad-mode">
+        <div class="mult-row">
+          <button class="mult-btn" id="mult-1" onclick="setMult(1)">Szimpla</button>
+          <button class="mult-btn on" id="mult-2" onclick="setMult(2)">Dupla</button>
+          <button class="mult-btn" id="mult-3" onclick="setMult(3)">Tripla</button>
+        </div>
+        <div class="numpad" id="numpad01"></div>
+      </div>
+      <!-- MANUAL / PHONE NUMPAD MODE -->
+      <div id="manual-mode" style="display:none">
+        <div id="manual-display" style="font-size:36px;font-weight:700;text-align:center;padding:12px 8px;background:#161616;border:1px solid #333;border-radius:10px;margin-bottom:10px;min-height:58px;color:#f0f0f0;letter-spacing:2px">—</div>
+        <div class="phone-numpad">
+          <button class="phone-btn" onclick="phoneKey('1')">1</button>
+          <button class="phone-btn" onclick="phoneKey('2')">2</button>
+          <button class="phone-btn" onclick="phoneKey('3')">3</button>
+          <button class="phone-btn" onclick="phoneKey('4')">4</button>
+          <button class="phone-btn" onclick="phoneKey('5')">5</button>
+          <button class="phone-btn" onclick="phoneKey('6')">6</button>
+          <button class="phone-btn" onclick="phoneKey('7')">7</button>
+          <button class="phone-btn" onclick="phoneKey('8')">8</button>
+          <button class="phone-btn" onclick="phoneKey('9')">9</button>
+          <button class="phone-btn phone-btn-del" onclick="phoneKey('del')">⌫</button>
+          <button class="phone-btn" onclick="phoneKey('0')">0</button>
+          <button class="phone-btn phone-btn-ok" onclick="submitManual()">OK ✓</button>
+        </div>
+      </div>
+      <div class="action-row-3" id="numpad-actions">
+        <button class="btn btn-danger btn-sm" onclick="undoThrow()" style="flex:1">↩ Törlés</button>
+        <button class="btn btn-primary btn-sm" onclick="submitTurn()" style="flex:1">Beküldés ✓</button>
+      </div>
+      <button class="undo-turn-btn" id="undo-turn-01-btn" onclick="undoLastTurn01()" disabled>↺ Előző kör visszavonása</button>
+      <p id="game01-error" class="error"></p>
+    </div>
   </div>
-  <div class="mult-row">
-    <button class="mult-btn" id="mult-1" onclick="setMult(1)">Single</button>
-    <button class="mult-btn on" id="mult-2" onclick="setMult(2)">Double</button>
-    <button class="mult-btn" id="mult-3" onclick="setMult(3)">Triple</button>
-  </div>
-  <div class="numpad" id="numpad01"></div>
-  <div class="action-row">
-    <button class="btn btn-danger btn-sm" onclick="undoThrow()" style="flex:1">↩ Undo</button>
-    <button class="btn btn-primary btn-sm" onclick="submitTurn()" style="flex:1">Submit turn ✓</button>
-  </div>
-  <p id="game01-error" class="error"></p>
-  <button class="btn" onclick="leaveGame()" style="margin-top:12px;color:#555;font-size:13px">Leave game</button>
+  <button class="btn" onclick="leaveGame()" style="margin-top:8px;color:#555;font-size:13px">Kilépés a játékból</button>
 </div>
 
-<!-- GAME CRICKET (shared online+offline) -->
+<!-- GAME CRICKET -->
 <div id="screen-cricket" class="screen">
   <div id="turn-banner-cr" class="turn-banner" style="display:none"></div>
   <div id="cricket-status" class="status-bar"></div>
-  <table class="cricket-table" id="cricket-table"></table>
-  <div id="cricket-controls">
-    <div class="throw-info" id="cricket-throw-info">Select a target</div>
-    <div class="cbt-grid" id="cricket-targets"></div>
-    <div class="mult-row">
-      <button class="mult-btn on" id="c-mult-1" onclick="setCricketMult(1)">Single</button>
-      <button class="mult-btn" id="c-mult-2" onclick="setCricketMult(2)">Double</button>
-      <button class="mult-btn" id="c-mult-3" onclick="setCricketMult(3)">Triple</button>
+  <div class="ls-wrap">
+    <div class="ls-left">
+      <table class="cricket-table" id="cricket-table"></table>
     </div>
-    <div class="action-row">
-      <button class="btn btn-danger btn-sm" onclick="undoCricket()" style="flex:1">↩ Undo</button>
-      <button class="btn btn-primary btn-sm" onclick="submitCricketTurn()" style="flex:1">Submit turn ✓</button>
+    <div class="ls-right">
+      <div id="cricket-controls">
+        <div class="throw-info" id="cricket-throw-info">Válassz célpontot</div>
+        <div class="cbt-grid" id="cricket-targets"></div>
+        <div class="mult-row">
+          <button class="mult-btn on" id="c-mult-1" onclick="setCricketMult(1)">Szimpla</button>
+          <button class="mult-btn" id="c-mult-2" onclick="setCricketMult(2)">Dupla</button>
+          <button class="mult-btn" id="c-mult-3" onclick="setCricketMult(3)">Tripla</button>
+        </div>
+        <div class="action-row-3">
+          <button class="btn btn-danger btn-sm" onclick="undoCricket()" style="flex:1">↩ Törlés</button>
+          <button class="btn btn-primary btn-sm" onclick="submitCricketTurn()" style="flex:1">Beküldés ✓</button>
+        </div>
+        <button class="undo-turn-btn" id="undo-turn-cr-btn" onclick="undoLastTurnCricket()" disabled>↺ Előző kör visszavonása</button>
+      </div>
+      <p id="cricket-error" class="error"></p>
     </div>
   </div>
-  <p id="cricket-error" class="error"></p>
-  <button class="btn" onclick="leaveGame()" style="margin-top:12px;color:#555;font-size:13px">Leave game</button>
+  <button class="btn" onclick="leaveGame()" style="margin-top:8px;color:#555;font-size:13px">Kilépés a játékból</button>
 </div>
 
 <!-- WINNER -->
 <div id="screen-winner" class="screen">
   <div class="winner-banner">
     <div class="trophy">🏆</div>
-    <h2 id="winner-name">Player wins!</h2>
+    <h2 id="winner-name">Játékos nyert!</h2>
     <p id="winner-sub"></p>
   </div>
-  <button class="btn btn-primary" onclick="playAgain()">Play again</button>
-  <button class="btn" onclick="leaveGame()">Back to home</button>
+  <div id="winner-cricket-result" style="display:none;margin-bottom:14px">
+    <div style="font-size:13px;font-weight:600;color:#888;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Végeredmény</div>
+    <table id="winner-result-table" style="width:100%;border-collapse:collapse"></table>
+  </div>
+  <div id="winner-wins-table" style="display:none;margin-bottom:14px">
+    <div style="font-size:13px;font-weight:600;color:#888;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Összes győzelem</div>
+    <div id="winner-wins-list"></div>
+  </div>
+  <button class="btn btn-primary" id="winner-continue-btn" onclick="playAgain()">▶ Folytatás (következő leg)</button>
+  <div id="winner-wait-msg" style="display:none;text-align:center;padding:14px;color:#888;font-size:14px">⏳ Várakozás a szoba gazdájára...</div>
+  <button class="btn" onclick="leaveGame()">Vissza a főmenübe</button>
 </div>
 
 <script>
-// ── Constants ──────────────────────────────────────────────
 const DB = 'https://dartsmost-default-rtdb.firebaseio.com';
 const CTGTS = ['15','16','17','18','19','20','B'];
 
-// ── Shared state ───────────────────────────────────────────
 let myId = 'p_' + Math.random().toString(36).slice(2,9);
 let roomId=null, gameState=null, myName='', selectedMode='501';
 let currentThrows=[], currentMult=2, cricketMult=1, cricketThrows=[];
 let isHost=false, pollTimer=null, lastSig=null;
 let offlineMode=false, selectedOfflineMode='501';
+let localPlayerIds=[]; // az eszközön lévő összes játékos ID-ja (multi-join esetén több)
+let winsTracker={}; // { playerName: count } — session-szintű számlálás
 
-// ── Firebase helpers ───────────────────────────────────────
+// Mindig nagybetűs név
+function uc(name){return (name||'').toUpperCase();}
+
+// Győzelmi badge HTML a névhez
+function winsBadge(name){
+  const w=winsTracker[name]||0;
+  return w>0?`<span class="ingame-wins">${w}</span>`:'';
+}
+
+// ── Turn history for undo ──────────────────────────────────
+// Each entry: snapshot of ALL players' data before that turn was submitted
+let turnHistory = [];
+const MAX_HISTORY = 10;
+
+function saveSnapshot() {
+  const snap = JSON.parse(JSON.stringify({
+    players: gameState.players,
+    currentPlayer: gameState.currentPlayer
+  }));
+  turnHistory.push(snap);
+  if (turnHistory.length > MAX_HISTORY) turnHistory.shift();
+  refreshUndoBtn();
+}
+
+function refreshUndoBtn() {
+  const has = turnHistory.length > 0;
+  const b01 = document.getElementById('undo-turn-01-btn');
+  const bcr = document.getElementById('undo-turn-cr-btn');
+  if (b01) b01.disabled = !has;
+  if (bcr) bcr.disabled = !has;
+}
+
+// ── Firebase ───────────────────────────────────────────────
 async function fbSet(p,d){try{const r=await fetch(`${DB}/${p}.json`,{method:'PUT',body:JSON.stringify(d),headers:{'Content-Type':'application/json'}});return r.ok}catch(e){return false}}
 async function fbUpdate(p,d){try{const r=await fetch(`${DB}/${p}.json`,{method:'PATCH',body:JSON.stringify(d),headers:{'Content-Type':'application/json'}});return r.ok}catch(e){return false}}
 async function fbGet(p){try{const r=await fetch(`${DB}/${p}.json`);if(!r.ok)return null;return r.json()}catch(e){return null}}
@@ -234,13 +428,21 @@ async function fbDel(p){try{await fetch(`${DB}/${p}.json`,{method:'DELETE'})}cat
 async function checkConn(){
   const dot=document.getElementById('conn-dot'),txt=document.getElementById('conn-txt');
   try{
-    const r=await fetch(`${DB}/.json?shallow=true`);
-    if(r.ok){dot.classList.add('ok');txt.textContent='Connected ✓';}
-    else{dot.classList.remove('ok');txt.textContent='Firebase error '+r.status;}
-  }catch(e){dot.classList.remove('ok');txt.textContent='No connection (use Local mode)';}
+    const r=await fetch(`${DB}/ping.json`,{method:'PUT',body:'"ok"',headers:{'Content-Type':'application/json'}});
+    if(r.ok||r.status===200){
+      dot.classList.add('ok');
+      txt.textContent='Kapcsolódva ✓';
+      fetch(`${DB}/ping.json`,{method:'DELETE'}).catch(()=>{});
+    } else {
+      dot.classList.remove('ok');
+      txt.textContent='Firebase hiba: '+r.status;
+    }
+  }catch(e){
+    dot.classList.remove('ok');
+    txt.textContent='Nincs kapcsolat';
+  }
 }
 
-// ── Polling ────────────────────────────────────────────────
 function startPolling(code){
   stopPolling();
   pollTimer=setInterval(async()=>{
@@ -254,63 +456,107 @@ function startPolling(code){
 }
 function stopPolling(){if(pollTimer){clearInterval(pollTimer);pollTimer=null;}lastSig=null;}
 
+// Helyi játékos-e az adott ID? (offline: mindenki; online multi-join: localPlayerIds)
+function isLocalPlayer(pid){
+  if(offlineMode) return pid===myId;
+  return localPlayerIds.length>0 ? localPlayerIds.includes(pid) : pid===myId;
+}
+
 function onRoomUpdate(room,code){
   if(!room)return;
   if(room.status==='lobby'){updateLobbyUI(room,code);return;}
   if(room.status==='playing'){
+    const wasOnWinner=document.getElementById('screen-winner').classList.contains('active');
+    if(wasOnWinner){
+      turnHistory=[];roundHistory=[];currentThrows=[];cricketThrows=[];phoneBuffer='';
+      lastSig=null;
+    }
     gameState=room;
-    if(document.getElementById('screen-lobby').classList.contains('active'))startGameUI(room);
-    updateGameUI(room);
+    // Multi-join: myId legyen a soron következő helyi játékos
+    if(!offlineMode && localPlayerIds.length>1 && isLocalPlayer(room.currentPlayer)){
+      myId=room.currentPlayer;
+    }
+    const onLobby=document.getElementById('screen-lobby').classList.contains('active');
+    if(onLobby||wasOnWinner) startGameUI(room);
+    else updateGameUI(room);
   }
-  if(room.status==='winner')showWinner(room);
+  if(room.status==='winner'){
+    showWinner(room);
+  }
 }
 
-// ── UI helpers ─────────────────────────────────────────────
+// ── UI ─────────────────────────────────────────────────────
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');window.scrollTo(0,0);}
 function setErr(id,msg){const el=document.getElementById(id);if(el)el.textContent=msg;}
 
-// ── Home tabs ──────────────────────────────────────────────
 function switchHomeTab(tab){
   document.querySelectorAll('.home-tab').forEach((b,i)=>b.classList.toggle('active',(tab==='online'&&i===0)||(tab==='offline'&&i===1)));
   document.getElementById('htab-online').classList.toggle('active',tab==='online');
   document.getElementById('htab-offline').classList.toggle('active',tab==='offline');
 }
 
-// ── Online mode ────────────────────────────────────────────
+// ── Online ─────────────────────────────────────────────────
 function selectMode(m){selectedMode=m;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('selected',b.dataset.mode===m));}
 function randomCode(){return Math.random().toString(36).slice(2,8).toUpperCase();}
 function copyCode(){
   const c=document.getElementById('lobby-code').textContent;
-  if(navigator.share){navigator.share({title:'DartsNow room code',text:'Join my DartsNow room! Code: '+c});}
+  if(navigator.share){navigator.share({title:'DartsNow szobakód',text:'Csatlakozz a DartsNow szobámhoz! Kód: '+c});}
   else{navigator.clipboard?.writeText(c).catch(()=>{});}
-  const el=document.getElementById('lobby-code');el.textContent='Copied!';setTimeout(()=>el.textContent=c,1500);
+  const el=document.getElementById('lobby-code');el.textContent='Másolva!';setTimeout(()=>el.textContent=c,1500);
 }
 
 async function createRoom(){
   myName=document.getElementById('player-name').value.trim();
-  if(!myName){setErr('home-error','Enter your name first');return;}
-  setErr('home-error','Creating...');
+  if(!myName){setErr('home-error','Előbb add meg a neved!');return;}
+  setErr('home-error','Létrehozás...');
   const code=randomCode();roomId=code;isHost=true;offlineMode=false;
   const room={host:myId,mode:selectedMode,status:'lobby',players:{[myId]:{name:myName,joined:Date.now()}}};
   const ok=await fbSet('rooms/'+code,room);
-  if(!ok){setErr('home-error','Connection failed — try Local mode or check your Netlify URL');return;}
+  if(!ok){setErr('home-error','Kapcsolódási hiba — próbáld a Helyi módot, vagy ellenőrizd a Netlify URL-t');return;}
   setErr('home-error','');show('lobby');
   document.getElementById('lobby-code').textContent=code;
   updateLobbyUI(room,code);startPolling(code);
 }
 
+function toggleMultiJoin(){
+  const panel=document.getElementById('multi-join-panel');
+  const btn=document.getElementById('multi-join-toggle');
+  const open=panel.style.display==='none';
+  panel.style.display=open?'block':'none';
+  btn.classList.toggle('active',open);
+}
+
 async function joinRoom(){
   myName=document.getElementById('player-name').value.trim();
   const code=document.getElementById('join-code').value.trim().toUpperCase();
-  if(!myName){setErr('home-error','Enter your name first');return;}
-  if(code.length<4){setErr('home-error','Enter the room code');return;}
-  setErr('home-error','Finding room...');
+  if(!myName){setErr('home-error','Előbb add meg a neved!');return;}
+  if(code.length<4){setErr('home-error','Add meg a szobakódot!');return;}
+
+  // Extra nevek (multi-join)
+  const name2=(document.getElementById('join-name-2')?.value||'').trim();
+  const name3=(document.getElementById('join-name-3')?.value||'').trim();
+  const extraNames=[name2,name3].filter(n=>n);
+
+  setErr('home-error','Szoba keresése...');
   const room=await fbGet('rooms/'+code);
-  if(!room){setErr('home-error','Room not found — check the code');return;}
-  if(room.status!=='lobby'){setErr('home-error','Game already started');return;}
-  if(Object.keys(room.players||{}).length>=4){setErr('home-error','Room is full (max 4)');return;}
+  if(!room){setErr('home-error','Szoba nem található — ellenőrizd a kódot');return;}
+  if(room.status!=='lobby'){setErr('home-error','A játék már elkezdődött');return;}
+  const existingCount=Object.keys(room.players||{}).length;
+  if(existingCount+1+extraNames.length>8){setErr('home-error','Túl sok játékos a szobában');return;}
+
   roomId=code;selectedMode=room.mode;isHost=false;offlineMode=false;
+  localPlayerIds=[myId];
+
+  // Regisztráljuk az első játékost
   await fbUpdate('rooms/'+code+'/players/'+myId,{name:myName,joined:Date.now()});
+
+  // Extra játékosok regisztrálása
+  for(let i=0;i<extraNames.length;i++){
+    const extraId='p_'+Math.random().toString(36).slice(2,9);
+    localPlayerIds.push(extraId);
+    await fbUpdate('rooms/'+code+'/players/'+extraId,{name:extraNames[i],joined:Date.now()+(i+1)*10});
+  }
+
   setErr('home-error','');show('lobby');
   document.getElementById('lobby-code').textContent=code;
   startPolling(code);
@@ -319,12 +565,11 @@ async function joinRoom(){
 function updateLobbyUI(room,code){
   const players=room.players||{};
   document.getElementById('lobby-players').innerHTML=Object.entries(players).map(([id,p])=>
-    `<div class="player-row"><span style="font-weight:600">${p.name}</span>
-    <span class="badge ${id===myId?'you':''}">${id===myId?'You':'Friend'}${id===room.host?' 👑':''}</span></div>`
+    `<div class="player-row"><span style="font-weight:600">${uc(p.name)}</span>
+    <span class="badge ${id===myId?'you':''}">${id===myId?'Te':'Barát'}${id===room.host?' 👑':''}</span></div>`
   ).join('');
   const count=Object.keys(players).length;
-  const st=document.getElementById('lobby-status');
-  st.textContent=count<2?'Waiting for your friend to join...':count+' players ready — start when ready!';
+  document.getElementById('lobby-status').textContent=count<2?'Várakozás a barátodra...':count+' játékos kész — indíthatsz!';
   document.getElementById('start-btn').style.display=(room.host===myId&&count>=2)?'block':'none';
 }
 
@@ -333,16 +578,16 @@ async function startGame(){
   const players=room.players||{};
   const playerOrder=Object.keys(players).sort((a,b)=>players[a].joined-players[b].joined);
   const mode=room.mode;
-  let gd={status:'playing',mode,currentPlayer:playerOrder[0],playerOrder,players:{}};
+  let gd={status:'playing',mode,currentPlayer:playerOrder[0],playerOrder,players:{},round:1};
   if(mode==='501'||mode==='301'){
-    playerOrder.forEach(pid=>{gd.players[pid]={name:players[pid].name,score:parseInt(mode)};});
+    playerOrder.forEach(pid=>{gd.players[pid]={name:players[pid].name,score:parseInt(mode),lastScore:null,totalThrown:0,rounds:0};});
   }else{
     playerOrder.forEach(pid=>{const marks={};CTGTS.forEach(t=>marks[t]=0);gd.players[pid]={name:players[pid].name,score:0,marks};});
   }
   await fbUpdate('rooms/'+roomId,gd);
 }
 
-// ── Offline mode ───────────────────────────────────────────
+// ── Offline ────────────────────────────────────────────────
 let offlinePlayers=[{name:''}];
 
 function selectOfflineMode(m){
@@ -351,51 +596,38 @@ function selectOfflineMode(m){
 }
 
 function renderOfflinePlayerList(){
-  const list=document.getElementById('opl-list');
-  list.innerHTML=offlinePlayers.map((p,i)=>`
+  document.getElementById('opl-list').innerHTML=offlinePlayers.map((p,i)=>`
     <div class="opl-item">
-      <input type="text" placeholder="Player ${i+1} name" maxlength="14" value="${p.name}"
+      <input type="text" placeholder="${i+1}. játékos neve" maxlength="14" value="${p.name}"
         oninput="offlinePlayers[${i}].name=this.value" autocomplete="off">
       ${offlinePlayers.length>1?`<button class="opl-remove" onclick="removeOfflinePlayer(${i})">✕</button>`:''}
     </div>`).join('');
 }
-
-function addOfflinePlayer(){
-  if(offlinePlayers.length>=8)return;
-  offlinePlayers.push({name:''});
-  renderOfflinePlayerList();
-}
-function removeOfflinePlayer(i){
-  offlinePlayers.splice(i,1);
-  renderOfflinePlayerList();
-}
+function addOfflinePlayer(){if(offlinePlayers.length>=8)return;offlinePlayers.push({name:''});renderOfflinePlayerList();}
+function removeOfflinePlayer(i){offlinePlayers.splice(i,1);renderOfflinePlayerList();}
 
 function startOfflineGame(){
   const names=offlinePlayers.map(p=>p.name.trim()).filter(n=>n);
-  if(names.length<1){setErr('offline-error','Add at least one player name');return;}
+  if(names.length<1){setErr('offline-error','Adj meg legalább egy játékos nevet!');return;}
   setErr('offline-error','');
-  offlineMode=true;
+  offlineMode=true;turnHistory=[];
   const playerOrder=names.map((_,i)=>'op'+i);
   const mode=selectedOfflineMode;
-  let gd={status:'playing',mode,currentPlayer:playerOrder[0],playerOrder,players:{}};
+  let gd={status:'playing',mode,currentPlayer:playerOrder[0],playerOrder,players:{},round:1};
   if(mode==='501'||mode==='301'){
-    playerOrder.forEach((pid,i)=>{gd.players[pid]={name:names[i],score:parseInt(mode)};});
+    playerOrder.forEach((pid,i)=>{gd.players[pid]={name:names[i],score:parseInt(mode),lastScore:null,totalThrown:0,rounds:0};});
   }else{
     playerOrder.forEach((pid,i)=>{const marks={};CTGTS.forEach(t=>marks[t]=0);gd.players[pid]={name:names[i],score:0,marks};});
   }
-  gameState=gd;
-  myId=playerOrder[0]; // offline: myId tracks current player
+  gameState=gd;myId=playerOrder[0];
   startGameUI(gd);
 }
 
-// Offline: advance turn by updating local gameState and re-rendering
 function offlinePassTurn(){
   const order=gameState.playerOrder;
   const next=order[(order.indexOf(gameState.currentPlayer)+1)%order.length];
-  gameState.currentPlayer=next;
-  myId=next;
-  updateGameUI(gameState);
-  showTurnBanner();
+  gameState.currentPlayer=next;myId=next;
+  updateGameUI(gameState);showTurnBanner();
 }
 
 function showTurnBanner(){
@@ -403,43 +635,363 @@ function showTurnBanner(){
   const mode=gameState.mode;
   const b01=document.getElementById('turn-banner-01');
   const bcr=document.getElementById('turn-banner-cr');
-  if(mode==='cricket'){b01.style.display='none';bcr.style.display='block';bcr.textContent='🎯 '+name+"'s turn — pass the phone!";}
-  else{bcr.style.display='none';b01.style.display='block';b01.textContent='🎯 '+name+"'s turn — pass the phone!";}
+  // Offline vagy online multi-join esetén mutatjuk a bannert
+  const showBanner=offlineMode||(localPlayerIds.length>1&&isLocalPlayer(gameState.currentPlayer));
+  if(mode==='cricket'){
+    b01.style.display='none';
+    bcr.style.display=showBanner?'block':'none';
+    if(showBanner) bcr.textContent='🎯 '+uc(name)+' köre';
+  }else{
+    bcr.style.display='none';
+    b01.style.display=showBanner?'block':'none';
+    if(showBanner) b01.textContent='🎯 '+uc(name)+' köre';
+  }
 }
 
-// ── Shared game logic ──────────────────────────────────────
+// ── Undo last turn ─────────────────────────────────────────
+async function undoLastTurn01(){
+  if(!turnHistory.length)return;
+  const snap=turnHistory.pop();
+  // restore all player data and whose turn it was
+  gameState.players=snap.players;
+  gameState.currentPlayer=snap.currentPlayer;
+  if(offlineMode){
+    myId=gameState.currentPlayer;
+    currentThrows=[];updateThrowDisplay();
+    updateGame01UI(gameState);
+    showTurnBanner();
+  }else{
+    // push restored state to Firebase
+    const updates={currentPlayer:snap.currentPlayer};
+    Object.keys(snap.players).forEach(pid=>{updates['players/'+pid+'/score']=snap.players[pid].score;});
+    await fbUpdate('rooms/'+roomId,updates);
+  }
+  refreshUndoBtn();
+  setErr('game01-error','');
+}
+
+async function undoLastTurnCricket(){
+  if(!turnHistory.length)return;
+  const snap=turnHistory.pop();
+  gameState.players=snap.players;
+  gameState.currentPlayer=snap.currentPlayer;
+  if(offlineMode){
+    myId=gameState.currentPlayer;
+    cricketThrows=[];updateCricketInfo();
+    updateCricketUI(gameState);
+    showTurnBanner();
+  }else{
+    const updates={currentPlayer:snap.currentPlayer};
+    Object.keys(snap.players).forEach(pid=>{
+      updates['players/'+pid+'/score']=snap.players[pid].score;
+      if(snap.players[pid].marks)updates['players/'+pid+'/marks']=snap.players[pid].marks;
+    });
+    await fbUpdate('rooms/'+roomId,updates);
+  }
+  refreshUndoBtn();
+  setErr('cricket-error','');
+}
+
+// ── Shared game ────────────────────────────────────────────
 function startGameUI(room){
-  // set players-bar columns based on player count
+  turnHistory=[];roundHistory=[];phoneBuffer='';refreshUndoBtn();
+  // Multi-join: myId = az első helyi játékos aki soron van, vagy az első helyi játékos
+  if(!offlineMode && localPlayerIds.length>1){
+    myId=isLocalPlayer(room.currentPlayer)?room.currentPlayer:localPlayerIds[0];
+  }
   const count=(room.playerOrder||[]).length;
   document.getElementById('game01-players').style.gridTemplateColumns=count<=2?'1fr 1fr':count===3?'1fr 1fr 1fr':'1fr 1fr';
   if(room.mode==='cricket'){show('cricket');buildCricketBtns();}
-  else{show('game01');buildNumpad();}
+  else{show('game01');buildNumpad();refreshNumpadLabels();}
   updateGameUI(room);
-  if(offlineMode) showTurnBanner();
+  if(offlineMode)showTurnBanner();
 }
-
 function updateGameUI(room){
   if(!room||room.status!=='playing')return;
-  if(room.mode==='cricket')updateCricketUI(room);
-  else updateGame01UI(room);
+  if(room.mode==='cricket')updateCricketUI(room);else updateGame01UI(room);
 }
 
-// ── 01 Game ────────────────────────────────────────────────
+// ── 01 ─────────────────────────────────────────────────────
 function buildNumpad(){
-  document.getElementById('numpad01').innerHTML=
-    [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,'B'].map(n=>
-      `<button class="num-btn" onclick="addThrow(${n==='B'?25:n})">${n}</button>`
-    ).join('');
+  const nums=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,'B'];
+  const np=document.getElementById('numpad01');
+  np.innerHTML=nums.map(n=>{
+    const val=n==='B'?25:n;
+    const label=n==='B'?'BULL':n;
+    return `<button class="num-btn" id="nb-${val}" onclick="addThrow(${val})">${label}</button>`;
+  }).join('');
 }
-function setMult(m){currentMult=m;[1,2,3].forEach(i=>document.getElementById('mult-'+i).classList.toggle('on',i===m));}
+
+function refreshNumpadLabels(){
+  const nums=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,25];
+  nums.forEach(val=>{
+    const btn=document.getElementById('nb-'+val);
+    if(!btn)return;
+    const isBull=val===25;
+    const baseLabel=isBull?'BULL':val;
+    if(currentMult===1){
+      btn.textContent=baseLabel;
+    } else {
+      const mult=currentMult===2?2:3;
+      const extra=isBull?(val*mult===50?'50':''):val*mult;
+      btn.innerHTML=`${baseLabel}<br><span style="font-size:11px;color:#1D9E75;font-weight:500">(${extra})</span>`;
+    }
+  });
+}
+function setMult(m){currentMult=m;[1,2,3].forEach(i=>document.getElementById('mult-'+i).classList.toggle('on',i===m));refreshNumpadLabels();}
+function setCricketMult(m){cricketMult=m;[1,2,3].forEach(i=>document.getElementById('c-mult-'+i).classList.toggle('on',i===m));}
+function resetMults(){setMult(1);setCricketMult(1);}
+
+// ── Checkout táblázat (170-ig) ─────────────────────────────
+const CHECKOUTS={
+  170:'T20 T20 Bull',164:'T20 T18 Bull',161:'T20 T17 Bull',
+  160:'T20 T20 D20',158:'T20 T20 D19',157:'T20 T19 Bull',
+  156:'T20 T20 D18',155:'T20 T19 D19',154:'T20 T18 Bull',
+  153:'T20 T19 D18',152:'T20 T20 D16',151:'T20 T17 Bull',
+  150:'T20 T18 D18',149:'T20 T19 D16',148:'T20 T20 D14',
+  147:'T20 T17 D18',146:'T20 T18 D16',145:'T20 T19 D14',
+  144:'T20 T20 D12',143:'T20 T17 D16',142:'T20 T14 Bull',
+  141:'T20 T19 D12',140:'T20 T20 D10',139:'T20 T13 Bull',
+  138:'T20 T18 D12',137:'T20 T19 D10',136:'T20 T20 D8',
+  135:'T20 T17 D12',134:'T20 T14 D16',133:'T20 T19 D8',
+  132:'T20 T16 D12',131:'T20 T13 D16',130:'T20 T20 D5',
+  129:'T20 T19 D6',128:'T20 T16 D10',127:'T20 T17 D8',
+  126:'T20 T19 D6',125:'T20 T15 D10',124:'T20 T16 D8',
+  123:'T20 T13 D12',122:'T18 T18 D7',121:'T20 T11 D14',
+  120:'T20 S20 D20',119:'T19 T12 D13',118:'T20 S18 D20',
+  117:'T20 S17 D20',116:'T20 S16 D20',115:'T20 S15 D20',
+  114:'T20 S14 D20',113:'T20 S13 D20',112:'T20 S12 D20',
+  111:'T20 S11 D20',110:'T20 S10 D20',109:'T20 S9 D20',
+  108:'T20 S8 D20',107:'T20 S7 D20',106:'T20 S6 D20',
+  105:'T20 S5 D20',104:'T20 S4 D20',103:'T20 S3 D20',
+  102:'T20 S2 D20',101:'T20 S1 D20',100:'T20 D20',
+  99:'T19 S10 D16',98:'T20 D19',97:'T19 D20',96:'T20 D18',
+  95:'T19 D19',94:'T18 D20',93:'T19 D18',92:'T20 D16',
+  91:'T17 D20',90:'T18 D18',89:'T19 D16',88:'T20 D14',
+  87:'T17 D18',86:'T18 D16',85:'T19 D14',84:'T20 D12',
+  83:'T17 D16',82:'T14 D20',81:'T19 D12',80:'T20 D10',
+  79:'T13 D20',78:'T18 D12',77:'T19 D10',76:'T20 D8',
+  75:'T17 D12',74:'T14 D16',73:'T19 D8',72:'T16 D12',
+  71:'T13 D16',70:'T18 D8',69:'T19 D6',68:'T20 D4',
+  67:'T17 D8',66:'T10 D18',65:'T19 D4',64:'T16 D8',
+  63:'T13 D12',62:'T10 D16',61:'T15 D8',60:'S20 D20',
+  59:'S19 D20',58:'S18 D20',57:'S17 D20',56:'S16 D20',
+  55:'S15 D20',54:'S14 D20',53:'S13 D20',52:'S12 D20',
+  51:'S11 D20',50:'Bull',49:'S9 D20',48:'S8 D20',
+  47:'S7 D20',46:'S6 D20',45:'S5 D20',44:'S4 D20',
+  43:'S3 D20',42:'S2 D20',41:'S1 D20',40:'D20',
+  38:'D19',36:'D18',34:'D17',32:'D16',30:'D15',
+  28:'D14',26:'D13',24:'D12',22:'D11',20:'D10',
+  18:'D9',16:'D8',14:'D7',12:'D6',10:'D5',8:'D4',6:'D3',4:'D2',2:'D1'
+};
+
+function showCheckout(score){
+  const div=document.getElementById('checkout-hint');
+  const combos=document.getElementById('checkout-combos');
+  if(score>170||score<=1||!CHECKOUTS[score]){div.style.display='none';return;}
+  div.style.display='block';
+  combos.textContent=CHECKOUTS[score];
+}
+
+// ── Input mode toggle ──────────────────────────────────────
+let manualInputMode=false;
+let phoneBuffer=''; // aktuálisan beírt szám a telefon numpadon
+let roundHistory=[]; // [{round, scores:{pid:score}}]
+
+function toggleInputMode(){
+  manualInputMode=!manualInputMode;
+  document.getElementById('numpad-mode').style.display=manualInputMode?'none':'block';
+  document.getElementById('manual-mode').style.display=manualInputMode?'block':'none';
+  document.getElementById('numpad-actions').style.display=manualInputMode?'none':'flex';
+  const btn=document.getElementById('input-mode-btn');
+  btn.textContent=manualInputMode?'🔢 Gombok':'✏️ Kézi bevitel';
+  btn.classList.toggle('active',manualInputMode);
+  if(manualInputMode){
+    currentThrows=[];updateThrowDisplay();updateLiveScore();
+    phoneBuffer='';updatePhoneDisplay();
+  }
+}
+
+function phoneKey(k){
+  if(!gameState||gameState.currentPlayer!==myId)return;
+  if(k==='del'){
+    phoneBuffer=phoneBuffer.slice(0,-1);
+  } else {
+    if(phoneBuffer.length>=3)return; // max 180
+    phoneBuffer+=k;
+    // cap at 180
+    if(parseInt(phoneBuffer)>180) phoneBuffer='180';
+  }
+  updatePhoneDisplay();
+  updateLiveScoreManual(parseInt(phoneBuffer)||0);
+}
+
+function updatePhoneDisplay(){
+  const el=document.getElementById('manual-display');
+  if(!el)return;
+  el.textContent=phoneBuffer||'—';
+  el.style.color=phoneBuffer?'#f0f0f0':'#444';
+}
+
+async function submitManual(){
+  if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Nem a te köröd!');return;}
+  const val=parseInt(phoneBuffer);
+  if(isNaN(val)||val<0||val>180){setErr('game01-error','Érvénytelen pontszám (0–180)!');return;}
+  const pd=gameState.players[myId];
+  const newScore=pd.score-val;
+  setErr('game01-error','');
+  const bust=newScore<0||newScore===1;
+  saveSnapshot();
+  const scored=bust?0:val;
+  gameState.players[myId].lastScore=scored;
+  gameState.players[myId].totalThrown=(gameState.players[myId].totalThrown||0)+scored;
+  gameState.players[myId].rounds=(gameState.players[myId].rounds||0)+1;
+  // save to round history (scoreHistory is updated inside saveRoundScore)
+  saveRoundScore(myId, scored);
+  const statsUpdate={
+    lastScore:scored,
+    totalThrown:gameState.players[myId].totalThrown,
+    rounds:gameState.players[myId].rounds,
+    scoreHistory:gameState.players[myId].scoreHistory||[]
+  };
+  if(!bust)gameState.players[myId].score=newScore;
+  renderRoundHistoryFromRoom(gameState);
+  phoneBuffer='';updatePhoneDisplay();
+  updateLiveScore();
+  // update avg immediately
+  updateAvgDisplay(myId);
+  if(bust){
+    setErr('game01-error','Túllövés! A pontszám marad: '+pd.score);
+    if(offlineMode){offlinePassTurn();}
+    else{await fbUpdate('rooms/'+roomId+'/players/'+myId,Object.assign({score:pd.score},statsUpdate));await passTurnOnline();}
+    return;
+  }
+  if(newScore===0){
+    if(offlineMode){gameState.status='winner';gameState.winner=myId;gameState.winnerName=pd.name;showWinner(gameState);}
+    else{await fbUpdate('rooms/'+roomId+'/players/'+myId,Object.assign({score:0},statsUpdate));await fbUpdate('rooms/'+roomId,{status:'winner',winner:myId,winnerName:pd.name});}
+    return;
+  }
+  if(offlineMode){updateGame01UI(gameState);offlinePassTurn();}
+  else{await fbUpdate('rooms/'+roomId+'/players/'+myId,Object.assign({score:newScore},statsUpdate));await passTurnOnline();}
+}
+
+// ── Round history — Firebase alapú, online is szinkron ─────
+function saveRoundScore(pid, scored){
+  // Lokálisan mindig tároljuk
+  const roundNum=gameState.players[pid].rounds;
+  let entry=roundHistory.find(r=>r.round===roundNum);
+  if(!entry){entry={round:roundNum,scores:{}};roundHistory.push(entry);}
+  entry.scores[pid]=scored;
+  // Firebase-hez: scoreHistory tömb a játékosnál (minden kör pontja sorban)
+  if(!gameState.players[pid].scoreHistory) gameState.players[pid].scoreHistory=[];
+  gameState.players[pid].scoreHistory.push(scored);
+}
+
+// Kör história renderelése — online módban a Firebase scoreHistory-ból rekonstruál
+function renderRoundHistoryFromRoom(room){
+  const div=document.getElementById('round-history');
+  const list=document.getElementById('round-history-list');
+  if(!list||!room)return;
+
+  if(!offlineMode){
+    // Rekonstruáljuk a roundHistory-t a scoreHistory tömbökből
+    // Minden játékosnál: scoreHistory[i] = az i+1. körben dobott pontszám
+    roundHistory=[];
+    (room.playerOrder||[]).forEach(pid=>{
+      const p=room.players[pid];
+      const hist=p.scoreHistory||[];
+      hist.forEach((s,i)=>{
+        const roundNum=i+1;
+        let entry=roundHistory.find(r=>r.round===roundNum);
+        if(!entry){entry={round:roundNum,scores:{}};roundHistory.push(entry);}
+        entry.scores[pid]=s;
+      });
+    });
+  }
+
+  if(!roundHistory.length){div.style.display='none';return;}
+  div.style.display='block';
+  const pOrder=room.playerOrder||[];
+  const html=[...roundHistory].sort((a,b)=>b.round-a.round).map(entry=>{
+    const scores=pOrder.map(pid=>{
+      const p=room.players[pid];
+      if(!p)return '';
+      const s=entry.scores[pid];
+      return s!=null
+        ?`<span class="round-name">${uc(p.name)}</span><span class="round-score">${s}</span>`
+        :'';
+    }).filter(Boolean).join('<span style="color:#333;margin:0 6px">|</span>');
+    return scores?`<div class="round-row"><span class="round-num">${entry.round}.</span>${scores}</div>`:'';
+  }).filter(Boolean).join('');
+  list.innerHTML=html;
+}
+
+// Update just the avg badge of one player without full redraw
+function updateAvgDisplay(pid){
+  const card=document.getElementById('pscard-'+pid);
+  if(!card||!gameState)return;
+  const p=gameState.players[pid];
+  const avg=p.rounds>0?((p.totalThrown||0)/p.rounds).toFixed(1):null;
+  const avgEl=card.querySelector('.avg-lbl');
+  if(avgEl&&avg!=null) avgEl.textContent='Átl: '+avg;
+}
+
+// ── Live score preview during dart entry ───────────────────
+function updateLiveScore(){
+  if(!gameState)return;
+  const thrown=currentThrows.reduce((s,t)=>s+t.points,0);
+  const base=gameState.players[myId].score;
+  const remaining=base-thrown;
+  // update just the current player's score card
+  const card=document.getElementById('pscard-'+myId);
+  if(!card)return;
+  if(thrown===0){
+    card.querySelector('.score-big').textContent=base;
+    card.querySelector('.score-preview')?.remove();
+    showCheckout(base);
+  } else {
+    card.querySelector('.score-big').textContent=base;
+    let prev=card.querySelector('.score-preview');
+    if(!prev){prev=document.createElement('div');prev.className='score-preview';card.querySelector('.score-big').after(prev);}
+    if(remaining<0||remaining===1){
+      prev.innerHTML=`<span style="color:#e74c3c;font-size:13px;font-weight:600">Túllövés!</span>`;
+    } else {
+      prev.innerHTML=`<span style="color:#1D9E75;font-size:18px;font-weight:700">→ ${remaining}</span>`;
+      showCheckout(remaining);
+    }
+  }
+}
+
+function updateLiveScoreManual(typed){
+  if(!gameState)return;
+  const base=gameState.players[myId].score;
+  const remaining=base-typed;
+  const card=document.getElementById('pscard-'+myId);
+  if(!card)return;
+  let prev=card.querySelector('.score-preview');
+  if(typed===0||isNaN(typed)){
+    prev?.remove();
+    showCheckout(base);
+    return;
+  }
+  if(!prev){prev=document.createElement('div');prev.className='score-preview';card.querySelector('.score-big').after(prev);}
+  if(remaining<0||remaining===1){
+    prev.innerHTML=`<span style="color:#e74c3c;font-size:13px;font-weight:600">Túllövés!</span>`;
+  } else {
+    prev.innerHTML=`<span style="color:#1D9E75;font-size:18px;font-weight:700">→ ${remaining}</span>`;
+    showCheckout(remaining);
+  }
+}
 
 function addThrow(val){
-  if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Not your turn!');return;}
+  if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Nem a te köröd!');return;}
   if(currentThrows.length>=3)return;
   currentThrows.push({val,mult:currentMult,points:val*currentMult});
-  updateThrowDisplay();setErr('game01-error','');
+  updateThrowDisplay();
+  updateLiveScore();
+  setErr('game01-error','');
 }
-function undoThrow(){currentThrows.pop();updateThrowDisplay();}
+function undoThrow(){currentThrows.pop();updateThrowDisplay();updateLiveScore();}
 function updateThrowDisplay(){
   for(let i=0;i<3;i++){
     const el=document.getElementById('t'+i);
@@ -451,44 +1003,66 @@ function updateThrowDisplay(){
 }
 
 async function submitTurn(){
-  if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Not your turn!');return;}
-  if(!currentThrows.length){setErr('game01-error','Enter at least one throw');return;}
+  if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Nem a te köröd!');return;}
+  if(!currentThrows.length){setErr('game01-error','Adj meg legalább egy dobást!');return;}
   const thrown=currentThrows.reduce((s,t)=>s+t.points,0);
   const pd=gameState.players[myId];
   const newScore=pd.score-thrown;
   setErr('game01-error','');
-
   const bust=newScore<0||newScore===1;
-  if(!bust) gameState.players[myId].score=newScore;
+
+  saveSnapshot();
+
+  const scored=bust?0:thrown;
+  gameState.players[myId].lastScore=scored;
+  gameState.players[myId].totalThrown=(pd.totalThrown||0)+scored;
+  gameState.players[myId].rounds=(pd.rounds||0)+1;
+  if(!bust)gameState.players[myId].score=newScore;
+
+  // save to round history first (updates scoreHistory array)
+  saveRoundScore(myId, scored);
+
+  const statsUpdate={
+    lastScore:scored,
+    totalThrown:gameState.players[myId].totalThrown,
+    rounds:gameState.players[myId].rounds,
+    scoreHistory:gameState.players[myId].scoreHistory||[]
+  };
+
+  renderRoundHistoryFromRoom(gameState);
+  updateAvgDisplay(myId);
 
   if(bust){
-    setErr('game01-error','Bust! Score stays at '+pd.score);
-    currentThrows=[];updateThrowDisplay();
+    setErr('game01-error','Túllövés! A pontszám marad: '+pd.score);
+    currentThrows=[];updateThrowDisplay();resetMults();updateLiveScore();
     if(offlineMode){offlinePassTurn();}
-    else{await fbUpdate('rooms/'+roomId+'/players/'+myId,{score:pd.score});await passTurnOnline();}
+    else{await fbUpdate('rooms/'+roomId+'/players/'+myId,Object.assign({score:pd.score},statsUpdate));await passTurnOnline();}
     return;
   }
-
   if(newScore===0){
-    currentThrows=[];updateThrowDisplay();
-    if(offlineMode){
-      gameState.status='winner';gameState.winner=myId;gameState.winnerName=pd.name;
-      showWinner(gameState);
-    }else{
-      await fbUpdate('rooms/'+roomId+'/players/'+myId,{score:0});
-      await fbUpdate('rooms/'+roomId,{status:'winner',winner:myId,winnerName:pd.name});
-    }
+    currentThrows=[];updateThrowDisplay();resetMults();updateLiveScore();
+    if(offlineMode){gameState.status='winner';gameState.winner=myId;gameState.winnerName=pd.name;showWinner(gameState);}
+    else{await fbUpdate('rooms/'+roomId+'/players/'+myId,Object.assign({score:0},statsUpdate));await fbUpdate('rooms/'+roomId,{status:'winner',winner:myId,winnerName:pd.name});}
     return;
   }
-
-  currentThrows=[];updateThrowDisplay();
+  currentThrows=[];updateThrowDisplay();resetMults();updateLiveScore();
   if(offlineMode){updateGame01UI(gameState);offlinePassTurn();}
-  else{await fbUpdate('rooms/'+roomId+'/players/'+myId,{score:newScore});await passTurnOnline();}
+  else{
+    await fbUpdate('rooms/'+roomId+'/players/'+myId,Object.assign({score:newScore},statsUpdate));
+    await passTurnOnline();
+  }
 }
 
 async function passTurnOnline(){
   const order=gameState.playerOrder;
   const next=order[(order.indexOf(gameState.currentPlayer)+1)%order.length];
+  // Multi-join: ha a következő játékos is helyi, frissítsük a myId-t
+  if(localPlayerIds.length>1 && isLocalPlayer(next)){
+    myId=next;
+    gameState.currentPlayer=next;
+    updateGameUI(gameState);
+    showTurnBanner();
+  }
   await fbUpdate('rooms/'+roomId,{currentPlayer:next});
 }
 
@@ -496,131 +1070,284 @@ function updateGame01UI(room){
   const isMyTurn=room.currentPlayer===myId;
   const el=document.getElementById('game01-status');
   el.className='status-bar '+(isMyTurn?'myturn':'');
-  const curName=room.players[room.currentPlayer]?.name||'?';
-  el.textContent=isMyTurn?(offlineMode?'🎯 Enter '+curName+"'s throws":'🎯 Your turn — enter your 3 throws'):'⏳ '+curName+"'s turn...";
+  const curName=uc(room.players[room.currentPlayer]?.name||'?');
+  // Round counter in status bar
+  // Körszám = hányadik kört játsszák (max rounds bármelyik játékosnál + 1 ha az aktuális még nem dobott)
+  const maxRounds=Math.max(...(room.playerOrder||[]).map(pid=>room.players[pid]?.rounds||0));
+  const roundNum=maxRounds+1;
+  el.innerHTML=isMyTurn
+    ?`🎯 A te köröd &nbsp;<span style="font-size:12px;opacity:.7;font-weight:400">${roundNum}. kör</span>`
+    :`⏳ ${curName} köre &nbsp;<span style="font-size:12px;opacity:.7;font-weight:400">${roundNum}. kör</span>`;
 
   document.getElementById('game01-players').innerHTML=(room.playerOrder||[]).map(pid=>{
     const p=room.players[pid];
-    return `<div class="pscard ${pid===room.currentPlayer?'active-turn':''}">
-      <div class="score-lbl">${p.name}</div>
+    const avg=p.rounds>0?((p.totalThrown||0)/p.rounds).toFixed(1):null;
+    const avgTxt=avg!=null?`<span class="avg-lbl" style="font-size:11px;color:#666">Átl: ${avg}</span>`:`<span class="avg-lbl" style="font-size:11px;color:#444">—</span>`;
+    return `<div class="pscard ${pid===room.currentPlayer?'active-turn':''}" id="pscard-${pid}">
+      <div style="font-size:15px;font-weight:700;text-transform:uppercase;margin-bottom:2px">${uc(p.name)}${winsBadge(p.name)}</div>
+      <div style="margin-bottom:4px">${avgTxt}</div>
       <div class="score-big">${p.score}</div>
       ${pid===room.currentPlayer?'<div class="score-lbl" style="color:#1D9E75;margin-top:2px">🎯</div>':''}
     </div>`;
   }).join('');
-
-  // In offline mode controls are always enabled (one device controls all)
+  if(isMyTurn) showCheckout(room.players[myId].score);
+  else document.getElementById('checkout-hint').style.display='none';
   if(!offlineMode){
     const np=document.getElementById('numpad01');
     np.style.opacity=isMyTurn?'1':'0.3';np.style.pointerEvents=isMyTurn?'auto':'none';
-    document.querySelectorAll('#screen-game01 .mult-row .mult-btn').forEach(b=>{
-      b.style.opacity=isMyTurn?'1':'0.3';b.style.pointerEvents=isMyTurn?'auto':'none';
-    });
+    document.querySelectorAll('#screen-game01 .mult-row .mult-btn').forEach(b=>{b.style.opacity=isMyTurn?'1':'0.3';b.style.pointerEvents=isMyTurn?'auto':'none';});
   }
+  renderRoundHistoryFromRoom(room);
+  refreshUndoBtn();
 }
 
 // ── Cricket ────────────────────────────────────────────────
 function buildCricketBtns(){
   document.getElementById('cricket-targets').innerHTML=CTGTS.map(t=>
-    `<button class="cbt" id="ct-${t}" onclick="hitCricket('${t}')">${t}</button>`
+    `<button class="cbt" id="ct-${t}" onclick="hitCricket('${t}')">${t==='B'?'BULL':t}</button>`
   ).join('');
 }
-function setCricketMult(m){cricketMult=m;[1,2,3].forEach(i=>document.getElementById('c-mult-'+i).classList.toggle('on',i===m));}
 
 function hitCricket(target){
-  if(!gameState||gameState.currentPlayer!==myId){setErr('cricket-error','Not your turn!');return;}
-  if(cricketThrows.length>=3){setErr('cricket-error','3 darts used — submit or undo');return;}
+  if(!gameState||gameState.currentPlayer!==myId){setErr('cricket-error','Nem a te köröd!');return;}
+  if(cricketThrows.length>=3){setErr('cricket-error','3 nyíl elhasználva — küldd be vagy töröld');return;}
   cricketThrows.push({target,mult:cricketMult});
-  updateCricketInfo();setErr('cricket-error','');
+  updateCricketInfo();
+  renderCricketTable(gameState); // live preview
+  setErr('cricket-error','');
 }
 function updateCricketInfo(){
-  if(!cricketThrows.length){document.getElementById('cricket-throw-info').textContent='Select a target — '+cricketMult+'x marks per dart';return;}
+  if(!cricketThrows.length){document.getElementById('cricket-throw-info').textContent='Válassz célpontot — '+cricketMult+'x pont nyílanként';return;}
   const prev=cricketThrows.map(t=>(t.mult===3?'T':t.mult===2?'D':'')+t.target).join(', ');
-  document.getElementById('cricket-throw-info').textContent=`${prev} · ${cricketThrows.length}/3 darts used`;
+  document.getElementById('cricket-throw-info').textContent=`${prev} · ${cricketThrows.length}/3 nyíl`;
 }
-function undoCricket(){cricketThrows.pop();updateCricketInfo();setErr('cricket-error','');}
+function undoCricket(){
+  cricketThrows.pop();
+  updateCricketInfo();
+  renderCricketTable(gameState); // update preview after undo
+  setErr('cricket-error','');
+}
+
+// Calculate what the current player's marks+score WOULD be with pending throws
+function calcPendingMarks(){
+  if(!gameState||!cricketThrows.length) return null;
+  const pending={marks:Object.assign({},gameState.players[myId].marks),score:gameState.players[myId].score};
+  function allClosed(t){return(gameState.playerOrder||[]).every(pid=>(gameState.players[pid].marks[t]||0)>=3);}
+  for(const t of cricketThrows){
+    const cur=pending.marks[t.target]||0;const after=cur+t.mult;
+    pending.marks[t.target]=Math.min(3,after);
+    if(!allClosed(t.target)&&after>3){
+      const overflow=after-Math.max(3,cur);
+      pending.score+=(t.target==='B'?50:parseInt(t.target))*overflow;
+    }
+  }
+  return pending;
+}
 
 async function submitCricketTurn(){
-  if(!gameState||gameState.currentPlayer!==myId){setErr('cricket-error','Not your turn!');return;}
-  if(!cricketThrows.length){setErr('cricket-error','Select at least one target');return;}
+  if(!gameState||gameState.currentPlayer!==myId){setErr('cricket-error','Nem a te köröd!');return;}
+  if(!cricketThrows.length){setErr('cricket-error','Válassz legalább egy célpontot!');return;}
+
+  saveSnapshot(); // save BEFORE applying changes
 
   const myMarks=Object.assign({},gameState.players[myId].marks);
   let myScore=gameState.players[myId].score;
-
   function allClosed(t){return(gameState.playerOrder||[]).every(pid=>(gameState.players[pid].marks[t]||0)>=3);}
-
   for(const t of cricketThrows){
-    const cur=myMarks[t.target]||0;
-    const after=cur+t.mult;
+    const cur=myMarks[t.target]||0;const after=cur+t.mult;
     myMarks[t.target]=Math.min(3,after);
     if(!allClosed(t.target)&&after>3){
       const overflowMarks=after-Math.max(3,cur);
       myScore+=(t.target==='B'?50:parseInt(t.target))*overflowMarks;
     }
   }
-
-  // update local state always (needed for offline, and for win check)
   gameState.players[myId].marks=myMarks;
   gameState.players[myId].score=myScore;
 
+  // Win condition: all 7 targets closed AND score >= all opponents
+  // (score only matters if opponent also closed all — otherwise closing all = win)
   const allDone=CTGTS.every(t=>(myMarks[t]||0)>=3);
-  const others=(gameState.playerOrder||[]).filter(p=>p!==myId).map(p=>gameState.players[p].score);
-  const won=allDone&&others.every(s=>myScore>=s);
-
-  cricketThrows=[];updateCricketInfo();
-
+  const won=allDone&&(gameState.playerOrder||[]).filter(p=>p!==myId).every(pid=>{
+    const oppAllDone=CTGTS.every(t=>(gameState.players[pid].marks[t]||0)>=3);
+    // if opponent hasn't closed all, I win by closing all
+    // if opponent also closed all, I need >= their score
+    return !oppAllDone || myScore>=gameState.players[pid].score;
+  });
+  cricketThrows=[];updateCricketInfo();resetMults();
   if(won){
     if(offlineMode){gameState.status='winner';gameState.winner=myId;gameState.winnerName=gameState.players[myId].name;showWinner(gameState);}
     else{await fbUpdate('rooms/'+roomId+'/players/'+myId,{marks:myMarks,score:myScore});await fbUpdate('rooms/'+roomId,{status:'winner',winner:myId,winnerName:gameState.players[myId].name});}
     return;
   }
-
   if(offlineMode){offlinePassTurn();}
-  else{
-    await fbUpdate('rooms/'+roomId+'/players/'+myId,{marks:myMarks,score:myScore});
-    await passTurnOnline();
-  }
+  else{await fbUpdate('rooms/'+roomId+'/players/'+myId,{marks:myMarks,score:myScore});await passTurnOnline();}
 }
 
-function markStr(m){return m===0?'':m===1?'/':m===2?'X':'⊗';}
+function markStr(m,pending){
+  // confirmed marks
+  const confirmed=m===0?'':m===1?'/':m===2?'X':'⊗';
+  if(!pending||pending===0) return confirmed;
+  // pending extra marks on top of confirmed
+  const pendingStr=pending===1?'/':pending===2?'X':'⊗';
+  return confirmed+`<span class="mark-pending">${pendingStr}</span>`;
+}
+
+// Renders the cricket table, overlaying pending (not yet submitted) marks in blue
+function renderCricketTable(room){
+  const pending=calcPendingMarks(); // null if no pending throws
+  const pO=room.playerOrder||[];
+
+  // build per-player effective marks (confirmed only, pending only for myId overlay)
+  function getMarks(pid,target){
+    const confirmed=(room.players[pid].marks||{})[target]||0;
+    if(pid===myId&&pending){
+      const pMark=pending.marks[target]||0;
+      const extra=Math.max(0,pMark-confirmed); // how many NEW marks pending adds
+      return {confirmed,extra};
+    }
+    return {confirmed,extra:0};
+  }
+  function getScore(pid){
+    if(pid===myId&&pending) return {score:room.players[pid].score,pendingScore:pending.score};
+    return {score:room.players[pid].score,pendingScore:null};
+  }
+
+  if(pO.length===2){
+    const p0=room.players[pO[0]],p1=room.players[pO[1]];
+    const rows=CTGTS.map(t=>{
+      const r0=getMarks(pO[0],t),r1=getMarks(pO[1],t);
+      const allConfirmed=(r0.confirmed>=3&&r1.confirmed>=3);
+      const cell0=markStr(r0.confirmed,r0.extra);
+      const cell1=markStr(r1.confirmed,r1.extra);
+      return `<tr>
+        <td style="font-size:20px">${cell0}</td>
+        <td class="tgt-col" style="${allConfirmed?'opacity:.3;text-decoration:line-through':''}">${t==='B'?'BULL':t}</td>
+        <td style="font-size:20px">${cell1}</td>
+      </tr>`;
+    }).join('');
+    const s0=getScore(pO[0]),s1=getScore(pO[1]);
+    document.getElementById('cricket-table').innerHTML=
+      `<thead><tr>
+        <th style="font-size:15px;font-weight:700;color:#f0f0f0;padding:10px 4px">${uc(p0.name)}${winsBadge(p0.name)}</th>
+        <th class="tgt-col">Célpont</th>
+        <th style="font-size:15px;font-weight:700;color:#f0f0f0;padding:10px 4px">${uc(p1.name)}${winsBadge(p1.name)}</th>
+      </tr></thead><tbody>${rows}</tbody>`;
+  }else{
+    const heads=pO.map(pid=>`<th style="font-size:15px;font-weight:700;color:#f0f0f0;padding:10px 4px">${uc(room.players[pid].name)}${winsBadge(room.players[pid].name)}</th>`).join('');
+    const rows=CTGTS.map(t=>`<tr>${pO.map(pid=>{const r=getMarks(pid,t);return `<td style="font-size:18px">${markStr(r.confirmed,r.extra)}</td>`}).join('')}<td class="tgt-col">${t==='B'?'BULL':t}</td></tr>`).join('');
+    document.getElementById('cricket-table').innerHTML=`<thead><tr>${heads}<th class="tgt-col">Célpont</th></tr></thead><tbody>${rows}</tbody>`;
+  }
+  CTGTS.forEach(t=>{
+    const btn=document.getElementById('ct-'+t);
+    if(!btn)return;
+    const allClosedByAll=(room.playerOrder||[]).every(pid=>((room.players[pid]?.marks||{})[t]||0)>=3);
+    // Use pending marks if available for current player
+    const pending=calcPendingMarks();
+    const myEffectiveMarks=pending?(pending.marks[t]||0):((room.players[myId]?.marks||{})[t]||0);
+    const closedByMe=myEffectiveMarks>=3;
+    btn.classList.toggle('closed', allClosedByAll || closedByMe);
+  });
+}
 
 function updateCricketUI(room){
   const isMyTurn=room.currentPlayer===myId;
   const el=document.getElementById('cricket-status');
   el.className='status-bar '+(isMyTurn?'myturn':'');
-  const curName=room.players[room.currentPlayer]?.name||'?';
-  el.textContent=isMyTurn?(offlineMode?'🎯 Enter '+curName+"'s throws":'🎯 Your turn — 3 darts'):'⏳ '+curName+"'s turn...";
-
-  const pO=room.playerOrder||[];
-  if(pO.length===2){
-    const p0=room.players[pO[0]],p1=room.players[pO[1]];
-    const rows=CTGTS.map(t=>{
-      const m0=(p0.marks||{})[t]||0,m1=(p1.marks||{})[t]||0,closed=m0>=3&&m1>=3;
-      return `<tr><td style="font-size:20px">${markStr(m0)}</td><td class="tgt-col" style="${closed?'opacity:.3;text-decoration:line-through':''}">${t}</td><td style="font-size:20px">${markStr(m1)}</td></tr>`;
-    }).join('');
-    document.getElementById('cricket-table').innerHTML=
-      `<thead><tr><th>${p0.name}</th><th class="tgt-col">Target</th><th>${p1.name}</th></tr>
-      <tr><td style="text-align:center;font-weight:700;padding:6px;color:#1D9E75">${p0.score}pts</td><td></td><td style="text-align:center;font-weight:700;padding:6px;color:#1D9E75">${p1.score}pts</td></tr></thead><tbody>${rows}</tbody>`;
-  }else{
-    const heads=pO.map(pid=>`<th>${room.players[pid].name}</th>`).join('');
-    const scores=pO.map(pid=>`<td style="font-weight:700;color:#1D9E75;padding:4px;text-align:center">${room.players[pid].score}pts</td>`).join('');
-    const rows=CTGTS.map(t=>`<tr>${pO.map(pid=>`<td>${markStr((room.players[pid].marks||{})[t]||0)}</td>`).join('')}<td class="tgt-col">${t}</td></tr>`).join('');
-    document.getElementById('cricket-table').innerHTML=`<thead><tr>${heads}<th class="tgt-col">Target</th></tr><tr>${scores}<td></td></tr></thead><tbody>${rows}</tbody>`;
-  }
-  CTGTS.forEach(t=>{const btn=document.getElementById('ct-'+t);if(!btn)return;btn.classList.toggle('closed',(room.playerOrder||[]).every(pid=>((room.players[pid]?.marks||{})[t]||0)>=3));});
-
+  const curName=uc(room.players[room.currentPlayer]?.name||'?');
+  el.textContent=isMyTurn?'🎯 A te köröd — 3 nyíl':'⏳ '+curName+' köre...';
+  renderCricketTable(room);
   if(!offlineMode){
     const ctrl=document.getElementById('cricket-controls');
     ctrl.style.opacity=isMyTurn?'1':'0.3';ctrl.style.pointerEvents=isMyTurn?'auto':'none';
   }
   if(isMyTurn||offlineMode)updateCricketInfo();
+  refreshUndoBtn();
 }
 
 // ── Winner ─────────────────────────────────────────────────
 function showWinner(room){
-  stopPolling();
-  const name=room.winnerName||room.players?.[room.winner]?.name||'Someone';
-  document.getElementById('winner-name').textContent='🎉 '+name+' wins!';
-  document.getElementById('winner-sub').textContent=`${(room.mode||'').toUpperCase()} · ${Object.keys(room.players||{}).length} players`;
+  // Ne futtassuk le többször ha már a winner képernyőn vagyunk
+  if(document.getElementById('screen-winner').classList.contains('active')&&
+     document.getElementById('winner-name').textContent) return;
+
+  if(offlineMode) stopPolling();
+
+  const winnerPid=room.winner;
+  const name=room.winnerName||room.players?.[winnerPid]?.name||'Valaki';
+
+  // Update wins tracker
+  winsTracker[name]=(winsTracker[name]||0)+1;
+
+  document.getElementById('winner-name').textContent='🎉 '+uc(name)+' nyert!';
+  document.getElementById('winner-sub').textContent=`${(room.mode||'').toUpperCase()} · ${Object.keys(room.players||{}).length} játékos`;
+
+  // Folytatás gomb: csak a host látja, a többiek várakoznak
+  const continueBtn=document.getElementById('winner-continue-btn');
+  const waitMsg=document.getElementById('winner-wait-msg');
+  if(continueBtn&&waitMsg){
+    if(isHost){
+      continueBtn.style.display='block';
+      waitMsg.style.display='none';
+    }else{
+      continueBtn.style.display='none';
+      waitMsg.style.display='block';
+    }
+  }
+
+  // ── Cricket végeredmény tábla ──
+  const cricketDiv=document.getElementById('winner-cricket-result');
+  if(room.mode==='cricket'&&room.players){
+    cricketDiv.style.display='block';
+    const pO=room.playerOrder||[];
+    // Build result rows: for each player show marks per target and total closed
+    const rows=pO.map(pid=>{
+      const p=room.players[pid];
+      const marks=p.marks||{};
+      const isWinner=pid===winnerPid;
+      const closedCount=CTGTS.filter(t=>(marks[t]||0)>=3).length;
+      const markCells=CTGTS.map(t=>{
+        const m=marks[t]||0;
+        const ms=m===0?'—':m===1?'/':m===2?'X':'⊗';
+        const col=m>=3?'#1D9E75':m>0?'#f0f0f0':'#444';
+        return `<td style="text-align:center;color:${col};font-size:15px">${ms}</td>`;
+      }).join('');
+      return `<tr class="${isWinner?'winner-row':''}">
+        <td style="font-weight:${isWinner?'700':'500'};white-space:nowrap">
+          ${isWinner?'🏆 ':''}${uc(p.name)}
+        </td>
+        ${markCells}
+        <td style="text-align:center;font-weight:600;color:${isWinner?'#1D9E75':'#888'}">${closedCount}/7</td>
+      </tr>`;
+    }).join('');
+    const targetHeaders=CTGTS.map(t=>`<th style="text-align:center">${t==='B'?'BULL':t}</th>`).join('');
+    document.getElementById('winner-result-table').innerHTML=
+      `<thead><tr>
+        <th>Játékos</th>${targetHeaders}<th style="text-align:center">Zárt</th>
+      </tr></thead><tbody>${rows}</tbody>`;
+    document.getElementById('winner-result-table').className='result-table';
+  } else {
+    cricketDiv.style.display='none';
+  }
+
+  // ── Győzelmek számlálója ──
+  const winsDiv=document.getElementById('winner-wins-table');
+  const allNames=Object.keys(room.players||{}).map(pid=>room.players[pid].name);
+  // show if anyone has more than 0 wins (i.e. at least one leg played)
+  const anyWins=allNames.some(n=>(winsTracker[n]||0)>0);
+  if(anyWins){
+    winsDiv.style.display='block';
+    // Sort by wins desc
+    const sorted=[...allNames].sort((a,b)=>(winsTracker[b]||0)-(winsTracker[a]||0));
+    document.getElementById('winner-wins-list').innerHTML=sorted.map(n=>
+      `<div class="wins-row">
+        <span class="wins-name">${uc(n)}</span>
+        <span class="wins-badge">${winsTracker[n]||0}</span>
+      </div>`
+    ).join('');
+  } else {
+    winsDiv.style.display='none';
+  }
+
   show('winner');
 }
 
@@ -629,22 +1356,93 @@ async function leaveGame(){
   if(!offlineMode&&roomId){if(isHost)await fbDel('rooms/'+roomId);else await fbDel('rooms/'+roomId+'/players/'+myId);}
   roomId=null;gameState=null;currentThrows=[];cricketThrows=[];isHost=false;
   offlineMode=false;myId='p_'+Math.random().toString(36).slice(2,9);
+  localPlayerIds=[];
+  turnHistory=[];winsTracker={};roundHistory=[];phoneBuffer='';
   document.getElementById('turn-banner-01').style.display='none';
   document.getElementById('turn-banner-cr').style.display='none';
   show('home');checkConn();
 }
 
 function playAgain(){
+  // winsTracker megmarad — csak a játék indul újra
   if(offlineMode){
-    // restart with same players and mode
-    const names=gameState.playerOrder.map(pid=>gameState.players[pid].name);
+    const prevPlayers=gameState.players;
+    const prevOrder=gameState.playerOrder;
+    const names=prevOrder.map(pid=>prevPlayers[pid].name);
     offlinePlayers=names.map(n=>({name:n}));
     selectedOfflineMode=gameState.mode;
+
+    // Mentsük el az összesített stats-ot (totalThrown és rounds) a folytatáshoz
+    const carryStats={};
+    if(gameState.mode==='501'||gameState.mode==='301'){
+      prevOrder.forEach(pid=>{
+        carryStats[prevPlayers[pid].name]={
+          totalThrown:prevPlayers[pid].totalThrown||0,
+          rounds:prevPlayers[pid].rounds||0
+        };
+      });
+    }
+
     startOfflineGame();
-  }else{leaveGame();}
+
+    // Visszaállítjuk a kumulált stats-ot az új leg után
+    if(gameState.mode==='501'||gameState.mode==='301'){
+      gameState.playerOrder.forEach(pid=>{
+        const name=gameState.players[pid].name;
+        if(carryStats[name]){
+          gameState.players[pid].totalThrown=carryStats[name].totalThrown;
+          gameState.players[pid].rounds=carryStats[name].rounds;
+        }
+      });
+      // Frissítjük az átlag kijelzőket
+      gameState.playerOrder.forEach(pid=>updateAvgDisplay(pid));
+    }
+  }else{
+    // Online: ugyanazok a játékosok, új leg ugyanabban a szobában
+    const prevMode=gameState.mode;
+    const prevPlayers=gameState.players;
+    const prevOrder=gameState.playerOrder;
+
+    // Kumulált stats mentése
+    const carryStats={};
+    if(prevMode==='501'||prevMode==='301'){
+      prevOrder.forEach(pid=>{
+        carryStats[pid]={
+          totalThrown:prevPlayers[pid].totalThrown||0,
+          rounds:prevPlayers[pid].rounds||0
+        };
+      });
+    }
+
+    // Új gameState felépítése
+    const newPlayers={};
+    prevOrder.forEach(pid=>{
+      if(prevMode==='501'||prevMode==='301'){
+        newPlayers[pid]={
+          name:prevPlayers[pid].name,
+          score:parseInt(prevMode),
+          lastScore:null,
+          totalThrown:carryStats[pid]?.totalThrown||0,
+          rounds:carryStats[pid]?.rounds||0,
+          scoreHistory:[]
+        };
+      }else{
+        const marks={};CTGTS.forEach(t=>marks[t]=0);
+        newPlayers[pid]={name:prevPlayers[pid].name,score:0,marks};
+      }
+    });
+
+    const newGd={status:'playing',mode:prevMode,currentPlayer:prevOrder[0],playerOrder:prevOrder,players:newPlayers,round:1};
+
+    turnHistory=[];roundHistory=[];currentThrows=[];cricketThrows=[];
+    gameState=newGd;
+
+    fbUpdate('rooms/'+roomId, newGd).then(()=>{
+      startGameUI(newGd);
+    });
+  }
 }
 
-// ── Init ───────────────────────────────────────────────────
 renderOfflinePlayerList();
 checkConn();
 </script>
