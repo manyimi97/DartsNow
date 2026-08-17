@@ -1,0 +1,13 @@
+{
+  "name": "DartsNow",
+  "short_name": "DartsNow",
+  "description": "Free multiplayer darts — 501, 301 and Cricket",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

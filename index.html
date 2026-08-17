@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="DartsNow">
+<meta name="theme-color" content="#111111">
+<title>DartsNow</title>
+<link rel="manifest" href="manifest.json">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#111;color:#f0f0f0;font-size:15px;min-height:100vh}
+.screen{display:none;padding:16px;max-width:480px;margin:0 auto;padding-bottom:40px}
+.screen.active{display:block}
+.logo{font-size:44px;text-align:center;margin:20px 0 4px}
+h1{font-size:24px;font-weight:600;text-align:center;margin-bottom:2px}
+.tagline{font-size:13px;color:#888;text-align:center;margin-bottom:20px}
+.card{background:#1e1e1e;border:1px solid #2a2a2a;border-radius:14px;padding:16px;margin-bottom:12px}
+h3{font-size:15px;font-weight:600;margin-bottom:10px;color:#ccc}
+input[type=text]{width:100%;padding:12px 14px;border:1px solid #333;border-radius:10px;background:#161616;color:#f0f0f0;font-size:16px;margin-bottom:0;outline:none}
+input[type=text]:focus{border-color:#1D9E75}
+.btn{display:block;width:100%;padding:14px;border:1px solid #333;border-radius:12px;background:transparent;color:#f0f0f0;font-size:16px;font-weight:600;cursor:pointer;text-align:center;margin-bottom:10px;transition:all .15s}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.btn-danger{background:#c0392b;color:#fff;border-color:#c0392b}
+.btn-sm{padding:11px 14px;font-size:14px;width:auto;display:inline-block;margin:0}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+.mode-btn{padding:16px 8px;border:1px solid #333;border-radius:10px;background:transparent;color:#ccc;font-size:15px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s}
+.mode-btn.selected{border-color:#1D9E75;background:rgba(29,158,117,0.15);color:#1D9E75}
+.mode-btn-full{grid-column:span 2;padding:14px}
+.room-code{font-size:40px;font-weight:700;letter-spacing:8px;text-align:center;padding:18px;background:#161616;border-radius:12px;margin:12px 0;cursor:pointer;border:1px solid #333;color:#1D9E75}
+.player-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #2a2a2a}
+.player-row:last-child{border-bottom:none}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;background:#2a2a2a;color:#888}
+.badge.you{background:rgba(29,158,117,0.2);color:#1D9E75}
+.status-bar{font-size:14px;color:#888;padding:12px;background:#1a1a1a;border-radius:10px;text-align:center;margin-bottom:14px;border:1px solid #2a2a2a}
+.status-bar.myturn{background:rgba(29,158,117,0.12);color:#1D9E75;font-weight:600;border-color:rgba(29,158,117,0.3)}
+.players-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.pscard{padding:14px 10px;border:1px solid #2a2a2a;border-radius:12px;text-align:center;background:#1a1a1a}
+.pscard.active-turn{border-color:#1D9E75;background:rgba(29,158,117,0.08)}
+.score-big{font-size:52px;font-weight:700;text-align:center;line-height:1;color:#f0f0f0}
+.score-lbl{font-size:12px;color:#666;text-align:center;margin-top:4px}
+.throw-display{display:flex;gap:8px;margin-bottom:12px}
+.throw-slot{flex:1;padding:12px;text-align:center;border:1px dashed #333;border-radius:10px;font-size:16px;font-weight:600;color:#555}
+.throw-slot.filled{border-style:solid;border-color:#1D9E75;color:#f0f0f0;background:rgba(29,158,117,0.08)}
+.mult-row{display:flex;gap:8px;margin-bottom:12px}
+.mult-btn{flex:1;padding:10px;font-size:14px;border:1px solid #333;border-radius:10px;background:transparent;cursor:pointer;color:#888;font-weight:500;transition:all .15s}
+.mult-btn.on{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.numpad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.num-btn{padding:15px 4px;font-size:16px;font-weight:600;border:1px solid #2a2a2a;border-radius:10px;background:#1a1a1a;color:#f0f0f0;cursor:pointer;transition:all .1s}
+.num-btn:active{background:#2a2a2a;transform:scale(0.95)}
+.cricket-table{width:100%;border-collapse:collapse;margin-bottom:14px}
+.cricket-table th{font-size:12px;font-weight:600;color:#666;padding:8px 4px;text-align:center;text-transform:uppercase;letter-spacing:.5px}
+.cricket-table td{padding:9px 4px;text-align:center;font-size:16px;border-top:1px solid #222}
+.tgt-col{font-weight:700;font-size:17px;background:#1a1a1a;color:#ccc}
+.cbt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.cbt{padding:14px 4px;font-size:16px;font-weight:600;border:1px solid #2a2a2a;border-radius:10px;background:#1a1a1a;color:#f0f0f0;cursor:pointer;transition:all .1s}
+.cbt:active{background:#2a2a2a;transform:scale(0.95)}
+.cbt.closed{opacity:0.25;pointer-events:none;text-decoration:line-through}
+.winner-banner{background:linear-gradient(135deg,#1D9E75,#0f6e56);border-radius:16px;padding:28px;text-align:center;margin-bottom:20px}
+.winner-banner .trophy{font-size:56px;margin-bottom:10px}
+.winner-banner h2{font-size:26px;font-weight:700;color:#fff}
+.winner-banner p{font-size:14px;color:rgba(255,255,255,0.8);margin-top:6px}
+.separator{text-align:center;color:#444;font-size:12px;margin:12px 0;position:relative}
+.separator::before,.separator::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:#2a2a2a}
+.separator::before{left:0}.separator::after{right:0}
+.error{color:#e74c3c;font-size:13px;text-align:center;padding:6px 0;min-height:22px}
+.throw-info{font-size:12px;color:#666;text-align:center;margin-bottom:8px;min-height:18px}
+.conn{font-size:12px;text-align:center;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:#e74c3c;display:inline-block}
+.dot.ok{background:#1D9E75}
+.action-row{display:flex;gap:8px}
+.copy-hint{font-size:11px;color:#555;text-align:center;margin-top:-8px;margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<div id="screen-home" class="screen active">
+  <div class="logo">🎯</div>
+  <h1>DartsNow</h1>
+  <p class="tagline">Free multiplayer · no subscription needed</p>
+  <div class="conn"><span class="dot" id="conn-dot"></span><span id="conn-txt">Checking connection...</span></div>
+  <div class="card">
+    <h3>Your name</h3>
+    <input type="text" id="player-name" placeholder="Enter your name" maxlength="16" autocomplete="off">
+  </div>
+  <div class="card">
+    <h3>Game mode</h3>
+    <div class="mode-grid">
+      <button class="mode-btn selected" data-mode="501" onclick="selectMode('501')">501</button>
+      <button class="mode-btn" data-mode="301" onclick="selectMode('301')">301</button>
+      <button class="mode-btn mode-btn-full" data-mode="cricket" onclick="selectMode('cricket')">Cricket</button>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="createRoom()">🆕 Create room &amp; invite friend</button>
+  <div class="separator">or join with a code</div>
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <input type="text" id="join-code" placeholder="ROOM CODE" maxlength="6" style="text-transform:uppercase;flex:1;letter-spacing:4px;font-weight:700;font-size:18px">
+    <button class="btn btn-sm btn-primary" style="flex:0 0 auto" onclick="joinRoom()">Join →</button>
+  </div>
+  <p id="home-error" class="error"></p>
+</div>
+
+<div id="screen-lobby" class="screen">
+  <h1 style="text-align:center;margin-bottom:4px">Room</h1>
+  <p style="text-align:center;font-size:13px;color:#666;margin-bottom:8px">Share this code with your friend</p>
+  <div class="room-code" id="lobby-code" onclick="copyCode()">------</div>
+  <p class="copy-hint">Tap to copy</p>
+  <div class="card" id="lobby-players"></div>
+  <div id="lobby-status" class="status-bar">Waiting for players...</div>
+  <button class="btn btn-primary" id="start-btn" style="display:none" onclick="startGame()">▶ Start game</button>
+  <button class="btn" onclick="leaveGame()">Leave room</button>
+</div>
+
+<div id="screen-game01" class="screen">
+  <div class="players-bar" id="game01-players"></div>
+  <div id="game01-status" class="status-bar"></div>
+  <div class="throw-display">
+    <div class="throw-slot" id="t0">—</div>
+    <div class="throw-slot" id="t1">—</div>
+    <div class="throw-slot" id="t2">—</div>
+  </div>
+  <div class="mult-row">
+    <button class="mult-btn" id="mult-1" onclick="setMult(1)">Single</button>
+    <button class="mult-btn on" id="mult-2" onclick="setMult(2)">Double</button>
+    <button class="mult-btn" id="mult-3" onclick="setMult(3)">Triple</button>
+  </div>
+  <div class="numpad" id="numpad01"></div>
+  <div class="action-row">
+    <button class="btn btn-danger btn-sm" onclick="undoThrow()" style="flex:1">↩ Undo</button>
+    <button class="btn btn-primary btn-sm" onclick="submitTurn()" style="flex:1">Submit turn ✓</button>
+  </div>
+  <p id="game01-error" class="error"></p>
+  <button class="btn" onclick="leaveGame()" style="margin-top:12px;color:#555;font-size:13px">Leave game</button>
+</div>
+
+<div id="screen-cricket" class="screen">
+  <div id="cricket-status" class="status-bar"></div>
+  <table class="cricket-table" id="cricket-table"></table>
+  <div id="cricket-controls">
+    <div class="throw-info" id="cricket-throw-info">Select a target</div>
+    <div class="cbt-grid" id="cricket-targets"></div>
+    <div class="mult-row">
+      <button class="mult-btn on" id="c-mult-1" onclick="setCricketMult(1)">Single</button>
+      <button class="mult-btn" id="c-mult-2" onclick="setCricketMult(2)">Double</button>
+      <button class="mult-btn" id="c-mult-3" onclick="setCricketMult(3)">Triple</button>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-danger btn-sm" onclick="undoCricket()" style="flex:1">↩ Undo</button>
+      <button class="btn btn-primary btn-sm" onclick="submitCricketTurn()" style="flex:1">Submit turn ✓</button>
+    </div>
+  </div>
+  <p id="cricket-error" class="error"></p>
+  <button class="btn" onclick="leaveGame()" style="margin-top:12px;color:#555;font-size:13px">Leave game</button>
+</div>
+
+<div id="screen-winner" class="screen">
+  <div class="winner-banner">
+    <div class="trophy">🏆</div>
+    <h2 id="winner-name">Player wins!</h2>
+    <p id="winner-sub"></p>
+  </div>
+  <button class="btn btn-primary" onclick="playAgain()">Play again</button>
+  <button class="btn" onclick="leaveGame()">Back to home</button>
+</div>
+
+<script>
+const DB = 'https://dartsmost-default-rtdb.firebaseio.com';
+const CTGTS = ['15','16','17','18','19','20','B'];
+
+let myId = 'p_' + Math.random().toString(36).slice(2,9);
+let roomId=null, gameState=null, myName='', selectedMode='501';
+let currentThrows=[], currentMult=2, cricketMult=1, cricketThrows=[];
+let isHost=false, pollTimer=null, lastSig=null;
+
+async function fbSet(p,d){try{const r=await fetch(`${DB}/${p}.json`,{method:'PUT',body:JSON.stringify(d),headers:{'Content-Type':'application/json'}});return r.ok}catch(e){return false}}
+async function fbUpdate(p,d){try{const r=await fetch(`${DB}/${p}.json`,{method:'PATCH',body:JSON.stringify(d),headers:{'Content-Type':'application/json'}});return r.ok}catch(e){return false}}
+async function fbGet(p){try{const r=await fetch(`${DB}/${p}.json`);if(!r.ok)return null;return r.json()}catch(e){return null}}
+async function fbDel(p){try{await fetch(`${DB}/${p}.json`,{method:'DELETE'})}catch(e){}}
+
+async function checkConn(){
+  const dot=document.getElementById('conn-dot'),txt=document.getElementById('conn-txt');
+  try{
+    const r=await fetch(`${DB}/.json?shallow=true`);
+    if(r.ok){dot.classList.add('ok');txt.textContent='Connected ✓';}
+    else{dot.classList.remove('ok');txt.textContent='Firebase error '+r.status;}
+  }catch(e){dot.classList.remove('ok');txt.textContent='Cannot reach Firebase';}
+}
+
+function startPolling(code){
+  stopPolling();
+  pollTimer=setInterval(async()=>{
+    const room=await fbGet('rooms/'+code);
+    if(!room)return;
+    const sig=JSON.stringify(room);
+    if(sig===lastSig)return;
+    lastSig=sig;
+    onRoomUpdate(room,code);
+  },1200);
+}
+function stopPolling(){if(pollTimer){clearInterval(pollTimer);pollTimer=null;}lastSig=null;}
+
+function onRoomUpdate(room,code){
+  if(!room)return;
+  if(room.status==='lobby'){updateLobbyUI(room,code);return;}
+  if(room.status==='playing'){
+    gameState=room;
+    if(document.getElementById('screen-lobby').classList.contains('active'))startGameUI(room);
+    updateGameUI(room);
+  }
+  if(room.status==='winner')showWinner(room);
+}
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');window.scrollTo(0,0);}
+function selectMode(m){selectedMode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('selected',b.dataset.mode===m));}
+function randomCode(){return Math.random().toString(36).slice(2,8).toUpperCase();}
+function copyCode(){
+  const c=document.getElementById('lobby-code').textContent;
+  if(navigator.share){navigator.share({title:'DartsNow room code',text:'Join my DartsNow room! Code: '+c});}
+  else{navigator.clipboard?.writeText(c).catch(()=>{});}
+  const el=document.getElementById('lobby-code');el.textContent='Copied!';setTimeout(()=>el.textContent=c,1500);
+}
+function setErr(id,msg){const el=document.getElementById(id);if(el)el.textContent=msg;}
+
+async function createRoom(){
+  myName=document.getElementById('player-name').value.trim();
+  if(!myName){setErr('home-error','Enter your name first');return;}
+  setErr('home-error','Creating...');
+  const code=randomCode();roomId=code;isHost=true;
+  const room={host:myId,mode:selectedMode,status:'lobby',players:{[myId]:{name:myName,joined:Date.now()}}};
+  const ok=await fbSet('rooms/'+code,room);
+  if(!ok){setErr('home-error','Connection failed — make sure you opened this page directly (not inside Claude)');return;}
+  setErr('home-error','');show('lobby');
+  document.getElementById('lobby-code').textContent=code;
+  updateLobbyUI(room,code);startPolling(code);
+}
+
+async function joinRoom(){
+  myName=document.getElementById('player-name').value.trim();
+  const code=document.getElementById('join-code').value.trim().toUpperCase();
+  if(!myName){setErr('home-error','Enter your name first');return;}
+  if(code.length<4){setErr('home-error','Enter the room code');return;}
+  setErr('home-error','Finding room...');
+  const room=await fbGet('rooms/'+code);
+  if(!room){setErr('home-error','Room not found — check the code');return;}
+  if(room.status!=='lobby'){setErr('home-error','Game already started');return;}
+  if(Object.keys(room.players||{}).length>=4){setErr('home-error','Room is full (max 4)');return;}
+  roomId=code;selectedMode=room.mode;isHost=false;
+  await fbUpdate('rooms/'+code+'/players/'+myId,{name:myName,joined:Date.now()});
+  setErr('home-error','');show('lobby');
+  document.getElementById('lobby-code').textContent=code;
+  startPolling(code);
+}
+
+function updateLobbyUI(room,code){
+  const players=room.players||{};
+  document.getElementById('lobby-players').innerHTML=Object.entries(players).map(([id,p])=>
+    `<div class="player-row"><span style="font-weight:600">${p.name}</span>
+    <span class="badge ${id===myId?'you':''}">${id===myId?'You':'Friend'}${id===room.host?' 👑':''}</span></div>`
+  ).join('');
+  const count=Object.keys(players).length;
+  const st=document.getElementById('lobby-status');
+  st.textContent=count<2?'Waiting for your friend to join...':count+' players ready — start when ready!';
+  document.getElementById('start-btn').style.display=(room.host===myId&&count>=2)?'block':'none';
+}
+
+async function startGame(){
+  const room=await fbGet('rooms/'+roomId);if(!room)return;
+  const players=room.players||{};
+  const playerOrder=Object.keys(players).sort((a,b)=>players[a].joined-players[b].joined);
+  const mode=room.mode;
+  let gd={status:'playing',mode,currentPlayer:playerOrder[0],playerOrder,players:{}};
+  if(mode==='501'||mode==='301'){
+    playerOrder.forEach(pid=>{gd.players[pid]={name:players[pid].name,score:parseInt(mode)};});
+  }else{
+    playerOrder.forEach(pid=>{const marks={};CTGTS.forEach(t=>marks[t]=0);gd.players[pid]={name:players[pid].name,score:0,marks};});
+  }
+  await fbUpdate('rooms/'+roomId,gd);
+}
+
+function startGameUI(room){
+  if(room.mode==='cricket'){show('cricket');buildCricketBtns();}
+  else{show('game01');buildNumpad();}
+}
+function updateGameUI(room){
+  if(!room||room.status!=='playing')return;
+  if(room.mode==='cricket')updateCricketUI(room);else updateGame01UI(room);
+}
+
+function buildNumpad(){
+  document.getElementById('numpad01').innerHTML=
+    [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,'B'].map(n=>
+      `<button class="num-btn" onclick="addThrow(${n==='B'?25:n})">${n}</button>`
+    ).join('');
+}
+function setMult(m){currentMult=m;[1,2,3].forEach(i=>document.getElementById('mult-'+i).classList.toggle('on',i===m));}
+function addThrow(val){
+  if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Not your turn!');return;}
+  if(currentThrows.length>=3)return;
+  currentThrows.push({val,mult:currentMult,points:val*currentMult});
+  updateThrowDisplay();setErr('game01-error','');
+}
+function undoThrow(){currentThrows.pop();updateThrowDisplay();}
+function updateThrowDisplay(){
+  for(let i=0;i<3;i++){
+    const el=document.getElementById('t'+i);
+    if(currentThrows[i]){
+      const t=currentThrows[i];const pfx=t.mult===3?'T':t.mult===2?'D':'';
+      el.textContent=t.val===25?(t.mult===2?'Bull':pfx+'25'):pfx+t.val;el.classList.add('filled');
+    }else{el.textContent='—';el.classList.remove('filled');}
+  }
+}
+async function submitTurn(){
+  if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Not your turn!');return;}
+  if(!currentThrows.length){setErr('game01-error','Enter at least one throw');return;}
+  const thrown=currentThrows.reduce((s,t)=>s+t.points,0);
+  const pd=gameState.players[myId];const newScore=pd.score-thrown;
+  setErr('game01-error','');
+  if(newScore<0||newScore===1){setErr('game01-error','Bust! Score stays at '+pd.score);currentThrows=[];updateThrowDisplay();await passTurn();return;}
+  await fbUpdate('rooms/'+roomId+'/players/'+myId,{score:newScore});
+  if(newScore===0){await fbUpdate('rooms/'+roomId,{status:'winner',winner:myId,winnerName:pd.name});}
+  else await passTurn();
+  currentThrows=[];updateThrowDisplay();
+}
+async function passTurn(){
+  const order=gameState.playerOrder;
+  const next=order[(order.indexOf(gameState.currentPlayer)+1)%order.length];
+  await fbUpdate('rooms/'+roomId,{currentPlayer:next});
+}
+function updateGame01UI(room){
+  const isMyTurn=room.currentPlayer===myId;
+  const el=document.getElementById('game01-status');
+  el.className='status-bar '+(isMyTurn?'myturn':'');
+  el.textContent=isMyTurn?'🎯 Your turn — enter your 3 throws':'⏳ '+(room.players[room.currentPlayer]?.name||'?')+"'s turn...";
+  document.getElementById('game01-players').innerHTML=(room.playerOrder||[]).map(pid=>{
+    const p=room.players[pid];
+    return `<div class="pscard ${pid===room.currentPlayer?'active-turn':''}">
+      <div class="score-lbl">${p.name}${pid===myId?' (you)':''}</div>
+      <div class="score-big">${p.score}</div>
+      ${pid===room.currentPlayer?'<div class="score-lbl" style="color:#1D9E75;margin-top:2px">🎯 throwing</div>':''}
+    </div>`;
+  }).join('');
+  const np=document.getElementById('numpad01');
+  np.style.opacity=isMyTurn?'1':'0.3';np.style.pointerEvents=isMyTurn?'auto':'none';
+  document.querySelectorAll('#screen-game01 .mult-row .mult-btn').forEach(b=>{b.style.opacity=isMyTurn?'1':'0.3';b.style.pointerEvents=isMyTurn?'auto':'none';});
+}
+
+function buildCricketBtns(){
+  document.getElementById('cricket-targets').innerHTML=CTGTS.map(t=>
+    `<button class="cbt" id="ct-${t}" onclick="hitCricket('${t}')">${t}</button>`
+  ).join('');
+}
+function setCricketMult(m){cricketMult=m;[1,2,3].forEach(i=>document.getElementById('c-mult-'+i).classList.toggle('on',i===m));}
+function hitCricket(target){
+  if(!gameState||gameState.currentPlayer!==myId){setErr('cricket-error','Not your turn!');return;}
+  const used=cricketThrows.reduce((s,t)=>s+t.mult,0);
+  if(used>=3){setErr('cricket-error','3 darts used — submit or undo');return;}
+  cricketThrows.push({target,mult:Math.min(cricketMult,3-used)});
+  updateCricketInfo();setErr('cricket-error','');
+}
+function updateCricketInfo(){
+  const used=cricketThrows.reduce((s,t)=>s+t.mult,0);
+  if(!cricketThrows.length){document.getElementById('cricket-throw-info').textContent='Select a target ('+cricketMult+' dart'+(cricketMult>1?'s':'')+' per tap)';return;}
+  const prev=cricketThrows.map(t=>(t.mult===3?'T':t.mult===2?'D':'')+t.target).join(', ');
+  document.getElementById('cricket-throw-info').textContent=`${prev} · ${used}/3 darts used`;
+}
+function undoCricket(){cricketThrows.pop();updateCricketInfo();setErr('cricket-error','');}
+async function submitCricketTurn(){
+  if(!gameState||gameState.currentPlayer!==myId){setErr('cricket-error','Not your turn!');return;}
+  if(!cricketThrows.length){setErr('cricket-error','Select at least one target');return;}
+  const myMarks=Object.assign({},gameState.players[myId].marks);
+  let myScore=gameState.players[myId].score;
+  function allClosed(t){return(gameState.playerOrder||[]).every(pid=>(gameState.players[pid].marks[t]||0)>=3);}
+  for(const t of cricketThrows){
+    const cur=myMarks[t.target]||0;const after=cur+t.mult;
+    myMarks[t.target]=Math.min(3,after);
+    if(after>3&&!allClosed(t.target)){myScore+=(t.target==='B'?50:parseInt(t.target))*Math.max(0,after-Math.max(3,cur));}
+  }
+  await fbUpdate('rooms/'+roomId+'/players/'+myId,{marks:myMarks,score:myScore});
+  const allDone=CTGTS.every(t=>(myMarks[t]||0)>=3);
+  if(allDone){
+    const others=(gameState.playerOrder||[]).filter(p=>p!==myId).map(p=>gameState.players[p].score);
+    if(others.every(s=>myScore>=s)){await fbUpdate('rooms/'+roomId,{status:'winner',winner:myId,winnerName:gameState.players[myId].name});cricketThrows=[];updateCricketInfo();return;}
+  }
+  await passTurn();cricketThrows=[];updateCricketInfo();
+}
+function markStr(m){return m===0?'':m===1?'/':m===2?'X':'⊗';}
+function updateCricketUI(room){
+  const isMyTurn=room.currentPlayer===myId;
+  const el=document.getElementById('cricket-status');
+  el.className='status-bar '+(isMyTurn?'myturn':'');
+  el.textContent=isMyTurn?'🎯 Your turn — 3 darts':'⏳ '+(room.players[room.currentPlayer]?.name||'?')+"'s turn...";
+  const pO=room.playerOrder||[];
+  if(pO.length===2){
+    const p0=room.players[pO[0]],p1=room.players[pO[1]];
+    const rows=CTGTS.map(t=>{
+      const m0=(p0.marks||{})[t]||0,m1=(p1.marks||{})[t]||0,closed=m0>=3&&m1>=3;
+      return `<tr><td style="font-size:20px">${markStr(m0)}</td><td class="tgt-col" style="${closed?'opacity:.3;text-decoration:line-through':''}">${t}</td><td style="font-size:20px">${markStr(m1)}</td></tr>`;
+    }).join('');
+    document.getElementById('cricket-table').innerHTML=
+      `<thead><tr><th>${p0.name}${pO[0]===myId?' (you)':''}</th><th class="tgt-col">Target</th><th>${p1.name}${pO[1]===myId?' (you)':''}</th></tr>
+      <tr><td style="text-align:center;font-weight:700;padding:6px;color:#1D9E75">${p0.score}pts</td><td></td><td style="text-align:center;font-weight:700;padding:6px;color:#1D9E75">${p1.score}pts</td></tr></thead><tbody>${rows}</tbody>`;
+  }else{
+    const heads=pO.map(pid=>`<th>${room.players[pid].name}</th>`).join('');
+    const rows=CTGTS.map(t=>`<tr>${pO.map(pid=>`<td>${markStr((room.players[pid].marks||{})[t]||0)}</td>`).join('')}<td class="tgt-col">${t}</td></tr>`).join('');
+    document.getElementById('cricket-table').innerHTML=`<thead><tr>${heads}<th class="tgt-col">Target</th></tr></thead><tbody>${rows}</tbody>`;
+  }
+  CTGTS.forEach(t=>{const btn=document.getElementById('ct-'+t);if(!btn)return;btn.classList.toggle('closed',(room.playerOrder||[]).every(pid=>((room.players[pid]?.marks||{})[t]||0)>=3));});
+  const ctrl=document.getElementById('cricket-controls');
+  ctrl.style.opacity=isMyTurn?'1':'0.3';ctrl.style.pointerEvents=isMyTurn?'auto':'none';
+  if(isMyTurn)updateCricketInfo();
+}
+function showWinner(room){
+  stopPolling();
+  document.getElementById('winner-name').textContent=room.winner===myId?'🎉 You win!':`${room.winnerName} wins!`;
+  document.getElementById('winner-sub').textContent=`${(room.mode||'').toUpperCase()} · ${Object.keys(room.players||{}).length} players`;
+  show('winner');
+}
+async function leaveGame(){
+  stopPolling();
+  if(roomId){if(isHost)await fbDel('rooms/'+roomId);else await fbDel('rooms/'+roomId+'/players/'+myId);}
+  roomId=null;gameState=null;currentThrows=[];cricketThrows=[];isHost=false;
+  show('home');checkConn();
+}
+function playAgain(){leaveGame();}
+checkConn();
+</script>
+</body>
+</html>
