@@ -1047,7 +1047,14 @@ function updateThrowDisplay(){
 
 async function submitTurn(){
   if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Nem a te köröd!');return;}
-  if(!currentThrows.length){setErr('game01-error','Adj meg legalább egy dobást!');return;}
+  // Ha nincs dobás, csak átpasszoljuk a kört
+  if(!currentThrows.length){
+    saveSnapshot();
+    currentThrows=[];updateThrowDisplay();resetMults();updateLiveScore();
+    if(offlineMode){offlinePassTurn();}
+    else{await passTurnOnline();}
+    return;
+  }
   const thrown=currentThrows.reduce((s,t)=>s+t.points,0);
   const pd=gameState.players[myId];
   const newScore=pd.score-thrown;
