@@ -1,10 +1,10 @@
-const CACHE = 'dartsnow-v4';
+const CACHE = 'dartsnow-v5';
 const FILES = [
-  '/DartsNow/',
-  '/DartsNow/index.html',
-  '/DartsNow/manifest.json',
-  '/DartsNow/icon-192.png',
-  '/DartsNow/icon-512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', e => {
@@ -13,9 +13,11 @@ self.addEventListener('install', e => {
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys =>
-    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-  ));
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    )
+  );
   self.clients.claim();
 });
 

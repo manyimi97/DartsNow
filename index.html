@@ -16,17 +16,19 @@ if('serviceWorker' in navigator){
     regs.forEach(r=>r.unregister());
   });
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/DartsNow/sw.js').catch(()=>{});
+    navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW error:',e));
   });
 }
 let deferredInstallPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{
   e.preventDefault();
   deferredInstallPrompt=e;
-  document.getElementById('install-btn')?.style.setProperty('display','block');
+  const btn=document.getElementById('install-btn');
+  if(btn) btn.style.display='block';
 });
 window.addEventListener('appinstalled',()=>{
-  document.getElementById('install-btn')?.style.setProperty('display','none');
+  const btn=document.getElementById('install-btn');
+  if(btn) btn.style.display='none';
   deferredInstallPrompt=null;
 });
 function installApp(){
