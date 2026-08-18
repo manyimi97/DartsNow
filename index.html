@@ -429,69 +429,60 @@ input[type=text]:focus{border-color:#1D9E75}
 
   <!-- ÁLLÓ MÓD -->
   <div id="cr-portrait" style="display:flex;flex-direction:column;height:100%;overflow:hidden">
-    <!-- Fejléc: aktív játékos neve -->
-    <div id="cr-header" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;padding:10px 16px;text-align:center;font-size:18px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;flex-shrink:0"></div>
-    <!-- Scoreboard tábla -->
-    <div style="flex-shrink:0;margin-bottom:6px">
+    <div id="cr-header" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;padding:10px 16px;text-align:center;font-size:18px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;flex-shrink:0"></div>
+    <div style="flex-shrink:0;margin-bottom:4px">
       <table id="cricket-table" style="width:100%;border-collapse:collapse;table-layout:fixed"></table>
     </div>
-    <!-- Gombok területe: flex:1 kitölti a maradékot -->
     <div style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">
-      <!-- S / D / T fejléc -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:4px;flex-shrink:0">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:3px;flex-shrink:0">
         <div style="text-align:center;font-size:16px;font-weight:700;color:#fff">S</div>
         <div style="text-align:center;font-size:16px;font-weight:700;color:#fff">D</div>
         <div style="text-align:center;font-size:16px;font-weight:700;color:#fff">T</div>
       </div>
-      <!-- Cricket gombok: 3 oszlop x 7 sor, kitölti a helyet -->
-      <div id="cricket-btn-grid" style="flex:1;min-height:0;display:grid;grid-template-rows:repeat(8,1fr);gap:3px;overflow:hidden"></div>
+      <!-- 7 sor egyenlő magassággal: 6 szám + bull sor UGYANOLYAN magasságban -->
+      <div id="cricket-btn-grid" style="flex:1;min-height:0;display:grid;grid-template-rows:repeat(7,1fr);gap:3px;overflow:hidden"></div>
     </div>
-    <!-- Alap gombok: Törlés, Beküldés, Visszavonás, Kilépés -->
-    <div style="flex-shrink:0;margin-top:6px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
+    <div style="flex-shrink:0;margin-top:5px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:5px">
         <button onclick="undoCricket()" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">Törlés</button>
         <button onclick="submitCricketTurn()" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">Beküldés</button>
       </div>
-      <button id="undo-turn-cr-btn" onclick="undoLastTurnCricket()" disabled style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:10px;padding:10px;color:#e67e22;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px;opacity:0.3">↺ Visszavonás</button>
-      <button onclick="confirmLeave()" style="width:100%;background:transparent;border:1px solid #333;border-radius:10px;padding:8px;color:#555;font-size:12px;cursor:pointer">Kilépés a játékból</button>
+      <button id="undo-turn-cr-btn" onclick="undoLastTurnCricket()" disabled style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:10px;padding:9px;color:#e67e22;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:5px;opacity:0.3">↺ Visszavonás</button>
+      <button onclick="confirmLeave()" style="width:100%;background:transparent;border:1px solid #333;border-radius:10px;padding:7px;color:#555;font-size:12px;cursor:pointer">Kilépés a játékból</button>
     </div>
   </div>
 
   <!-- FEKVŐ MÓD -->
-  <div id="cr-landscape" style="display:none;height:100%;overflow:hidden;flex-direction:row;gap:0">
-    <!-- Bal oldal: fejléc + scoreboard + kilépés -->
-    <div style="display:flex;flex-direction:column;overflow:hidden;padding-right:6px">
-      <!-- Fejléc -->
-      <div id="cr-header-ls" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;padding:8px 12px;text-align:center;font-size:15px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;flex-shrink:0"></div>
-      <!-- Scoreboard -->
-      <div style="flex:1;min-height:0;overflow:hidden">
-        <table id="cricket-table-ls" style="width:100%;border-collapse:collapse;table-layout:fixed;height:100%"></table>
-      </div>
-      <!-- Kilépés alul -->
-      <button onclick="confirmLeave()" style="flex-shrink:0;width:100%;background:transparent;border:1px solid #333;border-radius:8px;padding:6px;color:#555;font-size:11px;cursor:pointer;margin-top:4px">Kilépés a játékból</button>
-    </div>
-    <!-- Jobb oldal: S/D/T gombok + akció gombok -->
-    <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;padding-left:6px">
-      <!-- S / D / T fejléc -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:4px;flex-shrink:0">
-        <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">S</div>
-        <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">D</div>
-        <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">T</div>
-      </div>
-      <!-- Gombok -->
-      <div id="cricket-btn-grid-ls" style="flex:1;min-height:0;display:grid;grid-template-rows:repeat(8,1fr);gap:3px;overflow:hidden"></div>
-      <!-- Törlés + Beküldés -->
-      <div style="flex-shrink:0;margin-top:6px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px">
-          <button onclick="undoCricket()" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:8px;padding:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Törlés</button>
-          <button onclick="submitCricketTurn()" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:8px;padding:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Beküldés</button>
+  <div id="cr-landscape" style="display:none;width:100%;height:100%;overflow:hidden">
+    <div style="display:flex;flex-direction:row;height:100%;gap:8px">
+      <!-- Bal: fejléc + tábla + kilépés -->
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
+        <div id="cr-header-ls" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:8px;padding:7px 10px;text-align:center;font-size:13px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;flex-shrink:0"></div>
+        <div style="flex:1;min-height:0;overflow:hidden">
+          <table id="cricket-table-ls" style="width:100%;height:100%;border-collapse:collapse;table-layout:fixed"></table>
         </div>
-        <button id="undo-turn-cr-btn-ls" onclick="undoLastTurnCricket()" disabled style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:8px;padding:7px;color:#e67e22;font-size:11px;font-weight:600;cursor:pointer;opacity:0.3">↺ Visszavonás</button>
+        <button onclick="confirmLeave()" style="flex-shrink:0;width:100%;background:transparent;border:1px solid #333;border-radius:7px;padding:5px;color:#555;font-size:10px;cursor:pointer;margin-top:4px">Kilépés a játékból</button>
+      </div>
+      <!-- Jobb: S/D/T + gombok -->
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:3px;flex-shrink:0">
+          <div style="text-align:center;font-size:14px;font-weight:700;color:#fff">S</div>
+          <div style="text-align:center;font-size:14px;font-weight:700;color:#fff">D</div>
+          <div style="text-align:center;font-size:14px;font-weight:700;color:#fff">T</div>
+        </div>
+        <div id="cricket-btn-grid-ls" style="flex:1;min-height:0;display:grid;grid-template-rows:repeat(7,1fr);gap:3px;overflow:hidden"></div>
+        <div style="flex-shrink:0;margin-top:5px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px">
+            <button onclick="undoCricket()" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:8px;padding:9px;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Törlés</button>
+            <button onclick="submitCricketTurn()" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:8px;padding:9px;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Beküldés</button>
+          </div>
+          <button id="undo-turn-cr-btn-ls" onclick="undoLastTurnCricket()" disabled style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:8px;padding:6px;color:#e67e22;font-size:11px;font-weight:600;cursor:pointer;opacity:0.3">↺ Visszavonás</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <p id="cricket-error" style="color:#e74c3c;font-size:12px;text-align:center;min-height:16px;margin-top:2px"></p>
+  <p id="cricket-error" style="color:#e74c3c;font-size:11px;text-align:center;min-height:14px;margin-top:2px;flex-shrink:0"></p>
 </div>
 
 <!-- WINNER -->
@@ -941,47 +932,50 @@ function buildCricketBtns(){
   const grid = document.getElementById(gridId);
   if(!grid) return;
 
-  const numSize = portrait ? 'clamp(13px,3.5vw,18px)' : 'clamp(11px,1.8vh,16px)';
-  const dotSize = portrait ? 'clamp(8px,2vw,11px)' : 'clamp(7px,1.2vh,10px)';
+  const numSize = portrait ? 'clamp(14px,3.8vw,20px)' : 'clamp(11px,1.9vh,17px)';
+  const dotSize = portrait ? 'clamp(9px,2.2vw,13px)' : 'clamp(7px,1.3vh,11px)';
+
+  const btnStyle = (closed) =>
+    `width:100%;height:100%;border:none;border-radius:8px;cursor:pointer;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;` +
+    (closed ? 'background:linear-gradient(180deg,#2a2a2a,#1a1a1a);opacity:0.35;pointer-events:none;' : 'background:linear-gradient(180deg,#3a3a3a,#252525);opacity:1;pointer-events:auto;');
 
   const nums = ['15','16','17','18','19','20'];
   let html = '';
 
-  // Number rows: each row = 3 buttons (S,D,T) in one grid row
+  // 6 number rows
   nums.forEach(t => {
-    html += `
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;min-height:0">
-        <button id="cbt-${t}-1" onclick="hitCricketDirect('${t}',1)" style="${cbtStyle(false,false)}">
-          <span style="font-size:${numSize};color:#fff;line-height:1">${t}</span>
-          <span style="font-size:${dotSize};color:#aaa;letter-spacing:1px">*</span>
-        </button>
-        <button id="cbt-${t}-2" onclick="hitCricketDirect('${t}',2)" style="${cbtStyle(false,false)}">
-          <span style="font-size:${numSize};color:#fff;line-height:1">${t}</span>
-          <span style="font-size:${dotSize};color:#aaa;letter-spacing:1px">**</span>
-        </button>
-        <button id="cbt-${t}-3" onclick="hitCricketDirect('${t}',3)" style="${cbtStyle(false,false)}">
-          <span style="font-size:${numSize};color:#fff;line-height:1">${t}</span>
-          <span style="font-size:${dotSize};color:#aaa;letter-spacing:1px">***</span>
-        </button>
-      </div>`;
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;min-height:0">
+      <button id="cbt-${t}-1" onclick="hitCricketDirect('${t}',1)" style="${btnStyle(false)}">
+        <span style="font-size:${numSize};color:#fff;line-height:1">${t}</span>
+        <span style="font-size:${dotSize};color:#aaa">*</span>
+      </button>
+      <button id="cbt-${t}-2" onclick="hitCricketDirect('${t}',2)" style="${btnStyle(false)}">
+        <span style="font-size:${numSize};color:#fff;line-height:1">${t}</span>
+        <span style="font-size:${dotSize};color:#aaa">**</span>
+      </button>
+      <button id="cbt-${t}-3" onclick="hitCricketDirect('${t}',3)" style="${btnStyle(false)}">
+        <span style="font-size:${numSize};color:#fff;line-height:1">${t}</span>
+        <span style="font-size:${dotSize};color:#aaa">***</span>
+      </button>
+    </div>`;
   });
 
-  // Bull row: 2 buttons centered (S,D), no Triple
-  html += `
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;min-height:0">
-      <button id="cbt-B-1" onclick="hitCricketDirect('B',1)" style="${cbtStyle(false,false)}">
-        <span style="font-size:${numSize};color:#fff;line-height:1">BULL</span>
-        <span style="font-size:${dotSize};color:#aaa;letter-spacing:1px">*</span>
-      </button>
-      <button id="cbt-B-2" onclick="hitCricketDirect('B',2)" style="${cbtStyle(false,false)}">
-        <span style="font-size:${numSize};color:#fff;line-height:1">BULL</span>
-        <span style="font-size:${dotSize};color:#aaa;letter-spacing:1px">**</span>
-      </button>
-      <div></div>
-    </div>`;
+  // Bull row: S and D take same space as numbers, T cell empty
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;min-height:0">
+    <button id="cbt-B-1" onclick="hitCricketDirect('B',1)" style="${btnStyle(false)}">
+      <span style="font-size:${numSize};color:#fff;line-height:1">BULL</span>
+      <span style="font-size:${dotSize};color:#aaa">*</span>
+    </button>
+    <button id="cbt-B-2" onclick="hitCricketDirect('B',2)" style="${btnStyle(false)}">
+      <span style="font-size:${numSize};color:#fff;line-height:1">BULL</span>
+      <span style="font-size:${dotSize};color:#aaa">**</span>
+    </button>
+    <div style="min-height:0"></div>
+  </div>`;
 
   grid.innerHTML = html;
-  // Also build the other orientation grid
+
+  // Mirror to other orientation grid too
   const otherId = portrait ? 'cricket-btn-grid-ls' : 'cricket-btn-grid';
   const other = document.getElementById(otherId);
   if(other) other.innerHTML = html;
@@ -1045,42 +1039,28 @@ function markSymbol(m){
 }
 
 // Build the scoreboard table matching the design exactly
-function renderCricketTable(room){
+function renderCricketTableTo(tableId, room){
   if(!room)return;
-  const portrait=!isLandscape();
-  const tableId=portrait?'cricket-table':'cricket-table-ls';
   const table=document.getElementById(tableId);
   if(!table)return;
 
   const pO=room.playerOrder||[];
   const pending=calcPendingMarks();
+  const portrait=!isLandscape();
 
-  // Active player index
-  const activeIdx=pO.indexOf(room.currentPlayer);
-
-  // Header row: player names + CÉLPONT
-  // Design: player columns left, CÉLPONT fixed right
   const numSize=portrait?'clamp(12px,3.5vw,17px)':'clamp(10px,1.8vh,14px)';
-  const markSize=portrait?'clamp(14px,4vw,20px)':'clamp(12px,2.2vh,17px)';
+  const markSize=portrait?'clamp(15px,4vw,22px)':'clamp(13px,2.5vh,19px)';
 
-  // Column widths: equal for players, fixed for CÉLPONT
-  const playerCols=pO.map(()=>`1fr`).join(' ');
-  const gridCols=playerCols+' auto';
-
-  let headerHtml=`<colgroup>`;
-  pO.forEach(()=>{headerHtml+=`<col style="width:1fr">`;});
-  headerHtml+=`<col style="width:auto"></colgroup>`;
-
-  // Thead
+  // Thead: player names + CÉLPONT
   let thead=`<thead><tr>`;
-  pO.forEach((pid,i)=>{
+  pO.forEach((pid)=>{
     const isActive=pid===room.currentPlayer;
-    const style=isActive
-      ?`background:linear-gradient(135deg,#1aaa7a,#0f7a55);color:#fff;font-weight:700;border-radius:6px;padding:6px 4px;text-align:center;font-size:${numSize};text-transform:uppercase`
-      :`background:#1a1a1a;color:#ccc;font-weight:600;border-radius:6px;padding:6px 4px;text-align:center;font-size:${numSize};text-transform:uppercase`;
-    thead+=`<td style="${style}">${uc(room.players[pid].name)}</td>`;
+    const nameTd=isActive
+      ?`<td style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);color:#fff;font-weight:700;border-radius:6px;padding:clamp(4px,1vh,8px) 4px;text-align:center;font-size:${numSize};text-transform:uppercase;border-right:1px solid #111">${uc(room.players[pid].name)}</td>`
+      :`<td style="background:#1a1a1a;color:#ccc;font-weight:600;border-radius:6px;padding:clamp(4px,1vh,8px) 4px;text-align:center;font-size:${numSize};text-transform:uppercase;border-right:1px solid #111">${uc(room.players[pid].name)}</td>`;
+    thead+=nameTd;
   });
-  thead+=`<td style="background:#111;color:#888;font-weight:700;padding:6px 4px;text-align:center;font-size:clamp(9px,2vw,12px);text-transform:uppercase">CÉLPONT</td>`;
+  thead+=`<td style="background:#111;color:#888;font-weight:700;padding:clamp(4px,1vh,8px) 6px;text-align:center;font-size:clamp(9px,2vw,12px);text-transform:uppercase;white-space:nowrap">CÉLPONT</td>`;
   thead+=`</tr></thead>`;
 
   // Body rows
@@ -1090,57 +1070,61 @@ function renderCricketTable(room){
     tbody+=`<tr>`;
     pO.forEach(pid=>{
       const confirmed=(room.players[pid].marks||{})[t]||0;
-      let sym=markSymbol(confirmed);
-      let color='#fff';
-      // Pending overlay for current player
-      if(pid===myId&&pending){
+      let displayMark=markSymbol(confirmed);
+      let markColor='#fff';
+      // Pending kék jelzés
+      if(pid===myId&&pending&&confirmed<3){
         const pMark=(pending.marks[t]||0);
-        const extra=Math.max(0,pMark-confirmed);
-        if(extra>0&&confirmed<3){
-          sym=markSymbol(confirmed)+`<span style="color:#4a9eff">${markSymbol(Math.min(3,confirmed+extra)).slice(markSymbol(confirmed).length)}</span>`;
+        if(pMark>confirmed){
+          const pendingNew=markSymbol(pMark);
+          displayMark=`<span style='color:#fff'>${markSymbol(confirmed)}</span><span style='color:#4a9eff'>${pendingNew.slice(markSymbol(confirmed).length)}</span>`;
         }
       }
-      tbody+=`<td style="text-align:center;font-size:${markSize};padding:clamp(2px,1vh,8px) 2px;border-top:1px solid #2a2a2a">${sym}</td>`;
+      tbody+=`<td style="text-align:center;font-size:${markSize};padding:clamp(2px,0.8vh,6px) 2px;border-top:1px solid #2a2a2a;border-right:1px solid #2a2a2a">${displayMark}</td>`;
     });
-    // CÉLPONT column
     const tLabel=t==='B'?'BULL':t;
-    const targetStyle=allClosed
-      ?`text-align:center;font-size:${numSize};color:#444;text-decoration:line-through;padding:clamp(2px,1vh,8px) 6px;border-top:1px solid #2a2a2a;font-weight:700`
-      :`text-align:center;font-size:${numSize};color:#ccc;padding:clamp(2px,1vh,8px) 6px;border-top:1px solid #2a2a2a;font-weight:700`;
-    tbody+=`<td style="${targetStyle}">${tLabel}</td>`;
+    const tStyle=allClosed
+      ?`text-align:center;font-size:${numSize};color:#444;text-decoration:line-through;padding:clamp(2px,0.8vh,6px) 6px;border-top:1px solid #2a2a2a;font-weight:700`
+      :`text-align:center;font-size:${numSize};color:#ccc;padding:clamp(2px,0.8vh,6px) 6px;border-top:1px solid #2a2a2a;font-weight:700`;
+    tbody+=`<td style="${tStyle}">${tLabel}</td>`;
     tbody+=`</tr>`;
   });
   tbody+=`</tbody>`;
 
-  table.innerHTML=headerHtml+thead+tbody;
+  table.innerHTML=thead+tbody;
+}
+
+// Legacy alias
+function renderCricketTable(room){
+  renderCricketTableTo('cricket-table', room);
+  renderCricketTableTo('cricket-table-ls', room);
 }
 
 function renderCricketUI(room){
   if(!room)return;
   const portrait=!isLandscape();
 
-  // Show/hide portrait vs landscape panels
   const portraitEl=document.getElementById('cr-portrait');
   const landscapeEl=document.getElementById('cr-landscape');
-  if(portraitEl) portraitEl.style.display=portrait?'flex':'none';
-  if(landscapeEl) landscapeEl.style.display=portrait?'none':'flex';
+  if(portraitEl){portraitEl.style.display=portrait?'flex':'none';}
+  if(landscapeEl){landscapeEl.style.display=portrait?'none':'block';}
 
   const isMyTurn=room.currentPlayer===myId;
   const curName=uc(room.players[room.currentPlayer]?.name||'?');
+  const headerText='🎯 '+curName+' KÖRE';
 
-  // Update headers
   ['cr-header','cr-header-ls'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el) el.textContent='🎯 '+curName+' KÖRE';
+    if(el) el.textContent=headerText;
   });
 
-  // Render table for current orientation
-  renderCricketTable(room);
+  // Render tables for both orientations so switching is instant
+  renderCricketTableTo('cricket-table', room);
+  renderCricketTableTo('cricket-table-ls', room);
 
-  // Rebuild buttons for current orientation
   buildCricketBtns();
 
-  // Update undo buttons
+  // Undo buttons
   ['undo-turn-cr-btn','undo-turn-cr-btn-ls'].forEach(id=>{
     const btn=document.getElementById(id);
     if(!btn)return;
@@ -1149,7 +1133,7 @@ function renderCricketUI(room){
     btn.style.opacity=has?'1':'0.3';
   });
 
-  // Enable/disable controls based on turn
+  // Enable/disable based on turn
   const isLocal=offlineMode||(localPlayerIds.length>0&&isLocalPlayer(room.currentPlayer));
   const canInteract=isMyTurn||isLocal;
   const opacity=canInteract?'1':'0.35';
@@ -1163,9 +1147,7 @@ function renderCricketUI(room){
   refreshUndoBtn();
 }
 
-function updateCricketUI(room){
-  renderCricketUI(room);
-}
+function updateCricketUI(room){renderCricketUI(room);}
 
 // ── Cricket orientation listener
 function handleOrientationChange(){
