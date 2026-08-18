@@ -69,141 +69,40 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* Home/lobby/winner: max szélesség középre */
 #screen-home,#screen-lobby,#screen-winner{max-width:480px;margin:0 auto;padding-bottom:40px}
 /* ── Játék képernyők ── */
-/* Minden játék képernyő: fix, flex column, no scroll */
 #screen-game01.active,#screen-cricket.active{
-  display:flex!important;
-  flex-direction:column;
-  padding:6px 10px 6px;
-  overflow:hidden;
+  display:flex!important;flex-direction:column;
+  padding:6px 10px 6px;overflow:hidden;
 }
-
-/* ── 01: score felül (shrink), input alul (fill) ── */
-/* Score rész: fix magasság, nem nő */
-#screen-game01 .players-bar{flex-shrink:0}
-#screen-game01 .status-mini{flex-shrink:0}
-#screen-game01 #checkout-hint{flex-shrink:0}
-#screen-game01 #round-history{flex-shrink:0}
-#screen-game01 #turn-banner-01{flex-shrink:0}
-
-/* Input rész: kitölti a maradékot */
-.g01-input{
-  flex:1;
-  min-height:0;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-}
-/* Throw display + mode toggle: shrink */
-.g01-input > div:first-child{flex-shrink:0}
-
-/* Numpad mode: flex 1 hogy kitöltse */
-#numpad-mode{
-  flex:1;min-height:0;
-  display:flex;flex-direction:column;
-  overflow:hidden;
-}
-.mult-row{flex-shrink:0}
-#numpad01{
-  flex:1;min-height:0;
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:5px;
-  overflow:hidden;
-  margin-bottom:0;
-}
-.num-btn{
-  width:100%;height:100%;
-  font-size:clamp(11px,2.5vw,16px);
-  font-weight:600;
-  border:1px solid #2a2a2a;
-  border-radius:10px;
-  background:#1a1a1a;
-  color:#f0f0f0;
-  cursor:pointer;
-}
+/* 01: score shrink, input flex:1 */
+.g01-input{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+/* Numpad mode fills space */
+#numpad-mode{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#numpad-mode .mult-row{flex-shrink:0}
+#numpad01{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;overflow:hidden}
+.num-btn{width:100%;height:100%;font-size:clamp(11px,2.5vw,16px);font-weight:600;border:1px solid #2a2a2a;border-radius:10px;background:#1a1a1a;color:#f0f0f0;cursor:pointer;transition:background .1s}
 .num-btn:active{background:#2a2a2a}
-
-/* Manual mode: flex 1 */
-#manual-mode{
-  flex:1;min-height:0;
-  display:flex;flex-direction:column;
-  overflow:hidden;
-}
-#manual-display{flex-shrink:0}
-.phone-numpad{
-  flex:1;min-height:0;
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:5px;
-  overflow:hidden;
-}
-.phone-btn{
-  width:100%;height:100%;
-  font-size:clamp(16px,3vh,22px);
-  font-weight:600;
-  border:1px solid #2a2a2a;
-  border-radius:12px;
-  background:#1a1a1a;
-  color:#f0f0f0;
-  cursor:pointer;
-}
+/* Manual mode fills space */
+#manual-mode{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#manual-display{flex-shrink:0;font-size:28px;font-weight:700;text-align:center;padding:8px;background:#161616;border:1px solid #333;border-radius:10px;margin-bottom:6px;color:#f0f0f0}
+.phone-numpad{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;overflow:hidden}
+.phone-btn{width:100%;height:100%;font-size:clamp(16px,3vh,22px);font-weight:600;border:1px solid #2a2a2a;border-radius:12px;background:#1a1a1a;color:#f0f0f0;cursor:pointer}
 .phone-btn:active{background:#2a2a2a;transform:scale(0.95)}
 .phone-btn-del{background:#2a1a1a;color:#e74c3c;border-color:#3a2a2a}
 .phone-btn-ok{background:#1D9E75;color:#fff;border-color:#1D9E75}
-
-/* Bottom buttons: always shrink, never flex */
+/* Bottom buttons: always visible, never pushed away */
 .g01-bottom-btns{flex-shrink:0;padding-top:4px}
-
-/* ── Cricket álló: felül nevek+tábla, alul gombok ── */
-.cr-wrap{
-  flex:1;min-height:0;
-  display:flex;
-  gap:6px;
-  overflow:hidden;
-}
-.cr-left{
-  flex:1;min-width:0;
-  overflow:hidden;
-  display:flex;flex-direction:column;
-  justify-content:flex-start;
-}
-.cr-right{
-  flex:1;min-width:0;
-  overflow:hidden;
-  display:flex;flex-direction:column;
-}
-#cricket-controls{
-  flex:1;min-height:0;
-  display:flex;flex-direction:column;
-  overflow:hidden;
-}
-#cricket-btn-grid{
-  flex:1;min-height:0;
-  overflow:hidden;
-}
+/* Cricket */
+.cr-wrap{flex:1;min-height:0;display:flex;gap:6px;overflow:hidden}
+.cr-left{flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column}
+.cr-right{flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column}
+#cricket-controls{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#cricket-btn-grid{flex:1;min-height:0;overflow:hidden}
 .cr-bottom-btns{flex-shrink:0;padding-top:4px}
-
-/* Cricket tábla */
+.cr-divider{width:1px;background:#2a2a2a;flex-shrink:0;align-self:stretch;margin:0 1px}
+/* Cricket table */
 .cricket-table{width:100%;border-collapse:collapse}
-.cricket-table th{
-  padding:clamp(3px,0.8vh,6px) 2px;
-  text-align:center;
-  font-size:clamp(10px,2vw,13px);
-}
-.cricket-table td{
-  padding:clamp(3px,1.2vh,9px) 2px;
-  text-align:center;
-  border-top:1px solid #2a2a2a;
-  font-size:clamp(13px,3vw,17px);
-}
-/* Elválasztó vonal nevek között */
-.cr-divider{
-  width:1px;
-  background:#2a2a2a;
-  flex-shrink:0;
-  align-self:stretch;
-  margin:0 2px;
-}
+.cricket-table th{padding:clamp(3px,0.8vh,6px) 2px;text-align:center;font-size:clamp(10px,2vw,13px)}
+.cricket-table td{padding:clamp(3px,1.2vh,9px) 2px;text-align:center;border-top:1px solid #2a2a2a;font-size:clamp(13px,3vw,17px)}
 .logo{font-size:44px;text-align:center;margin:20px 0 4px}
 h1{font-size:24px;font-weight:600;text-align:center;margin-bottom:2px}
 .tagline{font-size:13px;color:#888;text-align:center;margin-bottom:16px}
@@ -1076,12 +975,12 @@ function toggleInputMode(){
   const numpadEl=document.getElementById('numpad-mode');
   const manualEl=document.getElementById('manual-mode');
   const actionsEl=document.getElementById('numpad-actions');
-  if(numpadEl) numpadEl.style.setProperty('display', manualInputMode?'none':'block','important');
-  if(manualEl) manualEl.style.setProperty('display', manualInputMode?'block':'none','important');
-  if(actionsEl) actionsEl.style.setProperty('display', manualInputMode?'none':'flex','important');
+  if(numpadEl){numpadEl.style.display=manualInputMode?'none':'flex';}
+  if(manualEl){manualEl.style.display=manualInputMode?'flex':'none';}
+  if(actionsEl){actionsEl.style.display=manualInputMode?'none':'flex';}
   const btn=document.getElementById('input-mode-btn');
   if(btn){
-    btn.textContent=manualInputMode?'🔢 Gombok':'✏️ Kézi bevitel';
+    btn.textContent=manualInputMode?'🔢 Gombok':'✏️ Kézi';
     btn.classList.toggle('active',manualInputMode);
   }
   if(manualInputMode){
