@@ -69,37 +69,141 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* Home/lobby/winner: max szélesség középre */
 #screen-home,#screen-lobby,#screen-winner{max-width:480px;margin:0 auto;padding-bottom:40px}
 /* ── Játék képernyők ── */
+/* Minden játék képernyő: fix, flex column, no scroll */
 #screen-game01.active,#screen-cricket.active{
-  display:flex!important;flex-direction:column;
-  padding:6px 10px 6px;overflow:hidden;
-  height:100%;
+  display:flex!important;
+  flex-direction:column;
+  padding:6px 10px 6px;
+  overflow:hidden;
 }
-/* 01 layout: score=shrink, input=fill */
+
+/* ── 01: score felül (shrink), input alul (fill) ── */
+/* Score rész: fix magasság, nem nő */
+#screen-game01 .players-bar{flex-shrink:0}
+#screen-game01 .status-mini{flex-shrink:0}
+#screen-game01 #checkout-hint{flex-shrink:0}
+#screen-game01 #round-history{flex-shrink:0}
+#screen-game01 #turn-banner-01{flex-shrink:0}
+
+/* Input rész: kitölti a maradékot */
 .g01-input{
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+/* Throw display + mode toggle: shrink */
+.g01-input > div:first-child{flex-shrink:0}
+
+/* Numpad mode: flex 1 hogy kitöltse */
+#numpad-mode{
   flex:1;min-height:0;
   display:flex;flex-direction:column;
   overflow:hidden;
 }
-/* Numpad fills available space */
-#numpad-mode{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
-#numpad01{flex:1;min-height:0;display:grid;overflow:hidden}
-/* Manual mode fills space too */
-#manual-mode{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
-.phone-numpad{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;overflow:hidden}
-/* Bottom buttons: never flex, always shrink */
-.g01-bottom-btns{flex-shrink:0;margin-top:4px}
-/* Cricket */
-.cr-wrap{flex:1;min-height:0;display:flex;gap:6px;overflow:hidden}
-.cr-left{flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-start}
-.cr-right{flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column}
-#cricket-controls{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
-#cricket-btn-grid{flex:1;min-height:0;overflow:hidden}
-.cr-bottom-btns{flex-shrink:0;margin-top:4px}
-/* Cricket table */
+.mult-row{flex-shrink:0}
+#numpad01{
+  flex:1;min-height:0;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:5px;
+  overflow:hidden;
+  margin-bottom:0;
+}
+.num-btn{
+  width:100%;height:100%;
+  font-size:clamp(11px,2.5vw,16px);
+  font-weight:600;
+  border:1px solid #2a2a2a;
+  border-radius:10px;
+  background:#1a1a1a;
+  color:#f0f0f0;
+  cursor:pointer;
+}
+.num-btn:active{background:#2a2a2a}
+
+/* Manual mode: flex 1 */
+#manual-mode{
+  flex:1;min-height:0;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+#manual-display{flex-shrink:0}
+.phone-numpad{
+  flex:1;min-height:0;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;
+  overflow:hidden;
+}
+.phone-btn{
+  width:100%;height:100%;
+  font-size:clamp(16px,3vh,22px);
+  font-weight:600;
+  border:1px solid #2a2a2a;
+  border-radius:12px;
+  background:#1a1a1a;
+  color:#f0f0f0;
+  cursor:pointer;
+}
+.phone-btn:active{background:#2a2a2a;transform:scale(0.95)}
+.phone-btn-del{background:#2a1a1a;color:#e74c3c;border-color:#3a2a2a}
+.phone-btn-ok{background:#1D9E75;color:#fff;border-color:#1D9E75}
+
+/* Bottom buttons: always shrink, never flex */
+.g01-bottom-btns{flex-shrink:0;padding-top:4px}
+
+/* ── Cricket álló: felül nevek+tábla, alul gombok ── */
+.cr-wrap{
+  flex:1;min-height:0;
+  display:flex;
+  gap:6px;
+  overflow:hidden;
+}
+.cr-left{
+  flex:1;min-width:0;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  justify-content:flex-start;
+}
+.cr-right{
+  flex:1;min-width:0;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+#cricket-controls{
+  flex:1;min-height:0;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+#cricket-btn-grid{
+  flex:1;min-height:0;
+  overflow:hidden;
+}
+.cr-bottom-btns{flex-shrink:0;padding-top:4px}
+
+/* Cricket tábla */
 .cricket-table{width:100%;border-collapse:collapse}
-.cricket-table th{padding:clamp(3px,0.8vh,6px) 2px;text-align:center;font-size:clamp(10px,2vw,13px)}
-.cricket-table td{padding:clamp(3px,1vh,8px) 2px;text-align:center;border-top:1px solid #2a2a2a;font-size:clamp(13px,3vw,17px)}
-.cr-divider{width:1px;background:#2a2a2a;flex-shrink:0;align-self:stretch;margin:0 2px}
+.cricket-table th{
+  padding:clamp(3px,0.8vh,6px) 2px;
+  text-align:center;
+  font-size:clamp(10px,2vw,13px);
+}
+.cricket-table td{
+  padding:clamp(3px,1.2vh,9px) 2px;
+  text-align:center;
+  border-top:1px solid #2a2a2a;
+  font-size:clamp(13px,3vw,17px);
+}
+/* Elválasztó vonal nevek között */
+.cr-divider{
+  width:1px;
+  background:#2a2a2a;
+  flex-shrink:0;
+  align-self:stretch;
+  margin:0 2px;
+}
 .logo{font-size:44px;text-align:center;margin:20px 0 4px}
 h1{font-size:24px;font-weight:600;text-align:center;margin-bottom:2px}
 .tagline{font-size:13px;color:#888;text-align:center;margin-bottom:16px}
@@ -210,13 +314,6 @@ input[type=text]:focus{border-color:#1D9E75}
 .winner-01-name{font-size:15px;font-weight:700;text-transform:uppercase;color:#f0f0f0}
 .winner-01-score{font-size:13px;color:#888;text-align:right;line-height:1.6}
 .winner-01-checkout{color:#1D9E75;font-weight:600}
-/* Telefon billentyűzet */
-.phone-numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
-.phone-btn{padding:16px 8px;font-size:20px;font-weight:600;border:1px solid #2a2a2a;border-radius:12px;background:#1a1a1a;color:#f0f0f0;cursor:pointer;transition:all .1s;text-align:center}
-.phone-btn:active{background:#2a2a2a;transform:scale(0.95)}
-.phone-btn-del{background:#2a1a1a;color:#e74c3c;border-color:#3a2a2a}
-.phone-btn-ok{background:#1D9E75;color:#fff;border-color:#1D9E75;font-size:16px}
-.phone-btn-ok:active{background:#158a63}
 /* Kör história */
 .round-row{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:#1a1a1a;font-size:12px}
 .round-num{color:#555;font-weight:600;min-width:28px}
@@ -241,47 +338,43 @@ input[type=text]:focus{border-color:#1D9E75}
   .logo{font-size:24px;margin:2px 0}
   h1{font-size:16px}
   .tagline{font-size:11px;margin-bottom:4px}
-  /* 01 fekvőben: score kártyák bal, input jobb */
-  #screen-game01.active{
-    flex-direction:row!important;gap:8px;padding:4px 8px;
-  }
-  /* Bal oldal: kártyák + status (fix szélesség) */
-  #screen-game01 .players-bar{
-    flex-direction:column;height:auto;gap:4px;
-    width:140px;flex-shrink:0;margin-bottom:0;
-  }
-  #screen-game01 .pscard{width:100%;flex:none;height:auto;padding:4px}
-  #screen-game01 #game01-status{font-size:10px;margin-bottom:2px}
+  /* 01 fekvőben: bal=score kártyák oszlopban, jobb=input */
+  #screen-game01.active{flex-direction:row!important;gap:8px;padding:4px 8px}
+  #screen-game01 .players-bar{flex-direction:column!important;width:110px;flex-shrink:0;height:auto;gap:3px;margin-bottom:0}
+  #screen-game01 .pscard{flex:none;width:100%;height:auto;padding:3px 4px}
+  #screen-game01 .score-big{font-size:clamp(14px,3vh,20px)}
+  #screen-game01 .status-mini{font-size:9px;margin-bottom:2px}
   #screen-game01 #checkout-hint{display:none!important}
   #screen-game01 #round-history{display:none!important}
   #screen-game01 #turn-banner-01{display:none!important}
-  /* Jobb oldal: input */
   #screen-game01 .g01-input{flex:1;min-width:0}
-  /* Cricket fekvőben: ugyanúgy marad (cr-wrap vízszintes) */
+  /* Cricket fekvőben: cr-wrap vízszintes, jól néz ki */
   #screen-cricket.active{padding:4px 8px}
   #turn-banner-cr{display:none!important}
-  /* Mindkét módban kis elemek */
+  /* Kis elemek */
   .status-mini{font-size:9px;margin-bottom:2px}
-  .score-big{font-size:clamp(14px,3vh,22px)}
   .players-bar{margin-bottom:4px;gap:3px;height:58px}
+  .score-big{font-size:clamp(14px,3vh,22px)}
   .num-btn{font-size:clamp(10px,1.8vh,13px)}
-  .numpad{gap:2px;margin-bottom:2px}
+  #numpad01{gap:2px}
   .cbt-new{padding:clamp(3px,0.7vh,6px) 2px 2px;font-size:clamp(10px,1.6vh,12px)}
   .cbt-dots{font-size:7px}
   .cbt-row{gap:2px;margin-bottom:2px}
   .mult-btn{padding:4px;font-size:10px}
-  .mult-row{margin-bottom:3px;flex-shrink:0}
-  .btn-sm{padding:5px 6px;font-size:10px}
+  .mult-row{margin-bottom:3px}
+  .btn-sm{padding:5px 6px;font-size:10px;margin-bottom:4px}
   .undo-turn-btn{padding:3px;font-size:9px;margin-top:2px}
   .throw-slot{padding:4px;font-size:11px}
-  .throw-display{margin-bottom:3px;flex-shrink:0}
+  .throw-display{margin-bottom:3px}
   .action-row-3{margin-bottom:2px}
   .mode-toggle-btn{padding:3px 5px;font-size:10px}
-  .throw-info{font-size:9px;margin-bottom:2px;flex-shrink:0}
+  .throw-info{font-size:9px;margin-bottom:2px}
   .cricket-player-header{padding:3px 2px;font-size:10px}
   .cricket-table th{font-size:9px;padding:2px}
   .cricket-table td{font-size:clamp(11px,2vh,14px);padding:clamp(2px,0.6vh,5px) 2px}
-  .g01-bottom-btns,.cr-bottom-btns{margin-top:2px}
+  .g01-bottom-btns,.cr-bottom-btns{padding-top:2px}
+  .phone-btn{font-size:clamp(14px,2.5vh,18px)}
+  #manual-display{font-size:22px;padding:5px;margin-bottom:5px}
   #screen-lobby,#screen-winner{max-width:500px;margin:0 auto}
 }
 </style>
