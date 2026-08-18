@@ -106,13 +106,16 @@ input[type=text]:focus{border-color:#1D9E75}
 .player-row:last-child{border-bottom:none}
 .badge{font-size:11px;padding:3px 10px;border-radius:20px;background:#2a2a2a;color:#888}
 .badge.you{background:rgba(29,158,117,0.2);color:#1D9E75}
-.status-bar{font-size:14px;color:#888;padding:12px;background:#1a1a1a;border-radius:10px;text-align:center;margin-bottom:14px;border:1px solid #2a2a2a}
+.status-bar{font-size:13px;color:#888;padding:8px 12px;background:#1a1a1a;border-radius:10px;text-align:center;margin-bottom:8px;border:1px solid #2a2a2a;flex-shrink:0}
 .status-bar.myturn{background:rgba(29,158,117,0.12);color:#1D9E75;font-weight:600;border-color:rgba(29,158,117,0.3)}
-.players-bar{display:flex;gap:6px;margin-bottom:10px;width:100%}
-.pscard{flex:1;min-width:0;padding:8px 4px;border:1px solid #2a2a2a;border-radius:12px;text-align:center;background:#1a1a1a;overflow:hidden}
+.players-bar{display:flex;gap:4px;margin-bottom:8px;width:100%;flex-shrink:0;height:80px}
+.pscard{flex:1;min-width:0;padding:6px 3px;border:1px solid #2a2a2a;border-radius:10px;text-align:center;background:#1a1a1a;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
 .pscard.active-turn{border-color:#1D9E75;background:rgba(29,158,117,0.08)}
-.score-big{font-size:clamp(22px,6vw,46px);font-weight:700;text-align:center;line-height:1;color:#f0f0f0}
-.score-lbl{font-size:12px;color:#666;text-align:center;margin-top:4px}
+/* Score font shrinks automatically with more players */
+.score-big{font-size:clamp(18px,5vw,40px);font-weight:700;text-align:center;line-height:1;color:#f0f0f0}
+/* Live preview inside pscard - fixed size so card doesn't jump */
+.score-preview{min-height:20px;display:block}
+.score-lbl{font-size:clamp(9px,2vw,12px);color:#666;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .throw-display{display:flex;gap:8px;margin-bottom:12px}
 .throw-slot{flex:1;padding:12px;text-align:center;border:1px dashed #333;border-radius:10px;font-size:16px;font-weight:600;color:#555}
 .throw-slot.filled{border-style:solid;border-color:#1D9E75;color:#f0f0f0;background:rgba(29,158,117,0.08)}
@@ -216,30 +219,36 @@ input[type=text]:focus{border-color:#1D9E75}
   h1{font-size:16px}
   .tagline{font-size:11px;margin-bottom:4px}
   /* 01 fekvőben: bal=info, jobb=gombok */
-  #screen-game01.active{flex-direction:row;gap:8px;padding:4px 8px}
-  .g01-top{flex:0 0 38%;overflow:hidden}
-  .g01-bottom{flex:1}
-  /* Cricket fekvőben: már jól van (cr-wrap vízszintes) */
-  #screen-cricket.active{padding:4px 8px}
-  #turn-banner-01,#turn-banner-cr,#cricket-status{display:none!important}
-  .turn-banner{padding:4px;font-size:11px;margin-bottom:3px}
-  .status-bar{padding:4px;font-size:10px;margin-bottom:4px}
-  .score-big{font-size:clamp(16px,3.5vw,26px)}
-  .pscard{padding:3px 2px}
-  .players-bar{margin-bottom:4px;gap:3px}
-  .num-btn{padding:clamp(5px,1.2vh,9px) 2px;font-size:clamp(10px,1.5vw,12px)}
-  .numpad{gap:3px;margin-bottom:3px}
-  .cbt-new{padding:clamp(3px,0.8vh,7px) 2px 2px;font-size:clamp(10px,1.5vw,12px)}
+  #screen-game01.active{
+    flex-direction:row!important;gap:8px;padding:4px 8px;
+  }
+  #screen-game01 .players-bar{margin-bottom:4px;height:60px}
+  #screen-game01 #game01-status{margin-bottom:4px}
+  #screen-game01 #checkout-hint{margin-bottom:4px}
+  #screen-game01 #round-history{display:none!important}
+  .g01-input{flex:1;min-width:0}
+  /* Cricket fekvőben */
+  #screen-cricket.active{padding:4px 8px;flex-direction:column}
+  /* Mindkettőnél elrejtjük a bannert */
+  #turn-banner-01,#turn-banner-cr{display:none!important}
+  #cricket-status{padding:4px;font-size:10px;margin-bottom:3px}
+  .status-bar{padding:4px 8px;font-size:10px;margin-bottom:4px}
+  .score-big{font-size:clamp(14px,3vh,24px)}
+  .pscard{padding:2px}
+  .players-bar{margin-bottom:3px;gap:3px;height:56px}
+  .num-btn{font-size:clamp(10px,1.8vh,13px)}
+  .numpad{gap:2px;margin-bottom:3px}
+  .cbt-new{padding:clamp(3px,0.7vh,6px) 2px 2px;font-size:clamp(10px,1.6vh,12px)}
   .cbt-dots{font-size:7px}
   .cbt-row{gap:2px;margin-bottom:2px}
   .mult-btn{padding:4px;font-size:10px}
   .mult-row{margin-bottom:3px}
-  .btn-sm{padding:6px 6px;font-size:10px}
-  .undo-turn-btn{padding:4px;font-size:9px;margin-top:2px}
+  .btn-sm{padding:5px 6px;font-size:10px}
+  .undo-turn-btn{padding:3px;font-size:9px;margin-top:2px}
   .throw-slot{padding:4px;font-size:11px}
   .throw-display{margin-bottom:3px}
   .action-row-3{margin-bottom:2px}
-  .mode-toggle-btn{padding:4px 6px;font-size:10px}
+  .mode-toggle-btn{padding:3px 5px;font-size:10px}
   .throw-info{font-size:9px;margin-bottom:2px}
   .cricket-player-header{padding:3px 2px;font-size:10px}
   #screen-lobby,#screen-winner{max-width:500px;margin:0 auto}
@@ -1092,23 +1101,23 @@ function updateLiveScore(){
   const thrown=currentThrows.reduce((s,t)=>s+t.points,0);
   const base=gameState.players[myId].score;
   const remaining=base-thrown;
-  // update just the current player's score card
   const card=document.getElementById('pscard-'+myId);
   if(!card)return;
+  card.querySelector('.score-big').textContent=base;
+  let prev=card.querySelector('.score-preview');
+  if(!prev){
+    prev=document.createElement('div');
+    prev.className='score-preview';
+    card.querySelector('.score-big').after(prev);
+  }
   if(thrown===0){
-    card.querySelector('.score-big').textContent=base;
-    card.querySelector('.score-preview')?.remove();
+    prev.innerHTML='';
     showCheckout(base);
+  } else if(remaining<0||remaining===1){
+    prev.innerHTML=`<span style="color:#e74c3c;font-size:12px;font-weight:600">Túllövés!</span>`;
   } else {
-    card.querySelector('.score-big').textContent=base;
-    let prev=card.querySelector('.score-preview');
-    if(!prev){prev=document.createElement('div');prev.className='score-preview';card.querySelector('.score-big').after(prev);}
-    if(remaining<0||remaining===1){
-      prev.innerHTML=`<span style="color:#e74c3c;font-size:13px;font-weight:600">Túllövés!</span>`;
-    } else {
-      prev.innerHTML=`<span style="color:#1D9E75;font-size:18px;font-weight:700">→ ${remaining}</span>`;
-      showCheckout(remaining);
-    }
+    prev.innerHTML=`<span style="color:#1D9E75;font-size:clamp(13px,3vw,18px);font-weight:700">→${remaining}</span>`;
+    showCheckout(remaining);
   }
 }
 
@@ -1119,16 +1128,18 @@ function updateLiveScoreManual(typed){
   const card=document.getElementById('pscard-'+myId);
   if(!card)return;
   let prev=card.querySelector('.score-preview');
-  if(typed===0||isNaN(typed)){
-    prev?.remove();
-    showCheckout(base);
-    return;
+  if(!prev){
+    prev=document.createElement('div');
+    prev.className='score-preview';
+    card.querySelector('.score-big').after(prev);
   }
-  if(!prev){prev=document.createElement('div');prev.className='score-preview';card.querySelector('.score-big').after(prev);}
-  if(remaining<0||remaining===1){
-    prev.innerHTML=`<span style="color:#e74c3c;font-size:13px;font-weight:600">Túllövés!</span>`;
+  if(typed===0||isNaN(typed)){
+    prev.innerHTML='';
+    showCheckout(base);
+  } else if(remaining<0||remaining===1){
+    prev.innerHTML=`<span style="color:#e74c3c;font-size:12px;font-weight:600">Túllövés!</span>`;
   } else {
-    prev.innerHTML=`<span style="color:#1D9E75;font-size:18px;font-weight:700">→ ${remaining}</span>`;
+    prev.innerHTML=`<span style="color:#1D9E75;font-size:clamp(13px,3vw,18px);font-weight:700">→${remaining}</span>`;
     showCheckout(remaining);
   }
 }
