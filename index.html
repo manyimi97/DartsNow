@@ -2,7 +2,7 @@
 <html lang="hu">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="DartsNow">
@@ -73,10 +73,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   display:flex!important;flex-direction:column;
   padding:6px 10px 4px;overflow:hidden;
 }
-/* 01: top=info (shrink), bottom=input (grow) */
-.g01-top{flex-shrink:0}
-.g01-bottom{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
-/* Cricket: status=shrink, cr-wrap=grow */
+/* 01: minden shrink kivéve input */
+.g01-input{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#numpad01{flex:1;min-height:0;overflow:hidden;display:grid}
+/* Cricket */
 .cr-wrap{flex:1;min-height:0;display:flex;gap:6px;overflow:hidden}
 .cr-left{flex:1;min-width:0;overflow:hidden;display:flex;align-items:center}
 .cr-right{flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column}
@@ -119,8 +119,8 @@ input[type=text]:focus{border-color:#1D9E75}
 .mult-row{display:flex;gap:8px;margin-bottom:12px}
 .mult-btn{flex:1;padding:10px;font-size:14px;border:1px solid #333;border-radius:10px;background:transparent;cursor:pointer;color:#888;font-weight:500;transition:all .15s}
 .mult-btn.on{background:#1D9E75;color:#fff;border-color:#1D9E75}
-.numpad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-.num-btn{padding:15px 4px;font-size:16px;font-weight:600;border:1px solid #2a2a2a;border-radius:10px;background:#1a1a1a;color:#f0f0f0;cursor:pointer;transition:all .1s}
+.numpad{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:6px;flex:1;min-height:0}
+.num-btn{padding:0;font-size:clamp(12px,2.5vw,16px);font-weight:600;border:1px solid #2a2a2a;border-radius:10px;background:#1a1a1a;color:#f0f0f0;cursor:pointer;transition:all .1s;min-height:0;width:100%;aspect-ratio:unset}
 .num-btn:active{background:#2a2a2a;transform:scale(0.95)}
 .cricket-table{width:100%;border-collapse:collapse;margin-bottom:14px}
 .cricket-table th{font-size:12px;font-weight:600;color:#666;padding:8px 4px;text-align:center;text-transform:uppercase;letter-spacing:.5px}
@@ -336,30 +336,29 @@ input[type=text]:focus{border-color:#1D9E75}
 <!-- GAME 01 -->
 <div id="screen-game01" class="screen">
   <div id="turn-banner-01" class="turn-banner" style="display:none"></div>
-  <!-- Top: score cards + status -->
-  <div class="g01-top">
-    <div class="players-bar" id="game01-players"></div>
-    <div id="game01-status" class="status-bar"></div>
-    <div id="checkout-hint" style="display:none;background:#1a1a1a;border:1px solid rgba(29,158,117,0.4);border-radius:8px;padding:7px 10px;margin-bottom:6px">
-      <div style="font-size:10px;color:#1D9E75;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">🎯 Kiszálló</div>
-      <div id="checkout-combos" style="font-size:12px;color:#ccc"></div>
-    </div>
-    <div id="round-history" style="display:none">
-      <div style="font-size:10px;color:#555;font-weight:600;text-transform:uppercase;margin-bottom:4px">Körök</div>
-      <div id="round-history-list" style="max-height:100px;overflow-y:auto"></div>
-    </div>
+  <!-- Score cards + status -->
+  <div class="players-bar" id="game01-players"></div>
+  <div id="game01-status" class="status-bar"></div>
+  <!-- Checkout hint -->
+  <div id="checkout-hint" style="display:none;background:#1a1a1a;border:1px solid rgba(29,158,117,0.4);border-radius:8px;padding:6px 10px;margin-bottom:6px">
+    <div style="font-size:10px;color:#1D9E75;font-weight:700;text-transform:uppercase;margin-bottom:2px">🎯 Kiszálló</div>
+    <div id="checkout-combos" style="font-size:12px;color:#ccc"></div>
   </div>
-  <!-- Bottom: input area full width -->
-  <div class="g01-bottom">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <div class="throw-display" style="flex:1;margin-bottom:0;margin-right:8px">
+  <!-- Round history: max height fixed, scrolls internally -->
+  <div id="round-history" style="display:none;margin-bottom:6px">
+    <div style="font-size:10px;color:#555;font-weight:600;text-transform:uppercase;margin-bottom:3px">Körök</div>
+    <div id="round-history-list" style="max-height:90px;overflow-y:auto"></div>
+  </div>
+  <!-- INPUT AREA: always at bottom, flex:1 -->
+  <div class="g01-input">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+      <div class="throw-display" style="flex:1;margin-bottom:0">
         <div class="throw-slot" id="t0">—</div>
         <div class="throw-slot" id="t1">—</div>
         <div class="throw-slot" id="t2">—</div>
       </div>
       <button class="mode-toggle-btn" id="input-mode-btn" onclick="toggleInputMode()">✏️ Kézi</button>
     </div>
-    <!-- NUMPAD MODE -->
     <div id="numpad-mode">
       <div class="mult-row">
         <button class="mult-btn" id="mult-1" onclick="setMult(1)">Szimpla</button>
@@ -368,9 +367,8 @@ input[type=text]:focus{border-color:#1D9E75}
       </div>
       <div class="numpad" id="numpad01"></div>
     </div>
-    <!-- MANUAL MODE -->
     <div id="manual-mode" style="display:none">
-      <div id="manual-display" style="font-size:32px;font-weight:700;text-align:center;padding:8px;background:#161616;border:1px solid #333;border-radius:10px;margin-bottom:8px;color:#f0f0f0">—</div>
+      <div id="manual-display" style="font-size:28px;font-weight:700;text-align:center;padding:8px;background:#161616;border:1px solid #333;border-radius:10px;margin-bottom:8px;color:#f0f0f0">—</div>
       <div class="phone-numpad">
         <button class="phone-btn" onclick="phoneKey('1')">1</button>
         <button class="phone-btn" onclick="phoneKey('2')">2</button>
@@ -391,8 +389,8 @@ input[type=text]:focus{border-color:#1D9E75}
       <button class="btn btn-primary btn-sm" onclick="submitTurn()" style="flex:1">Beküldés ✓</button>
     </div>
     <button class="undo-turn-btn" id="undo-turn-01-btn" onclick="undoLastTurn01()" disabled>↺ Előző kör visszavonása</button>
-    <p id="game01-error" class="error" style="margin:2px 0"></p>
-    <button class="btn" onclick="confirmLeave()" style="padding:6px;color:#555;font-size:11px;border-color:#222;margin-top:2px;margin-bottom:0">Kilépés</button>
+    <p id="game01-error" class="error" style="margin:2px 0;min-height:16px;font-size:11px"></p>
+    <button class="btn" onclick="confirmLeave()" style="padding:5px;color:#555;font-size:11px;border-color:#222;margin-top:0;margin-bottom:0">Kilépés</button>
   </div>
 </div>
 
