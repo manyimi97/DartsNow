@@ -831,8 +831,9 @@ function updateCricketBtnStates(){
       const myMarks=(gameState?.players[myId]?.marks||{})[t]||0;
       const pendingExtra=cricketThrows.filter(th=>th.target===t).reduce((s,th)=>s+th.mult,0);
       const effectiveMarks=Math.min(3,myMarks+pendingExtra);
+      // Csak lezárást jelzünk — bejelölést nem
       btn.classList.toggle('closed', allClosed||(effectiveMarks>=3&&myMarks>=3));
-      btn.classList.toggle('pending', pendingExtra>0&&!allClosed);
+      btn.classList.remove('pending'); // nem színezzük be
     });
   });
 }
@@ -1326,33 +1327,17 @@ async function submitCricketTurn(){
   else{await fbUpdate('rooms/'+roomId+'/players/'+myId,{marks:myMarks,score:myScore});await passTurnOnline();}
 }
 
-function markStr(m,pending){
-  // confirmed marks
-  const confirmed=m===0?'':m===1?'/':m===2?'X':'⊗';
-  if(!pending||pending===0) return confirmed;
-  // pending extra marks on top of confirmed
-  const pendingStr=pending===1?'/':pending===2?'X':'⊗';
-  return confirmed+`<span class="mark-pending">${pendingStr}</span>`;
+function markStr(m){
+  return m===0?'':m===1?'/':m===2?'X':'⊗';
 }
 
-// Renders the cricket table, overlaying pending (not yet submitted) marks in blue
+// Renders the cricket table - only confirmed marks, no pending overlay
 function renderCricketTable(room){
-  const pending=calcPendingMarks(); // null if no pending throws
   const pO=room.playerOrder||[];
 
-  // build per-player effective marks (confirmed only, pending only for myId overlay)
   function getMarks(pid,target){
     const confirmed=(room.players[pid].marks||{})[target]||0;
-    if(pid===myId&&pending){
-      const pMark=pending.marks[target]||0;
-      const extra=Math.max(0,pMark-confirmed); // how many NEW marks pending adds
-      return {confirmed,extra};
-    }
     return {confirmed,extra:0};
-  }
-  function getScore(pid){
-    if(pid===myId&&pending) return {score:room.players[pid].score,pendingScore:pending.score};
-    return {score:room.players[pid].score,pendingScore:null};
   }
 
   if(pO.length===2){
@@ -1360,15 +1345,12 @@ function renderCricketTable(room){
     const rows=CTGTS.map(t=>{
       const r0=getMarks(pO[0],t),r1=getMarks(pO[1],t);
       const allConfirmed=(r0.confirmed>=3&&r1.confirmed>=3);
-      const cell0=markStr(r0.confirmed,r0.extra);
-      const cell1=markStr(r1.confirmed,r1.extra);
       return `<tr>
-        <td style="font-size:20px">${cell0}</td>
+        <td style="font-size:20px">${markStr(r0.confirmed)}</td>
         <td class="tgt-col" style="${allConfirmed?'opacity:.3;text-decoration:line-through':''}">${t==='B'?'BULL':t}</td>
-        <td style="font-size:20px">${cell1}</td>
+        <td style="font-size:20px">${markStr(r1.confirmed)}</td>
       </tr>`;
     }).join('');
-    const s0=getScore(pO[0]),s1=getScore(pO[1]);
     document.getElementById('cricket-table').innerHTML=
       `<thead><tr>
         <th><div class="cricket-player-header ${pO[0]===room.currentPlayer?'active-header':''}">${uc(p0.name)}${winsBadge(p0.name)}${pO[0]===room.currentPlayer?'<span class="active-dot"></span>':''}</div></th>
@@ -1377,19 +1359,10 @@ function renderCricketTable(room){
       </tr></thead><tbody>${rows}</tbody>`;
   }else{
     const heads=pO.map(pid=>`<th><div class="cricket-player-header ${pid===room.currentPlayer?'active-header':''}">${uc(room.players[pid].name)}${winsBadge(room.players[pid].name)}${pid===room.currentPlayer?'<span class="active-dot"></span>':''}</div></th>`).join('');
-    const rows=CTGTS.map(t=>`<tr>${pO.map(pid=>{const r=getMarks(pid,t);return `<td style="font-size:18px">${markStr(r.confirmed,r.extra)}</td>`}).join('')}<td class="tgt-col">${t==='B'?'BULL':t}</td></tr>`).join('');
+    const rows=CTGTS.map(t=>`<tr>${pO.map(pid=>{const r=getMarks(pid,t);return `<td style="font-size:18px">${markStr(r.confirmed)}</td>`}).join('')}<td class="tgt-col">${t==='B'?'BULL':t}</td></tr>`).join('');
     document.getElementById('cricket-table').innerHTML=`<thead><tr>${heads}<th class="tgt-col">Célpont</th></tr></thead><tbody>${rows}</tbody>`;
   }
-  CTGTS.forEach(t=>{
-    const btn=document.getElementById('ct-'+t);
-    if(!btn)return;
-    const allClosedByAll=(room.playerOrder||[]).every(pid=>((room.players[pid]?.marks||{})[t]||0)>=3);
-    // Use pending marks if available for current player
-    const pending=calcPendingMarks();
-    const myEffectiveMarks=pending?(pending.marks[t]||0):((room.players[myId]?.marks||{})[t]||0);
-    const closedByMe=myEffectiveMarks>=3;
-    btn.classList.toggle('closed', allClosedByAll || closedByMe);
-  });
+  updateCricketBtnStates();
 }
 
 function updateCricketUI(room){
