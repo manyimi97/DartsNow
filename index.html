@@ -68,28 +68,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .screen.active{display:block}
 /* Home/lobby/winner: max szélesség középre */
 #screen-home,#screen-lobby,#screen-winner{max-width:480px;margin:0 auto;padding-bottom:40px}
-/* Játék képernyők: flex column, no internal scroll kivéve ls-left/right */
+/* Játék képernyők: fix, no scroll */
 #screen-game01.active,#screen-cricket.active{
-  display:flex;flex-direction:column;
-  padding:8px 12px 4px;
-  overflow:hidden;
+  display:flex!important;flex-direction:column;
+  padding:6px 10px 4px;overflow:hidden;
 }
-#screen-game01 .ls-wrap,#screen-cricket .ls-wrap{
-  flex:1;min-height:0;
-  display:flex;gap:12px;
-  overflow:hidden;
-}
-#screen-game01 .ls-left,#screen-cricket .ls-left{
-  flex:1;min-width:0;min-height:0;
-  overflow-y:auto;overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
-}
-#screen-game01 .ls-right,#screen-cricket .ls-right{
-  flex:1;min-width:0;min-height:0;
-  overflow-y:auto;overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
-  display:flex;flex-direction:column;
-}
+/* 01: top=info (shrink), bottom=input (grow) */
+.g01-top{flex-shrink:0}
+.g01-bottom{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+/* Cricket: status=shrink, cr-wrap=grow */
+.cr-wrap{flex:1;min-height:0;display:flex;gap:6px;overflow:hidden}
+.cr-left{flex:1;min-width:0;overflow:hidden;display:flex;align-items:center}
+.cr-right{flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column}
+.cricket-table{width:100%;border-collapse:collapse}
+.cricket-table th{padding:4px 2px;text-align:center;font-size:clamp(10px,2vw,13px)}
+.cricket-table td{padding:clamp(3px,1vh,8px) 2px;text-align:center;border-top:1px solid #222;font-size:clamp(12px,3vw,16px)}
 .logo{font-size:44px;text-align:center;margin:20px 0 4px}
 h1{font-size:24px;font-weight:600;text-align:center;margin-bottom:2px}
 .tagline{font-size:13px;color:#888;text-align:center;margin-bottom:16px}
@@ -216,78 +209,40 @@ input[type=text]:focus{border-color:#1D9E75}
 .wins-row{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#1a1a1a;border-radius:10px;margin-bottom:7px}
 .wins-name{font-size:15px;font-weight:600}
 .wins-badge{background:#1D9E75;color:#fff;font-size:13px;font-weight:700;padding:4px 12px;border-radius:20px;min-width:32px;text-align:center}
-/* ── Játék közbeni kompakt mód kis képernyőre ── */
-@media (max-height: 700px){
-  #screen-game01.active,#screen-cricket.active{padding:4px 8px}
-  .turn-banner{padding:8px;font-size:15px;margin-bottom:6px}
-  .status-bar{padding:7px;font-size:12px;margin-bottom:8px}
-  .pscard{padding:6px 8px}
-  .score-big{font-size:36px}
-  .throw-display{margin-bottom:6px}
-  .throw-slot{padding:7px}
-  .mult-row{margin-bottom:6px}
-  .mult-btn{padding:7px}
-  .num-btn{padding:10px 4px;font-size:14px}
-  .numpad{gap:5px;margin-bottom:6px}
-  .cbt-new{padding:7px 4px 4px;font-size:13px}
-  .cbt-row{gap:3px;margin-bottom:3px}
-  .cricket-table td{padding:5px 4px;font-size:14px}
-  .cricket-player-header{padding:5px 4px;font-size:13px}
-  .action-row-3 .btn-sm{padding:8px}
-  .undo-turn-btn{padding:7px;margin-top:4px}
-  .phone-btn{padding:11px 8px;font-size:17px}
-}
-@media (max-height: 550px){
-  .score-big{font-size:28px}
-  .num-btn{padding:7px 4px;font-size:12px}
-  .cbt-new{padding:5px 4px 3px;font-size:12px}
-  .phone-btn{padding:8px;font-size:15px}
-}
 /* ── Fekvő mód ── */
 @media (orientation:landscape) and (max-height:500px){
-  #screen-home,#screen-lobby,#screen-winner{padding:8px 16px 16px;max-width:100%}
-  .logo{font-size:28px;margin:4px 0 2px}
-  h1{font-size:18px}
-  .tagline{margin-bottom:6px;font-size:12px}
-  /* Játék képernyők fekvőben: 2 oszlop egymás mellett */
-  #screen-game01.active,#screen-cricket.active{
-    flex-direction:row;padding:6px 10px 4px;gap:10px;
-    align-items:stretch;
-  }
-  /* Fekvőben a banner teljes szélességbe */
-  #screen-game01 #turn-banner-01,
-  #screen-cricket #turn-banner-cr,
-  #screen-cricket #cricket-status{
-    display:none!important;
-  }
-  /* ls-wrap fekvőben flex:1 */
-  #screen-game01 .ls-wrap,#screen-cricket .ls-wrap{
-    flex:1;gap:8px;
-  }
-  .turn-banner{padding:6px;font-size:13px;margin-bottom:4px}
-  .status-bar{padding:6px;font-size:11px;margin-bottom:6px}
-  .score-big{font-size:clamp(18px,4vw,32px)}
-  .pscard{padding:4px 3px}
-  .players-bar{margin-bottom:6px}
-  .cricket-table th{padding:3px 2px;font-size:10px}
-  .cricket-table td{padding:4px 2px;font-size:13px}
-  .tgt-col{font-size:12px}
-  .num-btn{padding:8px 2px;font-size:12px}
-  .numpad{gap:4px;margin-bottom:6px}
-  .cbt-new{padding:5px 2px 3px;font-size:12px}
+  #screen-home,#screen-lobby,#screen-winner{padding:6px 14px 14px;max-width:100%}
+  .logo{font-size:24px;margin:2px 0}
+  h1{font-size:16px}
+  .tagline{font-size:11px;margin-bottom:4px}
+  /* 01 fekvőben: bal=info, jobb=gombok */
+  #screen-game01.active{flex-direction:row;gap:8px;padding:4px 8px}
+  .g01-top{flex:0 0 38%;overflow:hidden}
+  .g01-bottom{flex:1}
+  /* Cricket fekvőben: már jól van (cr-wrap vízszintes) */
+  #screen-cricket.active{padding:4px 8px}
+  #turn-banner-01,#turn-banner-cr,#cricket-status{display:none!important}
+  .turn-banner{padding:4px;font-size:11px;margin-bottom:3px}
+  .status-bar{padding:4px;font-size:10px;margin-bottom:4px}
+  .score-big{font-size:clamp(16px,3.5vw,26px)}
+  .pscard{padding:3px 2px}
+  .players-bar{margin-bottom:4px;gap:3px}
+  .num-btn{padding:clamp(5px,1.2vh,9px) 2px;font-size:clamp(10px,1.5vw,12px)}
+  .numpad{gap:3px;margin-bottom:3px}
+  .cbt-new{padding:clamp(3px,0.8vh,7px) 2px 2px;font-size:clamp(10px,1.5vw,12px)}
+  .cbt-dots{font-size:7px}
   .cbt-row{gap:2px;margin-bottom:2px}
-  .mult-btn{padding:6px;font-size:11px}
-  .mult-row{margin-bottom:5px}
-  .btn{padding:8px;font-size:12px;margin-bottom:6px}
-  .btn-sm{padding:7px 8px;font-size:11px}
-  .undo-turn-btn{padding:6px;font-size:11px;margin-top:3px}
-  .throw-slot{padding:6px;font-size:13px}
-  .throw-display{margin-bottom:5px}
-  .action-row-3{margin-bottom:4px}
-  .mode-toggle-btn{padding:5px 8px;font-size:11px}
-  .throw-info{font-size:10px;margin-bottom:4px}
-  .cricket-player-header{padding:4px;font-size:12px}
-  #screen-lobby,#screen-winner{max-width:520px;margin:0 auto}
+  .mult-btn{padding:4px;font-size:10px}
+  .mult-row{margin-bottom:3px}
+  .btn-sm{padding:6px 6px;font-size:10px}
+  .undo-turn-btn{padding:4px;font-size:9px;margin-top:2px}
+  .throw-slot{padding:4px;font-size:11px}
+  .throw-display{margin-bottom:3px}
+  .action-row-3{margin-bottom:2px}
+  .mode-toggle-btn{padding:4px 6px;font-size:10px}
+  .throw-info{font-size:9px;margin-bottom:2px}
+  .cricket-player-header{padding:3px 2px;font-size:10px}
+  #screen-lobby,#screen-winner{max-width:500px;margin:0 auto}
 }
 </style>
 </head>
@@ -381,96 +336,92 @@ input[type=text]:focus{border-color:#1D9E75}
 <!-- GAME 01 -->
 <div id="screen-game01" class="screen">
   <div id="turn-banner-01" class="turn-banner" style="display:none"></div>
-  <div class="ls-wrap">
-    <div class="ls-left">
-      <div class="players-bar" id="game01-players"></div>
-      <div id="game01-status" class="status-bar"></div>
-      <!-- Checkout hint -->
-      <div id="checkout-hint" style="display:none;background:#1a1a1a;border:1px solid rgba(29,158,117,0.4);border-radius:10px;padding:10px 12px;margin-bottom:10px">
-        <div style="font-size:11px;color:#1D9E75;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🎯 Kiszálló</div>
-        <div id="checkout-combos" style="font-size:13px;color:#ccc;line-height:1.7"></div>
-      </div>
-      <!-- Round history -->
-      <div id="round-history" style="display:none">
-        <div style="font-size:11px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Körök</div>
-        <div id="round-history-list" style="max-height:180px;overflow-y:auto"></div>
-      </div>
+  <!-- Top: score cards + status -->
+  <div class="g01-top">
+    <div class="players-bar" id="game01-players"></div>
+    <div id="game01-status" class="status-bar"></div>
+    <div id="checkout-hint" style="display:none;background:#1a1a1a;border:1px solid rgba(29,158,117,0.4);border-radius:8px;padding:7px 10px;margin-bottom:6px">
+      <div style="font-size:10px;color:#1D9E75;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">🎯 Kiszálló</div>
+      <div id="checkout-combos" style="font-size:12px;color:#ccc"></div>
     </div>
-    <div class="ls-right">
-      <!-- Mode toggle -->
-      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
-        <button class="mode-toggle-btn" id="input-mode-btn" onclick="toggleInputMode()">✏️ Kézi bevitel</button>
-      </div>
-      <!-- Throw display -->
-      <div class="throw-display">
+    <div id="round-history" style="display:none">
+      <div style="font-size:10px;color:#555;font-weight:600;text-transform:uppercase;margin-bottom:4px">Körök</div>
+      <div id="round-history-list" style="max-height:100px;overflow-y:auto"></div>
+    </div>
+  </div>
+  <!-- Bottom: input area full width -->
+  <div class="g01-bottom">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div class="throw-display" style="flex:1;margin-bottom:0;margin-right:8px">
         <div class="throw-slot" id="t0">—</div>
         <div class="throw-slot" id="t1">—</div>
         <div class="throw-slot" id="t2">—</div>
       </div>
-      <!-- NUMPAD MODE -->
-      <div id="numpad-mode">
-        <div class="mult-row">
-          <button class="mult-btn" id="mult-1" onclick="setMult(1)">Szimpla</button>
-          <button class="mult-btn on" id="mult-2" onclick="setMult(2)">Dupla</button>
-          <button class="mult-btn" id="mult-3" onclick="setMult(3)">Tripla</button>
-        </div>
-        <div class="numpad" id="numpad01"></div>
-      </div>
-      <!-- MANUAL / PHONE NUMPAD MODE -->
-      <div id="manual-mode" style="display:none">
-        <div id="manual-display" style="font-size:36px;font-weight:700;text-align:center;padding:12px 8px;background:#161616;border:1px solid #333;border-radius:10px;margin-bottom:10px;min-height:58px;color:#f0f0f0;letter-spacing:2px">—</div>
-        <div class="phone-numpad">
-          <button class="phone-btn" onclick="phoneKey('1')">1</button>
-          <button class="phone-btn" onclick="phoneKey('2')">2</button>
-          <button class="phone-btn" onclick="phoneKey('3')">3</button>
-          <button class="phone-btn" onclick="phoneKey('4')">4</button>
-          <button class="phone-btn" onclick="phoneKey('5')">5</button>
-          <button class="phone-btn" onclick="phoneKey('6')">6</button>
-          <button class="phone-btn" onclick="phoneKey('7')">7</button>
-          <button class="phone-btn" onclick="phoneKey('8')">8</button>
-          <button class="phone-btn" onclick="phoneKey('9')">9</button>
-          <button class="phone-btn phone-btn-del" onclick="phoneKey('del')">⌫</button>
-          <button class="phone-btn" onclick="phoneKey('0')">0</button>
-          <button class="phone-btn phone-btn-ok" onclick="submitManual()">OK ✓</button>
-        </div>
-      </div>
-      <div class="action-row-3" id="numpad-actions">
-        <button class="btn btn-danger btn-sm" onclick="undoThrow()" style="flex:1">↩ Törlés</button>
-        <button class="btn btn-primary btn-sm" onclick="submitTurn()" style="flex:1">Beküldés ✓</button>
-      </div>
-      <button class="undo-turn-btn" id="undo-turn-01-btn" onclick="undoLastTurn01()" disabled>↺ Előző kör visszavonása</button>
-      <p id="game01-error" class="error"></p>
-      <button class="btn" onclick="confirmLeave()" style="margin-top:auto;padding:8px;color:#555;font-size:12px;border-color:#2a2a2a">Kilépés</button>
+      <button class="mode-toggle-btn" id="input-mode-btn" onclick="toggleInputMode()">✏️ Kézi</button>
     </div>
+    <!-- NUMPAD MODE -->
+    <div id="numpad-mode">
+      <div class="mult-row">
+        <button class="mult-btn" id="mult-1" onclick="setMult(1)">Szimpla</button>
+        <button class="mult-btn on" id="mult-2" onclick="setMult(2)">Dupla</button>
+        <button class="mult-btn" id="mult-3" onclick="setMult(3)">Tripla</button>
+      </div>
+      <div class="numpad" id="numpad01"></div>
+    </div>
+    <!-- MANUAL MODE -->
+    <div id="manual-mode" style="display:none">
+      <div id="manual-display" style="font-size:32px;font-weight:700;text-align:center;padding:8px;background:#161616;border:1px solid #333;border-radius:10px;margin-bottom:8px;color:#f0f0f0">—</div>
+      <div class="phone-numpad">
+        <button class="phone-btn" onclick="phoneKey('1')">1</button>
+        <button class="phone-btn" onclick="phoneKey('2')">2</button>
+        <button class="phone-btn" onclick="phoneKey('3')">3</button>
+        <button class="phone-btn" onclick="phoneKey('4')">4</button>
+        <button class="phone-btn" onclick="phoneKey('5')">5</button>
+        <button class="phone-btn" onclick="phoneKey('6')">6</button>
+        <button class="phone-btn" onclick="phoneKey('7')">7</button>
+        <button class="phone-btn" onclick="phoneKey('8')">8</button>
+        <button class="phone-btn" onclick="phoneKey('9')">9</button>
+        <button class="phone-btn phone-btn-del" onclick="phoneKey('del')">⌫</button>
+        <button class="phone-btn" onclick="phoneKey('0')">0</button>
+        <button class="phone-btn phone-btn-ok" onclick="submitManual()">OK ✓</button>
+      </div>
+    </div>
+    <div class="action-row-3" id="numpad-actions">
+      <button class="btn btn-danger btn-sm" onclick="undoThrow()" style="flex:1">↩ Törlés</button>
+      <button class="btn btn-primary btn-sm" onclick="submitTurn()" style="flex:1">Beküldés ✓</button>
+    </div>
+    <button class="undo-turn-btn" id="undo-turn-01-btn" onclick="undoLastTurn01()" disabled>↺ Előző kör visszavonása</button>
+    <p id="game01-error" class="error" style="margin:2px 0"></p>
+    <button class="btn" onclick="confirmLeave()" style="padding:6px;color:#555;font-size:11px;border-color:#222;margin-top:2px;margin-bottom:0">Kilépés</button>
   </div>
 </div>
+
+<!-- GAME CRICKET -->
 <div id="screen-cricket" class="screen">
   <div id="turn-banner-cr" class="turn-banner" style="display:none"></div>
   <div id="cricket-status" class="status-bar"></div>
-  <div class="ls-wrap">
-    <div class="ls-left">
+  <!-- Cricket: tábla bal, gombok jobb -->
+  <div class="cr-wrap">
+    <div class="cr-left">
       <table class="cricket-table" id="cricket-table"></table>
     </div>
-    <div class="ls-right">
+    <div class="cr-right">
       <div id="cricket-controls">
         <div class="throw-info" id="cricket-throw-info">Válassz célpontot</div>
-        <!-- Cricket gombok: 3 oszlop (S/D/T) x 7 sor (15-20+Bull) -->
-        <div style="margin-bottom:6px">
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:4px">
-            <div style="text-align:center;font-size:11px;color:#555;font-weight:600;text-transform:uppercase;padding:2px">Szimpla</div>
-            <div style="text-align:center;font-size:11px;color:#555;font-weight:600;text-transform:uppercase;padding:2px">Dupla</div>
-            <div style="text-align:center;font-size:11px;color:#555;font-weight:600;text-transform:uppercase;padding:2px">Tripla</div>
-          </div>
-          <div id="cricket-btn-grid"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:3px">
+          <div style="text-align:center;font-size:10px;color:#555;font-weight:600;text-transform:uppercase">S</div>
+          <div style="text-align:center;font-size:10px;color:#555;font-weight:600;text-transform:uppercase">D</div>
+          <div style="text-align:center;font-size:10px;color:#555;font-weight:600;text-transform:uppercase">T</div>
         </div>
-        <div class="action-row-3">
+        <div id="cricket-btn-grid"></div>
+        <div class="action-row-3" style="margin-top:6px">
           <button class="btn btn-danger btn-sm" onclick="undoCricket()" style="flex:1">↩ Törlés</button>
           <button class="btn btn-primary btn-sm" onclick="submitCricketTurn()" style="flex:1">Beküldés ✓</button>
         </div>
         <button class="undo-turn-btn" id="undo-turn-cr-btn" onclick="undoLastTurnCricket()" disabled>↺ Előző kör visszavonása</button>
       </div>
-      <p id="cricket-error" class="error"></p>
-      <button class="btn" onclick="confirmLeave()" style="margin-top:auto;padding:8px;color:#555;font-size:12px;border-color:#2a2a2a">Kilépés</button>
+      <p id="cricket-error" class="error" style="margin:2px 0"></p>
+      <button class="btn" onclick="confirmLeave()" style="padding:6px;color:#555;font-size:11px;border-color:#222;margin-top:2px;margin-bottom:0">Kilépés</button>
     </div>
   </div>
 </div>
