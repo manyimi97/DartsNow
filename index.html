@@ -23,14 +23,12 @@ let deferredInstallPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{
   e.preventDefault();
   deferredInstallPrompt=e;
-  const btn=document.getElementById('install-btn');
-  if(btn) btn.style.display='block';
+  document.getElementById('install-btn').style.display='block';
+  document.getElementById('install-hint').style.display='none';
 });
 window.addEventListener('appinstalled',()=>{
-  const btn=document.getElementById('install-btn');
-  if(btn) btn.style.display='none';
-  const hint=document.getElementById('ios-hint');
-  if(hint) hint.style.display='none';
+  document.getElementById('install-btn').style.display='none';
+  document.getElementById('install-hint').style.display='none';
   deferredInstallPrompt=null;
 });
 function installApp(){
@@ -39,13 +37,25 @@ function installApp(){
     deferredInstallPrompt.userChoice.then(()=>{deferredInstallPrompt=null;});
   }
 }
-// iOS detektálás — Safari-ban mutasd az útmutatót ha nincs standalone módban
-const isIos=/iphone|ipad|ipod/i.test(navigator.userAgent);
-const isStandalone=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches;
-if(isIos&&!isStandalone){
+// Ha nem standalone módban fut, mutassuk a telepítési útmutatót
+const isStandalone=window.navigator.standalone===true||window.matchMedia('(display-mode:standalone)').matches;
+if(!isStandalone){
+  const isIos=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isAndroid=/android/i.test(navigator.userAgent);
   window.addEventListener('DOMContentLoaded',()=>{
-    const hint=document.getElementById('ios-hint');
-    if(hint) hint.style.display='block';
+    const hint=document.getElementById('install-hint');
+    if(isIos){
+      hint.style.display='block';
+      document.getElementById('install-hint-ios').style.display='block';
+    } else if(isAndroid){
+      // Android: csak mutasd ha 2mp után sem jelent meg az automatikus prompt
+      setTimeout(()=>{
+        if(!deferredInstallPrompt&&document.getElementById('install-btn').style.display==='none'){
+          hint.style.display='block';
+          document.getElementById('install-hint-android').style.display='block';
+        }
+      },2000);
+    }
   });
 }
 </script>
@@ -105,10 +115,10 @@ input[type=text]:focus{border-color:#1D9E75}
 .badge.you{background:rgba(29,158,117,0.2);color:#1D9E75}
 .status-bar{font-size:14px;color:#888;padding:12px;background:#1a1a1a;border-radius:10px;text-align:center;margin-bottom:14px;border:1px solid #2a2a2a}
 .status-bar.myturn{background:rgba(29,158,117,0.12);color:#1D9E75;font-weight:600;border-color:rgba(29,158,117,0.3)}
-.players-bar{display:grid;gap:8px;margin-bottom:14px}
-.pscard{padding:12px 10px;border:1px solid #2a2a2a;border-radius:12px;text-align:center;background:#1a1a1a}
+.players-bar{display:flex;gap:6px;margin-bottom:10px;width:100%}
+.pscard{flex:1;min-width:0;padding:8px 4px;border:1px solid #2a2a2a;border-radius:12px;text-align:center;background:#1a1a1a;overflow:hidden}
 .pscard.active-turn{border-color:#1D9E75;background:rgba(29,158,117,0.08)}
-.score-big{font-size:46px;font-weight:700;text-align:center;line-height:1;color:#f0f0f0}
+.score-big{font-size:clamp(22px,6vw,46px);font-weight:700;text-align:center;line-height:1;color:#f0f0f0}
 .score-lbl{font-size:12px;color:#666;text-align:center;margin-top:4px}
 .throw-display{display:flex;gap:8px;margin-bottom:12px}
 .throw-slot{flex:1;padding:12px;text-align:center;border:1px dashed #333;border-radius:10px;font-size:16px;font-weight:600;color:#555}
@@ -234,30 +244,49 @@ input[type=text]:focus{border-color:#1D9E75}
   .phone-btn{padding:8px;font-size:15px}
 }
 /* ── Fekvő mód ── */
-@media (orientation:landscape){
-  #screen-home,#screen-lobby,#screen-winner{max-width:100%;padding:8px 20px 20px}
-  .logo{font-size:28px;margin:6px 0 2px}
+@media (orientation:landscape) and (max-height:500px){
+  #screen-home,#screen-lobby,#screen-winner{padding:8px 16px 16px;max-width:100%}
+  .logo{font-size:28px;margin:4px 0 2px}
   h1{font-size:18px}
-  .tagline{margin-bottom:6px}
-  #screen-game01.active,#screen-cricket.active{padding:6px 14px 4px}
-  .turn-banner{padding:8px;font-size:14px;margin-bottom:6px}
-  .status-bar{padding:7px;margin-bottom:6px;font-size:12px}
-  .score-big{font-size:32px}
-  .pscard{padding:6px 8px}
-  .cricket-table th{padding:4px 3px;font-size:11px}
-  .cricket-table td{padding:5px 3px;font-size:14px}
-  .tgt-col{font-size:13px}
-  .num-btn{padding:9px 4px;font-size:13px}
-  .cbt-new{padding:6px 4px 4px;font-size:13px}
-  .mult-btn{padding:7px;font-size:12px}
-  .btn{padding:10px;font-size:13px}
-  .btn-sm{padding:8px 10px;font-size:12px}
-  .undo-turn-btn{padding:7px;font-size:12px}
-  .throw-slot{padding:8px;font-size:14px}
-  .throw-display{margin-bottom:6px}
-  .mult-row{margin-bottom:6px}
-  .numpad{gap:5px;margin-bottom:6px}
-  .cbt-row{gap:3px;margin-bottom:3px}
+  .tagline{margin-bottom:6px;font-size:12px}
+  /* Játék képernyők fekvőben: 2 oszlop egymás mellett */
+  #screen-game01.active,#screen-cricket.active{
+    flex-direction:row;padding:6px 10px 4px;gap:10px;
+    align-items:stretch;
+  }
+  /* Fekvőben a banner teljes szélességbe */
+  #screen-game01 #turn-banner-01,
+  #screen-cricket #turn-banner-cr,
+  #screen-cricket #cricket-status{
+    display:none!important;
+  }
+  /* ls-wrap fekvőben flex:1 */
+  #screen-game01 .ls-wrap,#screen-cricket .ls-wrap{
+    flex:1;gap:8px;
+  }
+  .turn-banner{padding:6px;font-size:13px;margin-bottom:4px}
+  .status-bar{padding:6px;font-size:11px;margin-bottom:6px}
+  .score-big{font-size:clamp(18px,4vw,32px)}
+  .pscard{padding:4px 3px}
+  .players-bar{margin-bottom:6px}
+  .cricket-table th{padding:3px 2px;font-size:10px}
+  .cricket-table td{padding:4px 2px;font-size:13px}
+  .tgt-col{font-size:12px}
+  .num-btn{padding:8px 2px;font-size:12px}
+  .numpad{gap:4px;margin-bottom:6px}
+  .cbt-new{padding:5px 2px 3px;font-size:12px}
+  .cbt-row{gap:2px;margin-bottom:2px}
+  .mult-btn{padding:6px;font-size:11px}
+  .mult-row{margin-bottom:5px}
+  .btn{padding:8px;font-size:12px;margin-bottom:6px}
+  .btn-sm{padding:7px 8px;font-size:11px}
+  .undo-turn-btn{padding:6px;font-size:11px;margin-top:3px}
+  .throw-slot{padding:6px;font-size:13px}
+  .throw-display{margin-bottom:5px}
+  .action-row-3{margin-bottom:4px}
+  .mode-toggle-btn{padding:5px 8px;font-size:11px}
+  .throw-info{font-size:10px;margin-bottom:4px}
+  .cricket-player-header{padding:4px;font-size:12px}
   #screen-lobby,#screen-winner{max-width:520px;margin:0 auto}
 }
 </style>
@@ -271,9 +300,10 @@ input[type=text]:focus{border-color:#1D9E75}
   <p class="tagline">Ingyenes multiplayer · előfizetés nélkül</p>
   <!-- Android: automatikus telepítés gomb -->
   <button id="install-btn" onclick="installApp()" style="display:none;width:100%;padding:12px;margin-bottom:10px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer">📲 Telepítés az eszközre</button>
-  <!-- iOS: manuális útmutató -->
-  <div id="ios-hint" style="display:none;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:12px;margin-bottom:10px;font-size:13px;color:#888;text-align:center">
-    📲 Telepítéshez: <strong style="color:#f0f0f0">Safari</strong> → Megosztás ⬆ → <strong style="color:#f0f0f0">Főképernyőhöz adás</strong>
+  <!-- Telepítési útmutató — csak ha nincs standalone módban -->
+  <div id="install-hint" style="display:none;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:12px;margin-bottom:10px;font-size:13px;color:#888;text-align:center;line-height:1.8">
+    <div id="install-hint-android" style="display:none">📲 <strong style="color:#f0f0f0">Android:</strong> böngésző ⋮ menü → <strong style="color:#f0f0f0">Hozzáadás a kezdőképernyőhöz</strong></div>
+    <div id="install-hint-ios" style="display:none">📲 <strong style="color:#f0f0f0">iPhone:</strong> Safari → Megosztás ⬆ → <strong style="color:#f0f0f0">Főképernyőhöz adás</strong></div>
   </div>
 
   <div class="home-tabs">
@@ -965,12 +995,17 @@ let roundHistory=[]; // [{round, scores:{pid:score}}]
 
 function toggleInputMode(){
   manualInputMode=!manualInputMode;
-  document.getElementById('numpad-mode').style.display=manualInputMode?'none':'block';
-  document.getElementById('manual-mode').style.display=manualInputMode?'block':'none';
-  document.getElementById('numpad-actions').style.display=manualInputMode?'none':'flex';
+  const numpadEl=document.getElementById('numpad-mode');
+  const manualEl=document.getElementById('manual-mode');
+  const actionsEl=document.getElementById('numpad-actions');
+  if(numpadEl) numpadEl.style.setProperty('display', manualInputMode?'none':'block','important');
+  if(manualEl) manualEl.style.setProperty('display', manualInputMode?'block':'none','important');
+  if(actionsEl) actionsEl.style.setProperty('display', manualInputMode?'none':'flex','important');
   const btn=document.getElementById('input-mode-btn');
-  btn.textContent=manualInputMode?'🔢 Gombok':'✏️ Kézi bevitel';
-  btn.classList.toggle('active',manualInputMode);
+  if(btn){
+    btn.textContent=manualInputMode?'🔢 Gombok':'✏️ Kézi bevitel';
+    btn.classList.toggle('active',manualInputMode);
+  }
   if(manualInputMode){
     currentThrows=[];updateThrowDisplay();updateLiveScore();
     phoneBuffer='';updatePhoneDisplay();
