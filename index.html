@@ -78,7 +78,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #numpad01{flex:1;min-height:0;overflow:hidden;display:grid}
 /* Cricket */
 .cr-wrap{flex:1;min-height:0;display:flex;gap:6px;overflow:hidden}
-.cr-left{flex:1;min-width:0;overflow:hidden;display:flex;align-items:center}
+.cr-left{flex:1;min-width:0;overflow:hidden;display:flex;align-items:flex-start;padding-top:2px}
 .cr-right{flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column}
 .cricket-table{width:100%;border-collapse:collapse}
 .cricket-table th{padding:4px 2px;text-align:center;font-size:clamp(10px,2vw,13px)}
@@ -156,7 +156,13 @@ input[type=text]:focus{border-color:#1D9E75}
 .opl-item{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .opl-item input{flex:1;margin-bottom:0}
 .opl-remove{padding:10px 14px;background:#1a1a1a;border:1px solid #333;border-radius:10px;color:#888;cursor:pointer;font-size:16px;flex-shrink:0}
-.turn-banner{background:#1D9E75;color:#fff;border-radius:12px;padding:14px;text-align:center;margin-bottom:14px;font-size:18px;font-weight:700;text-transform:uppercase}
+.turn-banner{background:#1D9E75;color:#fff;border-radius:12px;padding:14px;text-align:center;margin-bottom:14px;font-size:18px;font-weight:700;text-transform:uppercase;flex-shrink:0}
+/* Kis turn banner - csak a nevet mutatja */
+.turn-banner-mini{background:#1D9E75;color:#fff;border-radius:8px;padding:5px 12px;text-align:center;margin-bottom:5px;font-size:13px;font-weight:700;text-transform:uppercase;flex-shrink:0}
+.turn-banner-mini.turn-banner-mini-wait{background:#1a1a1a;color:#888;border:1px solid #2a2a2a}
+/* Kis státusz - csak a körszám */
+.status-mini{font-size:11px;color:#666;text-align:center;margin-bottom:5px;flex-shrink:0}
+.status-mini.myturn{color:#1D9E75;font-weight:600}
 .undo-turn-btn{width:100%;padding:11px;border:1px solid #e67e22;border-radius:10px;background:transparent;color:#e67e22;font-size:13px;font-weight:600;cursor:pointer;text-align:center;margin-top:8px}
 .undo-turn-btn:disabled{opacity:0.3;pointer-events:none}
 /* Minden játékosnév nagybetűs */
@@ -344,23 +350,19 @@ input[type=text]:focus{border-color:#1D9E75}
 
 <!-- GAME 01 -->
 <div id="screen-game01" class="screen">
-  <div id="turn-banner-01" class="turn-banner" style="display:none"></div>
-  <!-- Score cards + status -->
+  <div id="turn-banner-01" class="turn-banner-mini" style="display:none"></div>
   <div class="players-bar" id="game01-players"></div>
-  <div id="game01-status" class="status-bar"></div>
-  <!-- Checkout hint -->
-  <div id="checkout-hint" style="display:none;background:#1a1a1a;border:1px solid rgba(29,158,117,0.4);border-radius:8px;padding:6px 10px;margin-bottom:6px">
-    <div style="font-size:10px;color:#1D9E75;font-weight:700;text-transform:uppercase;margin-bottom:2px">🎯 Kiszálló</div>
+  <div id="game01-status" class="status-mini"></div>
+  <div id="checkout-hint" style="display:none;background:#1a1a1a;border:1px solid rgba(29,158,117,0.4);border-radius:8px;padding:5px 10px;margin-bottom:5px;flex-shrink:0">
+    <div style="font-size:10px;color:#1D9E75;font-weight:700;text-transform:uppercase;margin-bottom:1px">🎯 Kiszálló</div>
     <div id="checkout-combos" style="font-size:12px;color:#ccc"></div>
   </div>
-  <!-- Round history: max height fixed, scrolls internally -->
-  <div id="round-history" style="display:none;margin-bottom:6px">
-    <div style="font-size:10px;color:#555;font-weight:600;text-transform:uppercase;margin-bottom:3px">Körök</div>
-    <div id="round-history-list" style="max-height:90px;overflow-y:auto"></div>
+  <div id="round-history" style="display:none;flex-shrink:0;margin-bottom:4px">
+    <div style="font-size:10px;color:#555;font-weight:600;text-transform:uppercase;margin-bottom:2px">Körök</div>
+    <div id="round-history-list" style="max-height:72px;overflow-y:auto"></div>
   </div>
-  <!-- INPUT AREA: always at bottom, flex:1 -->
   <div class="g01-input">
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-shrink:0">
       <div class="throw-display" style="flex:1;margin-bottom:0">
         <div class="throw-slot" id="t0">—</div>
         <div class="throw-slot" id="t1">—</div>
@@ -368,16 +370,16 @@ input[type=text]:focus{border-color:#1D9E75}
       </div>
       <button class="mode-toggle-btn" id="input-mode-btn" onclick="toggleInputMode()">✏️ Kézi</button>
     </div>
-    <div id="numpad-mode">
-      <div class="mult-row">
+    <div id="numpad-mode" style="flex:1;min-height:0;display:flex;flex-direction:column">
+      <div class="mult-row" style="flex-shrink:0">
         <button class="mult-btn" id="mult-1" onclick="setMult(1)">Szimpla</button>
         <button class="mult-btn on" id="mult-2" onclick="setMult(2)">Dupla</button>
         <button class="mult-btn" id="mult-3" onclick="setMult(3)">Tripla</button>
       </div>
       <div class="numpad" id="numpad01"></div>
     </div>
-    <div id="manual-mode" style="display:none">
-      <div id="manual-display" style="font-size:28px;font-weight:700;text-align:center;padding:8px;background:#161616;border:1px solid #333;border-radius:10px;margin-bottom:8px;color:#f0f0f0">—</div>
+    <div id="manual-mode" style="display:none;flex:1;min-height:0;flex-direction:column">
+      <div id="manual-display" style="font-size:28px;font-weight:700;text-align:center;padding:8px;background:#161616;border:1px solid #333;border-radius:10px;margin-bottom:8px;color:#f0f0f0;flex-shrink:0">—</div>
       <div class="phone-numpad">
         <button class="phone-btn" onclick="phoneKey('1')">1</button>
         <button class="phone-btn" onclick="phoneKey('2')">2</button>
@@ -393,42 +395,44 @@ input[type=text]:focus{border-color:#1D9E75}
         <button class="phone-btn phone-btn-ok" onclick="submitManual()">OK ✓</button>
       </div>
     </div>
-    <div class="action-row-3" id="numpad-actions">
-      <button class="btn btn-danger btn-sm" onclick="undoThrow()" style="flex:1">↩ Törlés</button>
-      <button class="btn btn-primary btn-sm" onclick="submitTurn()" style="flex:1">Beküldés ✓</button>
+    <div style="flex-shrink:0;margin-top:auto;padding-top:4px">
+      <div class="action-row-3" id="numpad-actions">
+        <button class="btn btn-danger btn-sm" onclick="undoThrow()" style="flex:1">↩ Törlés</button>
+        <button class="btn btn-primary btn-sm" onclick="submitTurn()" style="flex:1">Beküldés ✓</button>
+      </div>
+      <button class="undo-turn-btn" id="undo-turn-01-btn" onclick="undoLastTurn01()" disabled>↺ Előző kör visszavonása</button>
+      <p id="game01-error" class="error" style="margin:2px 0;min-height:14px;font-size:11px"></p>
+      <button class="btn" onclick="confirmLeave()" style="padding:5px;color:#555;font-size:11px;border-color:#222;margin-bottom:0">Kilépés</button>
     </div>
-    <button class="undo-turn-btn" id="undo-turn-01-btn" onclick="undoLastTurn01()" disabled>↺ Előző kör visszavonása</button>
-    <p id="game01-error" class="error" style="margin:2px 0;min-height:16px;font-size:11px"></p>
-    <button class="btn" onclick="confirmLeave()" style="padding:5px;color:#555;font-size:11px;border-color:#222;margin-top:0;margin-bottom:0">Kilépés</button>
   </div>
 </div>
 
 <!-- GAME CRICKET -->
 <div id="screen-cricket" class="screen">
-  <div id="turn-banner-cr" class="turn-banner" style="display:none"></div>
-  <div id="cricket-status" class="status-bar"></div>
-  <!-- Cricket: tábla bal, gombok jobb -->
+  <div id="turn-banner-cr" class="turn-banner-mini" style="display:none"></div>
   <div class="cr-wrap">
     <div class="cr-left">
       <table class="cricket-table" id="cricket-table"></table>
     </div>
     <div class="cr-right">
-      <div id="cricket-controls">
-        <div class="throw-info" id="cricket-throw-info">Válassz célpontot</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:3px">
+      <div id="cricket-controls" style="flex:1;min-height:0;display:flex;flex-direction:column">
+        <div class="throw-info" id="cricket-throw-info" style="flex-shrink:0">Válassz célpontot</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:3px;flex-shrink:0">
           <div style="text-align:center;font-size:10px;color:#555;font-weight:600;text-transform:uppercase">S</div>
           <div style="text-align:center;font-size:10px;color:#555;font-weight:600;text-transform:uppercase">D</div>
           <div style="text-align:center;font-size:10px;color:#555;font-weight:600;text-transform:uppercase">T</div>
         </div>
-        <div id="cricket-btn-grid"></div>
-        <div class="action-row-3" style="margin-top:6px">
-          <button class="btn btn-danger btn-sm" onclick="undoCricket()" style="flex:1">↩ Törlés</button>
-          <button class="btn btn-primary btn-sm" onclick="submitCricketTurn()" style="flex:1">Beküldés ✓</button>
+        <div id="cricket-btn-grid" style="flex:1;min-height:0;overflow:hidden"></div>
+        <div style="flex-shrink:0;margin-top:auto;padding-top:4px">
+          <div class="action-row-3">
+            <button class="btn btn-danger btn-sm" onclick="undoCricket()" style="flex:1">↩ Törlés</button>
+            <button class="btn btn-primary btn-sm" onclick="submitCricketTurn()" style="flex:1">Beküldés ✓</button>
+          </div>
+          <button class="undo-turn-btn" id="undo-turn-cr-btn" onclick="undoLastTurnCricket()" disabled>↺ Előző kör visszavonása</button>
+          <p id="cricket-error" class="error" style="margin:2px 0;min-height:14px;font-size:11px"></p>
+          <button class="btn" onclick="confirmLeave()" style="padding:5px;color:#555;font-size:11px;border-color:#222;margin-bottom:0">Kilépés</button>
         </div>
-        <button class="undo-turn-btn" id="undo-turn-cr-btn" onclick="undoLastTurnCricket()" disabled>↺ Előző kör visszavonása</button>
       </div>
-      <p id="cricket-error" class="error" style="margin:2px 0"></p>
-      <button class="btn" onclick="confirmLeave()" style="padding:6px;color:#555;font-size:11px;border-color:#222;margin-top:2px;margin-bottom:0">Kilépés</button>
     </div>
   </div>
 </div>
@@ -760,16 +764,13 @@ function showTurnBanner(){
   const mode=gameState.mode;
   const b01=document.getElementById('turn-banner-01');
   const bcr=document.getElementById('turn-banner-cr');
-  // Offline vagy online multi-join esetén mutatjuk a bannert
   const showBanner=offlineMode||(localPlayerIds.length>1&&isLocalPlayer(gameState.currentPlayer));
   if(mode==='cricket'){
-    b01.style.display='none';
-    bcr.style.display=showBanner?'block':'none';
-    if(showBanner) bcr.textContent='🎯 '+uc(name)+' köre';
+    b01&&(b01.style.display='none');
+    if(bcr){bcr.style.display=showBanner?'block':'none';if(showBanner)bcr.textContent='🎯 '+uc(name)+' köre';}
   }else{
-    bcr.style.display='none';
-    b01.style.display=showBanner?'block':'none';
-    if(showBanner) b01.textContent='🎯 '+uc(name)+' köre';
+    bcr&&(bcr.style.display='none');
+    if(b01){b01.style.display=showBanner?'block':'none';if(showBanner)b01.textContent='🎯 '+uc(name)+' köre';}
   }
 }
 
@@ -1245,15 +1246,11 @@ async function passTurnOnline(){
 function updateGame01UI(room){
   const isMyTurn=room.currentPlayer===myId;
   const el=document.getElementById('game01-status');
-  el.className='status-bar '+(isMyTurn?'myturn':'');
+  el.className='status-mini '+(isMyTurn?'myturn':'');
   const curName=uc(room.players[room.currentPlayer]?.name||'?');
-  // Round counter in status bar
-  // Körszám = hányadik kört játsszák (max rounds bármelyik játékosnál + 1 ha az aktuális még nem dobott)
   const maxRounds=Math.max(...(room.playerOrder||[]).map(pid=>room.players[pid]?.rounds||0));
   const roundNum=maxRounds+1;
-  el.innerHTML=isMyTurn
-    ?`🎯 A te köröd &nbsp;<span style="font-size:12px;opacity:.7;font-weight:400">${roundNum}. kör</span>`
-    :`⏳ ${curName} köre &nbsp;<span style="font-size:12px;opacity:.7;font-weight:400">${roundNum}. kör</span>`;
+  el.textContent=isMyTurn?`🎯 A te köröd · ${roundNum}. kör`:`⏳ ${curName} köre · ${roundNum}. kör`;
 
   document.getElementById('game01-players').innerHTML=(room.playerOrder||[]).map(pid=>{
     const p=room.players[pid];
@@ -1440,10 +1437,14 @@ function renderCricketTable(room){
 
 function updateCricketUI(room){
   const isMyTurn=room.currentPlayer===myId;
-  const el=document.getElementById('cricket-status');
-  el.className='status-bar '+(isMyTurn?'myturn':'');
+  // Cricket: a mini banner mutatja kinek a köre
+  const bcr=document.getElementById('turn-banner-cr');
   const curName=uc(room.players[room.currentPlayer]?.name||'?');
-  el.textContent=isMyTurn?'🎯 A te köröd — 3 nyíl':'⏳ '+curName+' köre...';
+  if(bcr){
+    bcr.style.display='block';
+    bcr.textContent=isMyTurn?'🎯 A te köröd — 3 nyíl':'⏳ '+curName+' köre';
+    bcr.className='turn-banner-mini '+(isMyTurn?'':'turn-banner-mini-wait');
+  }
   renderCricketTable(room);
   if(!offlineMode){
     const ctrl=document.getElementById('cricket-controls');
