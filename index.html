@@ -1327,16 +1327,25 @@ async function submitCricketTurn(){
   else{await fbUpdate('rooms/'+roomId+'/players/'+myId,{marks:myMarks,score:myScore});await passTurnOnline();}
 }
 
-function markStr(m){
-  return m===0?'':m===1?'/':m===2?'X':'⊗';
+function markStr(m, pending){
+  const confirmed=m===0?'':m===1?'/':m===2?'X':'⊗';
+  if(!pending||pending===0) return confirmed;
+  const pendingStr=pending===1?'/':pending===2?'X':'⊗';
+  return confirmed+`<span class="mark-pending">${pendingStr}</span>`;
 }
 
-// Renders the cricket table - only confirmed marks, no pending overlay
+// Renders the cricket table with pending marks shown in blue on left side only
 function renderCricketTable(room){
+  const pending=calcPendingMarks();
   const pO=room.playerOrder||[];
 
   function getMarks(pid,target){
     const confirmed=(room.players[pid].marks||{})[target]||0;
+    if(pid===myId&&pending){
+      const pMark=pending.marks[target]||0;
+      const extra=Math.max(0,pMark-confirmed);
+      return {confirmed,extra};
+    }
     return {confirmed,extra:0};
   }
 
@@ -1346,9 +1355,9 @@ function renderCricketTable(room){
       const r0=getMarks(pO[0],t),r1=getMarks(pO[1],t);
       const allConfirmed=(r0.confirmed>=3&&r1.confirmed>=3);
       return `<tr>
-        <td style="font-size:20px">${markStr(r0.confirmed)}</td>
+        <td style="font-size:20px">${markStr(r0.confirmed,r0.extra)}</td>
         <td class="tgt-col" style="${allConfirmed?'opacity:.3;text-decoration:line-through':''}">${t==='B'?'BULL':t}</td>
-        <td style="font-size:20px">${markStr(r1.confirmed)}</td>
+        <td style="font-size:20px">${markStr(r1.confirmed,r1.extra)}</td>
       </tr>`;
     }).join('');
     document.getElementById('cricket-table').innerHTML=
@@ -1359,7 +1368,7 @@ function renderCricketTable(room){
       </tr></thead><tbody>${rows}</tbody>`;
   }else{
     const heads=pO.map(pid=>`<th><div class="cricket-player-header ${pid===room.currentPlayer?'active-header':''}">${uc(room.players[pid].name)}${winsBadge(room.players[pid].name)}${pid===room.currentPlayer?'<span class="active-dot"></span>':''}</div></th>`).join('');
-    const rows=CTGTS.map(t=>`<tr>${pO.map(pid=>{const r=getMarks(pid,t);return `<td style="font-size:18px">${markStr(r.confirmed)}</td>`}).join('')}<td class="tgt-col">${t==='B'?'BULL':t}</td></tr>`).join('');
+    const rows=CTGTS.map(t=>`<tr>${pO.map(pid=>{const r=getMarks(pid,t);return `<td style="font-size:18px">${markStr(r.confirmed,r.extra)}</td>`}).join('')}<td class="tgt-col">${t==='B'?'BULL':t}</td></tr>`).join('');
     document.getElementById('cricket-table').innerHTML=`<thead><tr>${heads}<th class="tgt-col">Célpont</th></tr></thead><tbody>${rows}</tbody>`;
   }
   updateCricketBtnStates();
