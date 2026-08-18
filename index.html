@@ -124,10 +124,13 @@ input[type=text]:focus{border-color:#1D9E75}
 .mode-toggle-btn.active{border-color:#1D9E75;color:#1D9E75;background:rgba(29,158,117,0.1)}
 /* Cricket 3-oszlopos gomb grid */
 .cbt-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:4px}
-.cbt-new{padding:12px 4px;font-size:15px;font-weight:600;border:1px solid #2a2a2a;border-radius:8px;background:#1a1a1a;color:#f0f0f0;cursor:pointer;transition:all .1s;text-align:center}
+/* Bull sor: 2 gomb középre igazítva */
+.cbt-row-bull{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;max-width:66.6%;margin-left:auto;margin-right:auto}
+.cbt-new{padding:10px 4px 6px;font-size:15px;font-weight:600;border:1px solid #2a2a2a;border-radius:8px;background:#1a1a1a;color:#f0f0f0;cursor:pointer;transition:all .1s;text-align:center;line-height:1.2}
 .cbt-new:active{background:#2a2a2a;transform:scale(0.95)}
 .cbt-new.closed{opacity:0.2;pointer-events:none;text-decoration:line-through}
 .cbt-new.pending{border-color:#4a9eff;background:rgba(74,158,255,0.12);color:#4a9eff}
+.cbt-dots{font-size:9px;color:#fff;letter-spacing:1px;display:block;margin-top:3px;opacity:0.7}
 /* Cricket tábla fejléc — nagyobb nevek kerettel */
 .cricket-player-header{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:8px 6px;text-align:center;font-size:16px;font-weight:700;color:#f0f0f0;text-transform:uppercase}
 .cricket-player-header.active-header{border-color:#1D9E75;background:rgba(29,158,117,0.1);color:#1D9E75}
@@ -819,14 +822,13 @@ function hitCricketDirect(target, mult){
 }
 
 function updateCricketBtnStates(){
-  const used=cricketThrows.length;
   CTGTS.forEach(t=>{
-    [1,2,3].forEach(m=>{
+    const mults=t==='B'?[1,2]:[1,2,3];
+    mults.forEach(m=>{
       const btn=document.getElementById(`cbt-${t}-${m}`);
       if(!btn)return;
       const allClosed=(gameState?.playerOrder||[]).every(pid=>((gameState?.players[pid]?.marks||{})[t]||0)>=3);
       const myMarks=(gameState?.players[myId]?.marks||{})[t]||0;
-      // Pending marks
       const pendingExtra=cricketThrows.filter(th=>th.target===t).reduce((s,th)=>s+th.mult,0);
       const effectiveMarks=Math.min(3,myMarks+pendingExtra);
       btn.classList.toggle('closed', allClosed||(effectiveMarks>=3&&myMarks>=3));
@@ -1214,15 +1216,32 @@ function updateGame01UI(room){
 function buildCricketBtns(){
   const grid=document.getElementById('cricket-btn-grid');
   if(!grid)return;
-  // 7 sor (15,16,17,18,19,20,B) x 3 oszlop (S,D,T)
-  grid.innerHTML=CTGTS.map(t=>{
-    const label=t==='B'?'Bull':t;
-    return `<div class="cbt-row">
-      <button class="cbt-new" id="cbt-${t}-1" onclick="hitCricketDirect('${t}',1)">${label}</button>
-      <button class="cbt-new" id="cbt-${t}-2" onclick="hitCricketDirect('${t}',2)">${label}</button>
-      <button class="cbt-new" id="cbt-${t}-3" onclick="hitCricketDirect('${t}',3)">${label}</button>
+  const dots=m=>m===1?'•':m===2?'• •':'• • •';
+  // Számok: 3 oszlop (S/D/T)
+  const numbers=CTGTS.filter(t=>t!=='B');
+  const numRows=numbers.map(t=>`
+    <div class="cbt-row">
+      <button class="cbt-new" id="cbt-${t}-1" onclick="hitCricketDirect('${t}',1)">
+        ${t}<br><span class="cbt-dots">${dots(1)}</span>
+      </button>
+      <button class="cbt-new" id="cbt-${t}-2" onclick="hitCricketDirect('${t}',2)">
+        ${t}<br><span class="cbt-dots">${dots(2)}</span>
+      </button>
+      <button class="cbt-new" id="cbt-${t}-3" onclick="hitCricketDirect('${t}',3)">
+        ${t}<br><span class="cbt-dots">${dots(3)}</span>
+      </button>
+    </div>`).join('');
+  // Bull: csak Szimpla + Dupla, középre igazítva
+  const bullRow=`
+    <div class="cbt-row-bull">
+      <button class="cbt-new" id="cbt-B-1" onclick="hitCricketDirect('B',1)">
+        Bull<br><span class="cbt-dots">${dots(1)}</span>
+      </button>
+      <button class="cbt-new" id="cbt-B-2" onclick="hitCricketDirect('B',2)">
+        Bull<br><span class="cbt-dots">${dots(2)}</span>
+      </button>
     </div>`;
-  }).join('');
+  grid.innerHTML=numRows+bullRow;
 }
 
 function hitCricket(target){
