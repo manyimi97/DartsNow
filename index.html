@@ -40,27 +40,33 @@ function installApp(){
 </script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#111;color:#f0f0f0;font-size:15px;height:100vh;width:100vw}
-/* Home/lobby/winner: scrollable */
-.screen{display:none;padding:16px;max-width:480px;margin:0 auto;padding-bottom:40px;height:100%;overflow-y:auto}
+html{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#111;color:#f0f0f0;font-size:15px;height:100vh;width:100vw;overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0}
+/* Minden képernyő: teljes méret, scrollozható */
+.screen{display:none;position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:auto;overflow-x:hidden;padding:16px;-webkit-overflow-scrolling:touch}
 .screen.active{display:block}
-/* Game screens: fixed, no scroll */
+/* Home/lobby/winner: max szélesség középre */
+#screen-home,#screen-lobby,#screen-winner{max-width:480px;margin:0 auto;padding-bottom:40px}
+/* Játék képernyők: flex column, no internal scroll kivéve ls-left/right */
 #screen-game01.active,#screen-cricket.active{
   display:flex;flex-direction:column;
-  height:100vh;width:100%;max-width:100%;
-  padding:8px 12px;overflow:hidden;margin:0;
+  padding:8px 12px 4px;
+  overflow:hidden;
 }
-/* ls-wrap in game screens fills remaining space */
 #screen-game01 .ls-wrap,#screen-cricket .ls-wrap{
-  flex:1;min-height:0;overflow:hidden;
-  display:flex;gap:12px;align-items:stretch;
+  flex:1;min-height:0;
+  display:flex;gap:12px;
+  overflow:hidden;
 }
 #screen-game01 .ls-left,#screen-cricket .ls-left{
-  flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
+  flex:1;min-width:0;min-height:0;
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
 }
 #screen-game01 .ls-right,#screen-cricket .ls-right{
-  flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
+  flex:1;min-width:0;min-height:0;
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
   display:flex;flex-direction:column;
 }
 .logo{font-size:44px;text-align:center;margin:20px 0 4px}
@@ -218,31 +224,29 @@ input[type=text]:focus{border-color:#1D9E75}
 }
 /* ── Fekvő mód ── */
 @media (orientation:landscape){
-  .screen{max-width:100%;padding:8px 14px 14px}
-  .logo{font-size:30px;margin:6px 0 2px}
-  h1{font-size:19px}
-  .tagline{margin-bottom:8px}
-  .turn-banner{padding:10px;font-size:15px;margin-bottom:8px}
-  .status-bar{padding:8px;margin-bottom:8px;font-size:13px}
-  /* two-column wrapper for game screens */
-  .ls-wrap{display:flex;gap:16px;align-items:flex-start}
-  .ls-left{flex:1;min-width:0}
-  .ls-right{flex:1;min-width:0}
-  /* smaller player score cards in landscape */
-  .score-big{font-size:36px}
-  .pscard{padding:8px}
-  /* cricket table compact */
-  .cricket-table th{padding:5px 3px;font-size:11px}
-  .cricket-table td{padding:6px 3px;font-size:15px}
-  .tgt-col{font-size:14px}
-  /* numpad smaller */
-  .num-btn{padding:11px 4px;font-size:14px}
-  .cbt{padding:10px 4px;font-size:14px}
-  .mult-btn{padding:8px;font-size:13px}
-  .btn{padding:11px;font-size:14px}
-  .btn-sm{padding:9px 10px;font-size:13px}
-  .undo-turn-btn{padding:9px}
-  /* lobby/winner centred */
+  #screen-home,#screen-lobby,#screen-winner{max-width:100%;padding:8px 20px 20px}
+  .logo{font-size:28px;margin:6px 0 2px}
+  h1{font-size:18px}
+  .tagline{margin-bottom:6px}
+  #screen-game01.active,#screen-cricket.active{padding:6px 14px 4px}
+  .turn-banner{padding:8px;font-size:14px;margin-bottom:6px}
+  .status-bar{padding:7px;margin-bottom:6px;font-size:12px}
+  .score-big{font-size:32px}
+  .pscard{padding:6px 8px}
+  .cricket-table th{padding:4px 3px;font-size:11px}
+  .cricket-table td{padding:5px 3px;font-size:14px}
+  .tgt-col{font-size:13px}
+  .num-btn{padding:9px 4px;font-size:13px}
+  .cbt-new{padding:6px 4px 4px;font-size:13px}
+  .mult-btn{padding:7px;font-size:12px}
+  .btn{padding:10px;font-size:13px}
+  .btn-sm{padding:8px 10px;font-size:12px}
+  .undo-turn-btn{padding:7px;font-size:12px}
+  .throw-slot{padding:8px;font-size:14px}
+  .throw-display{margin-bottom:6px}
+  .mult-row{margin-bottom:6px}
+  .numpad{gap:5px;margin-bottom:6px}
+  .cbt-row{gap:3px;margin-bottom:3px}
   #screen-lobby,#screen-winner{max-width:520px;margin:0 auto}
 }
 </style>
