@@ -1469,14 +1469,13 @@ function showWinner(room){
     result01List.innerHTML=pO.map(pid=>{
       const p=room.players[pid];
       const isWinner=pid===winnerPid;
-      // Kiszálló: startScore - maradék = dobott összeg
-      // A győztes maradéka 0, a többieké az aktuális score
       const remaining=isWinner?0:p.score;
-      const thrown=startScore-remaining;
+      // Kiszálló = az utolsó körben dobott pontszám (lastScore)
+      const checkout=p.lastScore||0;
       return `<div class="winner-01-row ${isWinner?'winner-row-hl':''}">
         <span class="winner-01-name">${isWinner?'🏆 ':''}${uc(p.name)}${winsBadge(p.name)}</span>
         <span class="winner-01-score">
-          ${isWinner?`<span class="winner-01-checkout">Kiszálló: ${thrown}</span><br>`:''}
+          ${isWinner?`<span class="winner-01-checkout">Kiszálló: ${checkout}</span><br>`:''}
           Maradt: ${remaining} pont
         </span>
       </div>`;
