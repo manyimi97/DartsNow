@@ -1415,7 +1415,7 @@ function showWinner(room){
   const continueBtn=document.getElementById('winner-continue-btn');
   const waitMsg=document.getElementById('winner-wait-msg');
   if(continueBtn&&waitMsg){
-    if(isHost){
+    if(offlineMode||isHost){
       continueBtn.style.display='block';
       waitMsg.style.display='none';
     }else{
