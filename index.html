@@ -1006,22 +1006,16 @@ function renderCricketUI(room){
   const hdr=`background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;text-align:center;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;flex-shrink:0`;
 
   if(portrait){
-    // CSS Grid: fix sorok - header, scoreboard, SDT, buttons(1fr), actions
-    el.innerHTML=`<div style="display:grid;grid-template-rows:auto auto auto minmax(0,1fr) auto;width:100%;height:100%;overflow:hidden;padding:4px 8px 4px;box-sizing:border-box;gap:3px">
-      <!-- 1. Fejléc -->
-      <div style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;padding:8px 16px;text-align:center;font-size:17px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px">🎯 ${curName} KÖRE</div>
-      <!-- 2. Scoreboard -->
-      <div>${_scoreboardHTML(room,true)}</div>
-      <!-- 3. S D T -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr">
+    el.innerHTML=`<div id="cr-portrait-wrap" style="display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;padding:4px 8px 4px;box-sizing:border-box">
+      <div id="cr-hdr" style="flex:0 0 auto;background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;padding:8px 16px;text-align:center;font-size:17px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">🎯 ${curName} KÖRE</div>
+      <div id="cr-sb" style="flex:0 0 auto;margin-bottom:3px">${_scoreboardHTML(room,true)}</div>
+      <div id="cr-sdt" style="flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:3px">
         <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">S</div>
         <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">D</div>
         <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">T</div>
       </div>
-      <!-- 4. Gombok - kitolti a maradekot -->
-      ${_buttonsHTML(room,true)}
-      <!-- 5. Akcio gombok - fix also blokk -->
-      <div>
+      <div id="cr-btns-wrap" style="flex:0 0 auto;overflow:hidden">${_buttonsHTML(room,true)}</div>
+      <div id="cr-actions" style="flex:0 0 auto;margin-top:auto;padding-top:4px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
           <button id="cr-del-btn" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:10px;padding:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;width:100%">Törlés</button>
           <button id="cr-sub-btn" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:10px;padding:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;width:100%">Beküldés</button>
@@ -1034,6 +1028,22 @@ function renderCricketUI(room){
     document.getElementById('cr-sub-btn')?.addEventListener('click', ()=>submitCricketTurn());
     document.getElementById('undo-cr-btn')?.addEventListener('click', ()=>undoLastTurnCricket());
     document.getElementById('cr-leave-btn')?.addEventListener('click', ()=>confirmLeave());
+    // JS-ből számoljuk ki a gomb grid pontos magasságát
+    requestAnimationFrame(()=>{
+      const wrap=document.getElementById('cr-portrait-wrap');
+      const hdr=document.getElementById('cr-hdr');
+      const sb=document.getElementById('cr-sb');
+      const sdt=document.getElementById('cr-sdt');
+      const act=document.getElementById('cr-actions');
+      const btns=document.getElementById('cr-btns-wrap');
+      if(!wrap||!hdr||!sb||!sdt||!act||!btns)return;
+      const total=wrap.clientHeight;
+      const used=hdr.offsetHeight+sb.offsetHeight+sdt.offsetHeight+act.offsetHeight+20;
+      const available=Math.max(120,total-used);
+      btns.style.height=available+'px';
+      const inner=btns.firstElementChild;
+      if(inner) inner.style.height='100%';
+    });
   } else {
     el.innerHTML=`<div style="display:flex;flex-direction:row;height:100%;overflow:hidden;padding:5px 10px;gap:10px;box-sizing:border-box">
       <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
