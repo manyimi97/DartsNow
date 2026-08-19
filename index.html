@@ -875,8 +875,11 @@ function markSymbol(m){
 
 function calcPendingMarks(){
   if(!gameState||!cricketThrows.length)return null;
-  const p={marks:{},score:gameState.players[myId].score};
-  CTGTS.forEach(t=>p.marks[t]=(gameState.players[myId].marks||{})[t]||0);
+  // Use currentPlayer's marks (works for both online and offline)
+  const activePid=gameState.currentPlayer;
+  if(!gameState.players[activePid])return null;
+  const p={marks:{},score:gameState.players[activePid].score};
+  CTGTS.forEach(t=>p.marks[t]=(gameState.players[activePid].marks||{})[t]||0);
   for(const th of cricketThrows){
     const cur=p.marks[th.target]||0;
     const after=cur+th.mult;
@@ -914,7 +917,8 @@ function _scoreboardHTML(room, portrait){
     pO.forEach(pid=>{
       const conf=(room.players[pid].marks||{})[t]||0;
       let cell=markSymbol(conf);
-      if(pid===myId&&pending&&conf<3){
+      const activePid=room.currentPlayer;
+      if(pid===activePid&&pending&&conf<3){
         const pm=pending.marks[t]||0;
         if(pm>conf){
           const added=markSymbol(pm).slice(markSymbol(conf).length);
@@ -998,30 +1002,23 @@ function renderCricketUI(room){
   const hdr=`background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;text-align:center;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;flex-shrink:0`;
 
   if(portrait){
-    // Álló: fejléc + scoreboard fix tetején, gombok alul fix, középen a btn grid flex:1
-    el.innerHTML=`<div style="display:flex;flex-direction:column;height:100%;overflow:hidden;padding:6px 10px 6px;box-sizing:border-box">
-      <!-- Fejléc -->
-      <div style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;padding:10px 16px;text-align:center;font-size:18px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;flex-shrink:0">🎯 ${curName} KÖRE</div>
-      <!-- Scoreboard: flex-shrink:0, soha nem nyomja el a gombokat -->
-      <div style="flex-shrink:0;margin-bottom:4px">${_scoreboardHTML(room,true)}</div>
-      <!-- S D T fejléc -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:3px;flex-shrink:0">
-        <div style="text-align:center;font-size:16px;font-weight:700;color:#fff">S</div>
-        <div style="text-align:center;font-size:16px;font-weight:700;color:#fff">D</div>
-        <div style="text-align:center;font-size:16px;font-weight:700;color:#fff">T</div>
+    el.innerHTML=`<div style="display:flex;flex-direction:column;height:100%;overflow:hidden;padding:4px 8px 4px;box-sizing:border-box">
+      <div style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;padding:8px 16px;text-align:center;font-size:17px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;flex-shrink:0">🎯 ${curName} KÖRE</div>
+      <div style="flex-shrink:0;margin-bottom:3px">${_scoreboardHTML(room,true)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:2px;flex-shrink:0">
+        <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">S</div>
+        <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">D</div>
+        <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">T</div>
       </div>
-      <!-- Gombok: flex:1 kitölti a maradékot -->
       ${_buttonsHTML(room,true)}
-      <!-- Akció gombok: mindig lent, flex-shrink:0 -->
-      <div style="flex-shrink:0;margin-top:5px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:5px">
-          <button onclick="undoCricket()" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">Törlés</button>
-          <button onclick="submitCricketTurn()" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">Beküldés</button>
+      <div style="flex-shrink:0;margin-top:4px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px">
+          <button onclick="undoCricket()" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Törlés</button>
+          <button onclick="submitCricketTurn()" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Beküldés</button>
         </div>
-        <button id="undo-cr-btn" onclick="undoLastTurnCricket()" ${turnHistory.length>0?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:10px;padding:9px;color:#e67e22;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:5px;opacity:${turnHistory.length>0?'1':'0.3'}">↺ Visszavonás</button>
-        <button id="cr-leave-btn" style="width:100%;background:transparent;border:1px solid #333;border-radius:10px;padding:7px;color:#555;font-size:12px;cursor:pointer">Kilépés a játékból</button>
+        <button id="undo-cr-btn" onclick="undoLastTurnCricket()" ${turnHistory.length>0?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:10px;padding:7px;color:#e67e22;font-size:12px;font-weight:600;cursor:pointer;margin-bottom:4px;opacity:${turnHistory.length>0?'1':'0.3'}">↺ Visszavonás</button>
+        <button id="cr-leave-btn" style="width:100%;background:transparent;border:1px solid #333;border-radius:10px;padding:6px;color:#555;font-size:11px;cursor:pointer">Kilépés a játékból</button>
       </div>
-      <p id="cricket-error" style="color:#e74c3c;font-size:11px;text-align:center;min-height:14px;margin-top:2px;flex-shrink:0"></p>
     </div>`;
     document.getElementById('cr-leave-btn')?.addEventListener('click', confirmLeave);
   } else {
