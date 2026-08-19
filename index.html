@@ -1015,7 +1015,7 @@ function renderCricketUI(room){
         <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">T</div>
       </div>
       <div id="cr-btns-wrap" style="flex:0 0 auto;overflow:hidden">${_buttonsHTML(room,true)}</div>
-      <div id="cr-actions" style="flex:0 0 auto;margin-top:auto;padding-top:4px">
+      <div id="cr-actions" style="flex:0 0 auto;padding-top:4px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
           <button id="cr-del-btn" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:10px;padding:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;width:100%">Törlés</button>
           <button id="cr-sub-btn" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:10px;padding:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;width:100%">Beküldés</button>
@@ -1029,7 +1029,7 @@ function renderCricketUI(room){
     document.getElementById('undo-cr-btn')?.addEventListener('click', ()=>undoLastTurnCricket());
     document.getElementById('cr-leave-btn')?.addEventListener('click', ()=>confirmLeave());
     // JS-ből számoljuk ki a gomb grid pontos magasságát
-    requestAnimationFrame(()=>{
+    const fitButtons=()=>{
       const wrap=document.getElementById('cr-portrait-wrap');
       const hdr=document.getElementById('cr-hdr');
       const sb=document.getElementById('cr-sb');
@@ -1038,12 +1038,16 @@ function renderCricketUI(room){
       const btns=document.getElementById('cr-btns-wrap');
       if(!wrap||!hdr||!sb||!sdt||!act||!btns)return;
       const total=wrap.clientHeight;
-      const used=hdr.offsetHeight+sb.offsetHeight+sdt.offsetHeight+act.offsetHeight+20;
-      const available=Math.max(120,total-used);
+      const used=hdr.offsetHeight+sb.offsetHeight+sdt.offsetHeight+act.offsetHeight+18;
+      const available=Math.max(100,total-used);
       btns.style.height=available+'px';
+      btns.style.maxHeight=available+'px';
       const inner=btns.firstElementChild;
-      if(inner) inner.style.height='100%';
-    });
+      if(inner){inner.style.height='100%';inner.style.maxHeight='100%';}
+    };
+    requestAnimationFrame(fitButtons);
+    setTimeout(fitButtons,50);
+    setTimeout(fitButtons,200);
   } else {
     el.innerHTML=`<div style="display:flex;flex-direction:row;height:100%;overflow:hidden;padding:5px 10px;gap:10px;box-sizing:border-box">
       <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
