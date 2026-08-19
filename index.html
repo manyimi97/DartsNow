@@ -965,10 +965,11 @@ function _buttonsHTML(room, portrait){
       ${btn(t,1,t)}${btn(t,2,t)}${btn(t,3,t)}
     </div>`;
   });
-  // Bull: S és D gomb, T üres — DE UGYANOLYAN MAGASSÁGÚ mint a többi sor
+  // Bull: S az S oszlopban, D a D oszlopban, T üres
   rows+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:${gap};min-height:0">
-    ${btn('B',1,'BULL')}${btn('B',2,'BULL')}
-    <div style="min-height:0"></div>
+    ${btn('B',1,'BULL')}
+    ${btn('B',2,'BULL')}
+    <div></div>
   </div>`;
 
   return `<div style="flex:1;min-height:0;display:grid;grid-template-rows:repeat(7,1fr);gap:${gap};overflow:hidden;opacity:${mainOp}">${rows}</div>`;
@@ -994,23 +995,32 @@ function renderCricketUI(room){
   const hdr=`background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;text-align:center;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;flex-shrink:0`;
 
   if(portrait){
-    el.innerHTML=`<div style="display:flex;flex-direction:column;height:100%;overflow:hidden;padding:6px 10px 6px">
-      <div style="${hdr};font-size:18px;padding:10px 16px;margin-bottom:6px">🎯 ${curName} KÖRE</div>
+    // Álló: fejléc + scoreboard fix tetején, gombok alul fix, középen a btn grid flex:1
+    el.innerHTML=`<div style="display:flex;flex-direction:column;height:100%;overflow:hidden;padding:6px 10px 6px;box-sizing:border-box">
+      <!-- Fejléc -->
+      <div style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;padding:10px 16px;text-align:center;font-size:18px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;flex-shrink:0">🎯 ${curName} KÖRE</div>
+      <!-- Scoreboard: flex-shrink:0, soha nem nyomja el a gombokat -->
       <div style="flex-shrink:0;margin-bottom:4px">${_scoreboardHTML(room,true)}</div>
-      <div style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:3px;flex-shrink:0">
-          <div style="text-align:center;font-size:16px;font-weight:700;color:#fff">S</div>
-          <div style="text-align:center;font-size:16px;font-weight:700;color:#fff">D</div>
-          <div style="text-align:center;font-size:16px;font-weight:700;color:#fff">T</div>
-        </div>
-        ${_buttonsHTML(room,true)}
+      <!-- S D T fejléc -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:3px;flex-shrink:0">
+        <div style="text-align:center;font-size:16px;font-weight:700;color:#fff">S</div>
+        <div style="text-align:center;font-size:16px;font-weight:700;color:#fff">D</div>
+        <div style="text-align:center;font-size:16px;font-weight:700;color:#fff">T</div>
       </div>
+      <!-- Gombok: flex:1 kitölti a maradékot -->
+      ${_buttonsHTML(room,true)}
+      <!-- Akció gombok: mindig lent, flex-shrink:0 -->
       <div style="flex-shrink:0;margin-top:5px">
-        ${_actionHTML(true)}
-        <button onclick="confirmLeave()" style="width:100%;background:transparent;border:1px solid #333;border-radius:10px;padding:7px;color:#555;font-size:12px;cursor:pointer;margin-top:5px">Kilépés a játékból</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:5px">
+          <button onclick="undoCricket()" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">Törlés</button>
+          <button onclick="submitCricketTurn()" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">Beküldés</button>
+        </div>
+        <button id="undo-cr-btn" onclick="undoLastTurnCricket()" ${turnHistory.length>0?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:10px;padding:9px;color:#e67e22;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:5px;opacity:${turnHistory.length>0?'1':'0.3'}">↺ Visszavonás</button>
+        <button id="cr-leave-btn" style="width:100%;background:transparent;border:1px solid #333;border-radius:10px;padding:7px;color:#555;font-size:12px;cursor:pointer">Kilépés a játékból</button>
       </div>
       <p id="cricket-error" style="color:#e74c3c;font-size:11px;text-align:center;min-height:14px;margin-top:2px;flex-shrink:0"></p>
     </div>`;
+    document.getElementById('cr-leave-btn')?.addEventListener('click', confirmLeave);
   } else {
     el.innerHTML=`<div style="display:flex;flex-direction:row;height:100%;overflow:hidden;padding:5px 10px;gap:10px">
       <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
@@ -1752,11 +1762,15 @@ function confirmLeave2(){
       <div style="font-size:17px;font-weight:600;color:#f0f0f0;margin-bottom:8px">De tényleg biztos vagy benne?</div>
       <div style="font-size:13px;color:#888;margin-bottom:20px">Mert ha igen, akkor vége a bulinak...</div>
       <div style="display:flex;gap:10px">
-        <button onclick="document.getElementById('leave-popup').remove();leaveGame()" style="flex:1;padding:13px;background:#c0392b;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">Igen, kilépek</button>
+        <button id="leave-confirm-yes" style="flex:1;padding:13px;background:#c0392b;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">Igen, kilépek</button>
         <button onclick="document.getElementById('leave-popup').remove()" style="flex:1;padding:13px;background:#1D9E75;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">Maradok! 🎯</button>
       </div>
     </div>`;
   document.body.appendChild(popup);
+  document.getElementById('leave-confirm-yes').addEventListener('click',()=>{
+    document.getElementById('leave-popup')?.remove();
+    leaveGame();
+  });
 }
 
 async function leaveGame(){
