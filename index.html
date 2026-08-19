@@ -948,7 +948,8 @@ function _buttonsHTML(room, portrait){
   const gap=portrait?'4px':'3px';
 
   function closed(t,m){
-    const myM=(gameState.players[myId]?.marks||{})[t]||0;
+    const activePid=room.currentPlayer;
+    const myM=(gameState.players[activePid]?.marks||{})[t]||0;
     const pend=cricketThrows.filter(th=>th.target===t).reduce((s,th)=>s+th.mult,0);
     const allC=(gameState.playerOrder||[]).every(pid=>((gameState.players[pid]?.marks||{})[t]||0)>=3);
     return allC||(Math.min(3,myM+pend)>=3&&myM>=3);
@@ -1002,7 +1003,9 @@ function renderCricketUI(room){
   const hdr=`background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;text-align:center;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;flex-shrink:0`;
 
   if(portrait){
-    el.innerHTML=`<div style="display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;padding:4px 8px 4px;box-sizing:border-box">
+    // Az akció gombok becsült magassága: Törlés+Beküldés ~50px, Visszavonás ~38px, Kilépés ~34px, margók ~16px = ~138px
+    const actionH = 142;
+    el.innerHTML=`<div style="position:relative;display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;padding:4px 8px ${actionH+8}px;box-sizing:border-box">
       <div style="flex:0 0 auto;background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;padding:8px 16px;text-align:center;font-size:17px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">🎯 ${curName} KÖRE</div>
       <div style="flex:0 0 auto;margin-bottom:3px">${_scoreboardHTML(room,true)}</div>
       <div style="flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:2px">
@@ -1011,7 +1014,8 @@ function renderCricketUI(room){
         <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">T</div>
       </div>
       ${_buttonsHTML(room,true)}
-      <div style="flex:0 0 auto;margin-top:4px">
+      <!-- Akció gombok: position absolute, mindig látszódik -->
+      <div style="position:absolute;bottom:4px;left:8px;right:8px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
           <button id="cr-del-btn" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;width:100%">Törlés</button>
           <button id="cr-sub-btn" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;width:100%">Beküldés</button>
