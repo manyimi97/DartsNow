@@ -1002,7 +1002,7 @@ function renderCricketUI(room){
   const hdr=`background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;text-align:center;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;flex-shrink:0`;
 
   if(portrait){
-    el.innerHTML=`<div style="display:flex;flex-direction:column;height:100%;overflow:hidden;padding:4px 8px 4px;box-sizing:border-box">
+    el.innerHTML=`<div style="display:flex;flex-direction:column;height:100%;overflow:hidden;padding:4px 8px;box-sizing:border-box">
       <div style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;padding:8px 16px;text-align:center;font-size:17px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;flex-shrink:0">🎯 ${curName} KÖRE</div>
       <div style="flex-shrink:0;margin-bottom:3px">${_scoreboardHTML(room,true)}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:2px;flex-shrink:0">
@@ -1011,16 +1011,19 @@ function renderCricketUI(room){
         <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">T</div>
       </div>
       ${_buttonsHTML(room,true)}
-      <div style="flex-shrink:0;margin-top:4px">
+      <div style="flex-shrink:0;padding-top:4px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px">
-          <button onclick="undoCricket()" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Törlés</button>
-          <button onclick="submitCricketTurn()" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Beküldés</button>
+          <button id="cr-del-btn" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Törlés</button>
+          <button id="cr-sub-btn" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Beküldés</button>
         </div>
-        <button id="undo-cr-btn" onclick="undoLastTurnCricket()" ${turnHistory.length>0?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:10px;padding:7px;color:#e67e22;font-size:12px;font-weight:600;cursor:pointer;margin-bottom:4px;opacity:${turnHistory.length>0?'1':'0.3'}">↺ Visszavonás</button>
+        <button id="undo-cr-btn" ${turnHistory.length>0?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:10px;padding:7px;color:#e67e22;font-size:12px;font-weight:600;cursor:pointer;margin-bottom:4px;opacity:${turnHistory.length>0?'1':'0.3'}">↺ Visszavonás</button>
         <button id="cr-leave-btn" style="width:100%;background:transparent;border:1px solid #333;border-radius:10px;padding:6px;color:#555;font-size:11px;cursor:pointer">Kilépés a játékból</button>
       </div>
     </div>`;
-    document.getElementById('cr-leave-btn')?.addEventListener('click', confirmLeave);
+    document.getElementById('cr-del-btn')?.addEventListener('click', ()=>undoCricket());
+    document.getElementById('cr-sub-btn')?.addEventListener('click', ()=>submitCricketTurn());
+    document.getElementById('undo-cr-btn')?.addEventListener('click', ()=>undoLastTurnCricket());
+    document.getElementById('cr-leave-btn')?.addEventListener('click', ()=>confirmLeave());
   } else {
     el.innerHTML=`<div style="display:flex;flex-direction:row;height:100%;overflow:hidden;padding:5px 10px;gap:10px;box-sizing:border-box">
       <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
@@ -1037,22 +1040,27 @@ function renderCricketUI(room){
         ${_buttonsHTML(room,false)}
         <div style="flex-shrink:0;margin-top:5px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:4px">
-            <button onclick="undoCricket()" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:8px;padding:9px;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Törlés</button>
-            <button onclick="submitCricketTurn()" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:8px;padding:9px;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Beküldés</button>
+            <button id="cr-del-btn-ls" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:8px;padding:9px;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Törlés</button>
+            <button id="cr-sub-btn-ls" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:8px;padding:9px;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Beküldés</button>
           </div>
-          <button id="undo-cr-btn" onclick="undoLastTurnCricket()" ${turnHistory.length>0?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:8px;padding:6px;color:#e67e22;font-size:11px;font-weight:600;cursor:pointer;opacity:${turnHistory.length>0?'1':'0.3'}">↺ Visszavonás</button>
+          <button id="undo-cr-btn-ls" ${turnHistory.length>0?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:8px;padding:6px;color:#e67e22;font-size:11px;font-weight:600;cursor:pointer;opacity:${turnHistory.length>0?'1':'0.3'}">↺ Visszavonás</button>
         </div>
       </div>
       <p id="cricket-error" style="display:none"></p>
     </div>`;
-    document.getElementById('cr-leave-btn-ls')?.addEventListener('click', confirmLeave);
+    document.getElementById('cr-leave-btn-ls')?.addEventListener('click', ()=>confirmLeave());
+    document.getElementById('cr-del-btn-ls')?.addEventListener('click', ()=>undoCricket());
+    document.getElementById('cr-sub-btn-ls')?.addEventListener('click', ()=>submitCricketTurn());
+    document.getElementById('undo-cr-btn-ls')?.addEventListener('click', ()=>undoLastTurnCricket());
   }
 }
 
 function updateCricketUI(room){renderCricketUI(room);}
 
 function hitCricketDirect(target,mult){
-  if(!gameState||gameState.currentPlayer!==myId)return;
+  if(!gameState)return;
+  const isLocal=offlineMode||(localPlayerIds.length>0&&isLocalPlayer(gameState.currentPlayer));
+  if(gameState.currentPlayer!==myId&&!isLocal)return;
   if(cricketThrows.length>=3)return;
   cricketThrows.push({target,mult});
   renderCricketUI(gameState);
