@@ -979,7 +979,7 @@ function _buttonsHTML(room, portrait){
     <div></div>
   </div>`;
 
-  return `<div style="flex:1;min-height:0;display:grid;grid-template-rows:repeat(7,1fr);gap:${gap};overflow:hidden;opacity:${mainOp};pointer-events:${pe}">${rows}</div>`;
+  return `<div style="flex:1;min-height:0;min-width:0;display:grid;grid-template-rows:repeat(7,1fr);gap:${gap};overflow:hidden;opacity:${mainOp};pointer-events:${pe}">${rows}</div>`;
 }
 
 function _actionHTML(portrait){
@@ -1002,22 +1002,22 @@ function renderCricketUI(room){
   const hdr=`background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;text-align:center;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;flex-shrink:0`;
 
   if(portrait){
-    el.innerHTML=`<div style="display:flex;flex-direction:column;height:100%;overflow:hidden;padding:4px 8px;box-sizing:border-box">
-      <div style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;padding:8px 16px;text-align:center;font-size:17px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;flex-shrink:0">🎯 ${curName} KÖRE</div>
-      <div style="flex-shrink:0;margin-bottom:3px">${_scoreboardHTML(room,true)}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:2px;flex-shrink:0">
+    el.innerHTML=`<div style="display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;padding:4px 8px 4px;box-sizing:border-box">
+      <div style="flex:0 0 auto;background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;padding:8px 16px;text-align:center;font-size:17px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">🎯 ${curName} KÖRE</div>
+      <div style="flex:0 0 auto;margin-bottom:3px">${_scoreboardHTML(room,true)}</div>
+      <div style="flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:2px">
         <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">S</div>
         <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">D</div>
         <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">T</div>
       </div>
       ${_buttonsHTML(room,true)}
-      <div style="flex-shrink:0;padding-top:4px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px">
-          <button id="cr-del-btn" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Törlés</button>
-          <button id="cr-sub-btn" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Beküldés</button>
+      <div style="flex:0 0 auto;margin-top:4px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
+          <button id="cr-del-btn" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;width:100%">Törlés</button>
+          <button id="cr-sub-btn" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;width:100%">Beküldés</button>
         </div>
-        <button id="undo-cr-btn" ${turnHistory.length>0?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:10px;padding:7px;color:#e67e22;font-size:12px;font-weight:600;cursor:pointer;margin-bottom:4px;opacity:${turnHistory.length>0?'1':'0.3'}">↺ Visszavonás</button>
-        <button id="cr-leave-btn" style="width:100%;background:transparent;border:1px solid #333;border-radius:10px;padding:6px;color:#555;font-size:11px;cursor:pointer">Kilépés a játékból</button>
+        <button id="undo-cr-btn" ${turnHistory.length>0?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:10px;padding:8px;color:#e67e22;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:4px;opacity:${turnHistory.length>0?'1':'0.3'}">↺ Visszavonás</button>
+        <button id="cr-leave-btn" style="width:100%;background:transparent;border:1px solid #2a2a2a;border-radius:10px;padding:7px;color:#555;font-size:12px;cursor:pointer">Kilépés a játékból</button>
       </div>
     </div>`;
     document.getElementById('cr-del-btn')?.addEventListener('click', ()=>undoCricket());
@@ -1067,7 +1067,9 @@ function hitCricketDirect(target,mult){
 }
 
 function undoCricket(){
-  cricketThrows.pop();
+  if(cricketThrows.length>0){
+    cricketThrows.pop();
+  }
   renderCricketUI(gameState);
 }
 
