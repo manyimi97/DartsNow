@@ -68,6 +68,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .screen.active{display:block}
 /* Home/lobby/winner: max szélesség középre */
 #screen-home,#screen-lobby,#screen-winner{max-width:480px;margin:0 auto;padding-bottom:40px}
+/* Cricket screen: JS buildeli a tartalmát, ne scrollozzon */
+#screen-cricket{padding:0!important;overflow:hidden!important}
+#screen-cricket.active{display:flex!important;flex-direction:column}
 /* ── Játék képernyők ── */
 #screen-game01.active,#screen-cricket.active{
   display:flex!important;flex-direction:column;
@@ -1789,23 +1792,31 @@ function confirmLeave2(){
 }
 
 async function leaveGame(){
-  if(!offlineMode&&roomId){
-    const leavingName=myName||gameState?.players?.[myId]?.name||'Valaki';
-    if(isHost){
-      await fbUpdate('rooms/'+roomId,{status:'disbanded',disbandedBy:leavingName});
-      setTimeout(()=>fbDel('rooms/'+roomId),5000);
-    } else {
-      await fbUpdate('rooms/'+roomId,{leftPlayer:leavingName,leftAt:Date.now()});
-      await fbDel('rooms/'+roomId+'/players/'+myId);
+  try{
+    if(!offlineMode&&roomId){
+      const leavingName=myName||gameState?.players?.[myId]?.name||'Valaki';
+      if(isHost){
+        await fbUpdate('rooms/'+roomId,{status:'disbanded',disbandedBy:leavingName});
+        setTimeout(()=>fbDel('rooms/'+roomId),5000);
+      } else {
+        await fbUpdate('rooms/'+roomId,{leftPlayer:leavingName,leftAt:Date.now()});
+        await fbDel('rooms/'+roomId+'/players/'+myId);
+      }
     }
-  }
+  }catch(e){console.warn('leaveGame firebase error',e);}
   stopPolling();
   roomId=null;gameState=null;currentThrows=[];cricketThrows=[];isHost=false;
   offlineMode=false;myId='p_'+Math.random().toString(36).slice(2,9);
   localPlayerIds=[];
   turnHistory=[];winsTracker={};roundHistory=[];phoneBuffer='';legNumber=0;lastSeenLeftPlayer=null;
-  document.getElementById('turn-banner-01').style.display='none';
-  document.getElementById('turn-banner-cr').style.display='none';
+  // Safely clear banners - they may not exist if cricket screen was JS-built
+  const b01=document.getElementById('turn-banner-01');
+  const bcr=document.getElementById('turn-banner-cr');
+  if(b01)b01.style.display='none';
+  if(bcr)bcr.style.display='none';
+  // Clear cricket screen content
+  const crEl=document.getElementById('screen-cricket');
+  if(crEl)crEl.innerHTML='';
   show('home');checkConn();
 }
 
