@@ -1200,7 +1200,7 @@ function addThrow(val){
   let points, target;
   if(val==='B'){
     if(currentMult===3)return;
-    points=currentMult===2?50:50;
+    points=currentMult===2?50:25;
     target='B';
   } else {
     points=val*currentMult;
@@ -1436,14 +1436,20 @@ function _g01MultRow(portrait){
 }
 
 function _g01NumBtn(n, portrait, cols){
-  const val = n==='B' ? (currentMult===2?50:currentMult===3?0:50) : n*currentMult;
+  // BULL: szimpla = 25, dupla = 50, tripla nincs
+  const val = n==='B' ? (currentMult===2?50:currentMult===3?0:25) : n*currentMult;
   const lbl = n==='B' ? 'BULL' : n;
   const nFs = portrait ? 'clamp(11px,3vw,15px)' : 'clamp(10px,1.9vh,14px)';
   const vFs = portrait ? 'clamp(10px,2.8vw,14px)' : 'clamp(9px,1.7vh,13px)';
   const dis = (n==='B' && currentMult===3);
+  // Szimplánál nem mutatjuk a zárójeles értéket (ugyanaz mint a szám), BULL-nál viszont igen
+  const showVal = (currentMult!==1) || (n==='B');
+  const valLine = showVal
+    ? `<span style="font-size:${vFs};font-weight:700;color:#1fd18c;line-height:1">(${val})</span>`
+    : '';
   return `<button class="g01-num" data-n="${n}" ${dis?'disabled':''} style="width:100%;height:100%;min-height:0;overflow:hidden;border:none;border-radius:8px;background:linear-gradient(180deg,#3d3d3d,#282828);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px;opacity:${dis?'0.3':'1'};-webkit-tap-highlight-color:transparent">
     <span style="font-size:${nFs};font-weight:700;color:#fff;line-height:1.1">${lbl}</span>
-    <span style="font-size:${vFs};font-weight:700;color:#1fd18c;line-height:1">(${val})</span>
+    ${valLine}
   </button>`;
 }
 
@@ -1525,7 +1531,7 @@ function renderGame01UI(room){
           <button id="g01-del-btn" style="background:linear-gradient(160deg,#e91e63,#c62828);border:none;border-radius:10px;padding:11px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Törlés</button>
           <button class="g01-num" data-n="B" style="border:none;border-radius:10px;background:linear-gradient(180deg,#3d3d3d,#282828);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;opacity:${currentMult===3?'0.3':'1'}" ${currentMult===3?'disabled':''}>
             <span style="font-size:12px;font-weight:700;color:#fff;line-height:1.1">BULL</span>
-            <span style="font-size:11px;font-weight:700;color:#1fd18c;line-height:1">(${currentMult===2?50:currentMult===3?0:50})</span>
+            <span style="font-size:11px;font-weight:700;color:#1fd18c;line-height:1">(${currentMult===2?50:currentMult===3?0:25})</span>
           </button>
           <button id="g01-sub-btn" style="background:linear-gradient(160deg,#2ecf9b,#12a171);border:none;border-radius:10px;padding:11px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Beküldés</button>
         </div>`;
