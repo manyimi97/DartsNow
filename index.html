@@ -1486,7 +1486,6 @@ function renderGame01UI(room){
     if(manualInputMode){
       const keys = ['1','2','3','4','5','6','7','8','9','del','0','ok'];
       rightBlock = `
-        <div style="flex:0 0 auto;opacity:${inputOp};pointer-events:${inputPe};margin-bottom:6px">${_g01ManualDisplay(false)}</div>
         <div id="g01-keys" style="flex:1;min-height:0;opacity:${inputOp};pointer-events:${inputPe};overflow:hidden">
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:repeat(4,minmax(0,1fr));gap:6px;height:100%">
             ${keys.map(k=>_g01PhoneBtn(k,false)).join('')}
