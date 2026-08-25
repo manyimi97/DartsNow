@@ -1367,9 +1367,12 @@ function _g01History(room, portrait){
       </div>`;
     }).join('');
   }
-  return `<div>
-    <div style="font-size:${lblFs};font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">KÖRÖK</div>
-    <div id="g01-hist-box" style="height:${boxH}px;overflow-y:auto;-webkit-overflow-scrolling:touch">${inner}</div>
+  const boxStyle = portrait
+    ? `flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch`
+    : `height:${boxH}px;overflow-y:auto;-webkit-overflow-scrolling:touch`;
+  return `<div style="display:flex;flex-direction:column;height:100%;min-height:0">
+    <div style="flex:0 0 auto;font-size:${lblFs};font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">KÖRÖK</div>
+    <div id="g01-hist-box" style="${boxStyle}">${inner}</div>
   </div>`;
 }
 
@@ -1394,7 +1397,7 @@ function _g01ManualDisplay(portrait){
   const btnFs = portrait ? '13px' : '11px';
   return `<div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center">
     <div style="background:#242424;border-radius:10px;height:${h};display:flex;align-items:center;justify-content:center;font-size:${fs};font-weight:700;color:#f0f0f0">${phoneBuffer||''}</div>
-    <button id="g01-mode-btn" style="border:1px solid #4a4a4a;border-radius:10px;height:${h};padding:0 12px;background:transparent;color:#ddd;font-size:${btnFs};cursor:pointer;white-space:nowrap">✏️ Kézi bevitel</button>
+    <button id="g01-mode-btn" style="border:1px solid #4a4a4a;border-radius:10px;height:${h};padding:0 12px;background:transparent;color:#ddd;font-size:${btnFs};cursor:pointer;white-space:nowrap">🔢 Gombok</button>
   </div>`;
 }
 
@@ -1445,24 +1448,17 @@ function renderGame01UI(room){
   const nums = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
 
   if(portrait){
-    let inputBlock;
+    // TOP block (fix) / KEYS (minmax(0,1fr)) / ACTIONS (fix)
+    let topExtra, keysGrid;
     if(manualInputMode){
       const keys = ['1','2','3','4','5','6','7','8','9','del','0','ok'];
-      inputBlock = `
-        <div style="opacity:${inputOp};pointer-events:${inputPe}">${_g01ManualDisplay(true)}</div>
-        <div id="g01-keys" style="opacity:${inputOp};pointer-events:${inputPe};overflow:hidden">
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:repeat(4,minmax(0,1fr));gap:8px;height:100%">
-            ${keys.map(k=>_g01PhoneBtn(k,true)).join('')}
-          </div>
-        </div>`;
+      topExtra = `<div style="opacity:${inputOp};pointer-events:${inputPe}">${_g01ManualDisplay(true)}</div>`;
+      keysGrid = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:repeat(4,minmax(0,1fr));gap:8px;height:100%">${keys.map(k=>_g01PhoneBtn(k,true)).join('')}</div>`;
     } else {
       const cells = nums.map(n=>_g01NumBtn(n,true,3)).join('') + _g01NumBtn('B',true,3);
-      inputBlock = `
-        <div style="opacity:${inputOp};pointer-events:${inputPe}">${_g01Slots(true)}</div>
-        <div style="opacity:${inputOp};pointer-events:${inputPe}">${_g01MultRow(true)}</div>
-        <div id="g01-keys" style="opacity:${inputOp};pointer-events:${inputPe};overflow:hidden">
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:repeat(7,minmax(0,1fr));gap:6px;height:100%">${cells}</div>
-        </div>`;
+      topExtra = `<div style="opacity:${inputOp};pointer-events:${inputPe}">${_g01Slots(true)}</div>
+                  <div style="opacity:${inputOp};pointer-events:${inputPe};margin-top:6px">${_g01MultRow(true)}</div>`;
+      keysGrid = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:repeat(7,minmax(0,1fr));gap:6px;height:100%">${cells}</div>`;
     }
 
     const actions = manualInputMode ? `
@@ -1476,14 +1472,13 @@ function renderGame01UI(room){
         <button id="g01-undo-btn" ${turnHistory.length>0?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:10px;padding:9px;color:#e67e22;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:6px;opacity:${turnHistory.length>0?'1':'0.35'}">Visszavonás</button>
         <button id="g01-leave-btn" style="width:100%;background:transparent;border:1px solid #2f2f2f;border-radius:10px;padding:8px;color:#666;font-size:13px;cursor:pointer">Kilépés a játékból</button>`;
 
-    el.innerHTML = `<div id="g01-wrap" style="display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;padding:6px 10px;box-sizing:border-box;gap:6px">
-      <div id="g01-top" style="flex:0 0 auto;display:flex;flex-direction:column;gap:6px">
-        ${_g01Header(curName,true)}
-        ${_g01Cards(room,true)}
-        ${_g01History(room,true)}
-      </div>
-      ${inputBlock}
-      <div id="g01-actions" style="flex:0 0 auto">${actions}</div>
+    el.innerHTML = `<div id="g01-wrap" style="display:grid;grid-template-rows:auto auto minmax(52px,148px) auto minmax(0,1fr) auto;width:100%;height:100%;overflow:hidden;padding:6px 10px;box-sizing:border-box;gap:6px">
+      <div>${_g01Header(curName,true)}</div>
+      <div>${_g01Cards(room,true)}</div>
+      <div style="min-height:0;overflow:hidden">${_g01History(room,true)}</div>
+      <div style="min-height:0">${topExtra}</div>
+      <div id="g01-keys" style="min-height:0;overflow:hidden;opacity:${inputOp};pointer-events:${inputPe}">${keysGrid}</div>
+      <div id="g01-actions">${actions}</div>
     </div>`;
   } else {
     // LANDSCAPE
@@ -1551,24 +1546,6 @@ function renderGame01UI(room){
     });
   });
 
-  // ── Fit the key grid into remaining space (portrait only) ──
-  if(portrait){
-    const fit=()=>{
-      const wrap=document.getElementById('g01-wrap');
-      const keys=document.getElementById('g01-keys');
-      const acts=document.getElementById('g01-actions');
-      if(!wrap||!keys||!acts)return;
-      let used=acts.offsetHeight;
-      Array.from(wrap.children).forEach(ch=>{ if(ch!==keys && ch!==acts) used+=ch.offsetHeight; });
-      used += 6*(wrap.children.length-1) + 14;
-      const avail=Math.max(120, wrap.clientHeight-used);
-      keys.style.height=avail+'px';
-      keys.style.maxHeight=avail+'px';
-    };
-    requestAnimationFrame(fit);
-    setTimeout(fit,60);
-    setTimeout(fit,220);
-  }
 }
 
 function updateGame01UI(room){ renderGame01UI(room); }
