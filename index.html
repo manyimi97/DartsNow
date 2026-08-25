@@ -1341,6 +1341,29 @@ function _g01Cards(room, portrait){
   }).join('') + `</div>`;
 }
 
+function _g01Checkout(room, portrait){
+  const cur = room.currentPlayer;
+  const p = room.players[cur];
+  const thrown = currentThrows.reduce((s,t)=>s+t.points,0);
+  const manualVal = manualInputMode ? (parseInt(phoneBuffer)||0) : 0;
+  const pending = manualInputMode ? manualVal : thrown;
+  const live = p ? p.score - pending : 0;
+  const combo = (live>=2 && live<=170) ? CHECKOUTS[live] : null;
+
+  const lblFs = portrait ? 'clamp(9px,2.3vw,11px)' : 'clamp(8px,1.5vh,10px)';
+  const txtFs = portrait ? 'clamp(12px,3.2vw,16px)' : 'clamp(10px,2vh,14px)';
+  const h = portrait ? '38px' : '30px';
+
+  const border = combo ? '1px solid rgba(46,207,155,0.45)' : '1px solid #232323';
+  const bg = combo ? 'rgba(46,207,155,0.10)' : '#141414';
+  const body = combo
+    ? `<span style="font-size:${lblFs};color:#2ecf9b;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Kiszálló</span>
+       <span style="font-size:${txtFs};color:#e8e8e8;font-weight:700;margin-left:8px">${combo}</span>`
+    : `<span style="font-size:${txtFs};color:#2f2f2f">&nbsp;</span>`;
+
+  return `<div style="height:${h};border:${border};background:${bg};border-radius:9px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0 8px">${body}</div>`;
+}
+
 function _g01History(room, portrait){
   const pO = room.playerOrder||[];
   const rows = [...roundHistory].sort((a,b)=>b.round-a.round);
@@ -1471,9 +1494,10 @@ function renderGame01UI(room){
         <button id="g01-undo-btn" ${turnHistory.length>0?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:10px;padding:9px;color:#e67e22;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:6px;opacity:${turnHistory.length>0?'1':'0.35'}">Visszavonás</button>
         <button id="g01-leave-btn" style="width:100%;background:transparent;border:1px solid #2f2f2f;border-radius:10px;padding:8px;color:#666;font-size:13px;cursor:pointer">Kilépés a játékból</button>`;
 
-    el.innerHTML = `<div id="g01-wrap" style="display:grid;grid-template-rows:auto auto minmax(52px,148px) auto minmax(0,1fr) auto;width:100%;height:100%;overflow:hidden;padding:6px 10px;box-sizing:border-box;gap:6px">
+    el.innerHTML = `<div id="g01-wrap" style="display:grid;grid-template-rows:auto auto auto minmax(46px,148px) auto minmax(0,1fr) auto;width:100%;height:100%;overflow:hidden;padding:6px 10px;box-sizing:border-box;gap:6px">
       <div>${_g01Header(curName,true)}</div>
       <div>${_g01Cards(room,true)}</div>
+      <div>${_g01Checkout(room,true)}</div>
       <div style="min-height:0;overflow:hidden">${_g01History(room,true)}</div>
       <div style="min-height:0">${topExtra}</div>
       <div id="g01-keys" style="min-height:0;overflow:hidden;opacity:${inputOp};pointer-events:${inputPe}">${keysGrid}</div>
@@ -1512,6 +1536,7 @@ function renderGame01UI(room){
       <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;gap:5px">
         <div style="flex:0 0 auto">${_g01Header(curName,false)}</div>
         <div style="flex:0 0 auto">${_g01Cards(room,false)}</div>
+        <div style="flex:0 0 auto">${_g01Checkout(room,false)}</div>
         <div style="flex:1;min-height:0;overflow:hidden">${_g01History(room,false)}</div>
         <div style="flex:0 0 auto;opacity:${inputOp};pointer-events:${inputPe}">${manualInputMode?_g01ManualDisplay(false):_g01Slots(false)}</div>
         <div style="flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px">
