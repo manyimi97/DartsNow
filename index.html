@@ -68,9 +68,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .screen.active{display:block}
 /* Home/lobby/winner: max szélesség középre */
 #screen-home,#screen-lobby,#screen-winner{max-width:480px;margin:0 auto;padding-bottom:40px}
-/* Cricket screen: JS buildeli a tartalmát */
-#screen-cricket{padding:0!important;overflow:visible!important}
-#screen-cricket.active{display:block!important;position:absolute;top:0;left:0;right:0;bottom:0}
+/* Cricket + 01 screen: JS buildeli a tartalmát */
+#screen-cricket,#screen-game01{padding:0!important;overflow:hidden!important}
+#screen-cricket.active,#screen-game01.active{display:block!important;position:absolute;top:0;left:0;right:0;bottom:0}
 /* ── Játék képernyők ── */
 #screen-game01.active,#screen-cricket.active{
   display:flex!important;flex-direction:column;
@@ -241,15 +241,6 @@ input[type=text]:focus{border-color:#1D9E75}
   h1{font-size:16px}
   .tagline{font-size:11px;margin-bottom:4px}
   /* 01 fekvőben: bal=score kártyák oszlopban, jobb=input */
-  #screen-game01.active{flex-direction:row!important;gap:8px;padding:4px 8px}
-  #screen-game01 .players-bar{flex-direction:column!important;width:110px;flex-shrink:0;height:auto;gap:3px;margin-bottom:0}
-  #screen-game01 .pscard{flex:none;width:100%;height:auto;padding:3px 4px}
-  #screen-game01 .score-big{font-size:clamp(14px,3vh,20px)}
-  #screen-game01 .status-mini{font-size:9px;margin-bottom:2px}
-  #screen-game01 #checkout-hint{display:none!important}
-  #screen-game01 #round-history{display:none!important}
-  #screen-game01 #turn-banner-01{display:none!important}
-  #screen-game01 .g01-input{flex:1;min-width:0}
   /* Cricket fekvőben: cr-wrap vízszintes, jól néz ki */
   #screen-cricket.active{padding:4px 8px}
   #turn-banner-cr{display:none!important}
@@ -369,63 +360,7 @@ input[type=text]:focus{border-color:#1D9E75}
 </div>
 
 <!-- GAME 01 -->
-<div id="screen-game01" class="screen">
-  <div id="turn-banner-01" class="turn-banner-mini" style="display:none"></div>
-  <div class="players-bar" id="game01-players"></div>
-  <div id="game01-status" class="status-mini"></div>
-  <div id="checkout-hint" style="display:none;background:#1a1a1a;border:1px solid rgba(29,158,117,0.4);border-radius:8px;padding:5px 10px;margin-bottom:4px;flex-shrink:0">
-    <div style="font-size:10px;color:#1D9E75;font-weight:700;text-transform:uppercase;margin-bottom:1px">🎯 Kiszálló</div>
-    <div id="checkout-combos" style="font-size:12px;color:#ccc"></div>
-  </div>
-  <div id="round-history" style="display:none;flex-shrink:0;margin-bottom:4px">
-    <div style="font-size:10px;color:#555;font-weight:600;text-transform:uppercase;margin-bottom:2px">Körök</div>
-    <div id="round-history-list" style="max-height:64px;overflow-y:auto"></div>
-  </div>
-  <div class="g01-input">
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-shrink:0">
-      <div class="throw-display" style="flex:1;margin-bottom:0">
-        <div class="throw-slot" id="t0">—</div>
-        <div class="throw-slot" id="t1">—</div>
-        <div class="throw-slot" id="t2">—</div>
-      </div>
-      <button class="mode-toggle-btn" id="input-mode-btn" onclick="toggleInputMode()">✏️ Kézi</button>
-    </div>
-    <div id="numpad-mode">
-      <div class="mult-row" style="flex-shrink:0">
-        <button class="mult-btn" id="mult-1" onclick="setMult(1)">Szimpla</button>
-        <button class="mult-btn on" id="mult-2" onclick="setMult(2)">Dupla</button>
-        <button class="mult-btn" id="mult-3" onclick="setMult(3)">Tripla</button>
-      </div>
-      <div class="numpad" id="numpad01"></div>
-    </div>
-    <div id="manual-mode">
-      <div id="manual-display" style="font-size:28px;font-weight:700;text-align:center;padding:8px;background:#161616;border:1px solid #333;border-radius:10px;margin-bottom:8px;color:#f0f0f0;flex-shrink:0">—</div>
-      <div class="phone-numpad">
-        <button class="phone-btn" onclick="phoneKey('1')">1</button>
-        <button class="phone-btn" onclick="phoneKey('2')">2</button>
-        <button class="phone-btn" onclick="phoneKey('3')">3</button>
-        <button class="phone-btn" onclick="phoneKey('4')">4</button>
-        <button class="phone-btn" onclick="phoneKey('5')">5</button>
-        <button class="phone-btn" onclick="phoneKey('6')">6</button>
-        <button class="phone-btn" onclick="phoneKey('7')">7</button>
-        <button class="phone-btn" onclick="phoneKey('8')">8</button>
-        <button class="phone-btn" onclick="phoneKey('9')">9</button>
-        <button class="phone-btn phone-btn-del" onclick="phoneKey('del')">⌫</button>
-        <button class="phone-btn" onclick="phoneKey('0')">0</button>
-        <button class="phone-btn phone-btn-ok" onclick="submitManual()">OK ✓</button>
-      </div>
-    </div>
-    <div class="g01-bottom-btns">
-      <div class="action-row-3" id="numpad-actions">
-        <button class="btn btn-danger btn-sm" onclick="undoThrow()" style="flex:1">↩ Törlés</button>
-        <button class="btn btn-primary btn-sm" onclick="submitTurn()" style="flex:1">Beküldés ✓</button>
-      </div>
-      <button class="undo-turn-btn" id="undo-turn-01-btn" onclick="undoLastTurn01()" disabled>↺ Előző kör visszavonása</button>
-      <p id="game01-error" class="error" style="margin:2px 0;min-height:14px;font-size:11px"></p>
-      <button class="btn" onclick="confirmLeave()" style="padding:5px;color:#555;font-size:11px;border-color:#222;margin-bottom:0">Kilépés</button>
-    </div>
-  </div>
-</div>
+<div id="screen-game01" class="screen"></div>
 
 <!-- GAME CRICKET -->
 <div id="screen-cricket" class="screen" style="padding:0;overflow:hidden">
@@ -751,7 +686,7 @@ function offlinePassTurn(){
   const next=order[(order.indexOf(gameState.currentPlayer)+1)%order.length];
   gameState.currentPlayer=next;myId=next;
   if(gameState.mode==='cricket') renderCricketUI(gameState);
-  else{updateGame01UI(gameState);showTurnBanner();}
+  else renderGame01UI(gameState);
 }
 
 function showTurnBanner(){
@@ -821,9 +756,8 @@ function startGameUI(room){
     myId=isLocalPlayer(room.currentPlayer)?room.currentPlayer:localPlayerIds[0];
   }
   const count=(room.playerOrder||[]).length;
-  document.getElementById('game01-players').style.gridTemplateColumns=count<=2?'1fr 1fr':count===3?'1fr 1fr 1fr':'1fr 1fr';
   if(room.mode==='cricket'){show('cricket');renderCricketUI(room);}
-  else{show('game01');buildNumpad();refreshNumpadLabels();}
+  else{show('game01');renderGame01UI(room);}
   updateGameUI(room);
 }
 function updateGameUI(room){
@@ -832,33 +766,10 @@ function updateGameUI(room){
 }
 
 // ── 01 ─────────────────────────────────────────────────────
-function buildNumpad(){
-  const nums=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,'B'];
-  const np=document.getElementById('numpad01');
-  np.innerHTML=nums.map(n=>{
-    const val=n==='B'?25:n;
-    const label=n==='B'?'BULL':n;
-    return `<button class="num-btn" id="nb-${val}" onclick="addThrow(${val})">${label}</button>`;
-  }).join('');
-}
+function buildNumpad(){}
 
-function refreshNumpadLabels(){
-  const nums=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,25];
-  nums.forEach(val=>{
-    const btn=document.getElementById('nb-'+val);
-    if(!btn)return;
-    const isBull=val===25;
-    const baseLabel=isBull?'BULL':val;
-    if(currentMult===1){
-      btn.textContent=baseLabel;
-    } else {
-      const mult=currentMult===2?2:3;
-      const extra=isBull?(val*mult===50?'50':''):val*mult;
-      btn.innerHTML=`${baseLabel}<br><span style="font-size:11px;color:#1D9E75;font-weight:500">(${extra})</span>`;
-    }
-  });
-}
-function setMult(m){currentMult=m;[1,2,3].forEach(i=>document.getElementById('mult-'+i).classList.toggle('on',i===m));refreshNumpadLabels();}
+function refreshNumpadLabels(){}
+function setMult(m){ currentMult=m; renderGame01UI(gameState); }
 // ── Cricket ────────────────────────────────────────────────
 // ── Cricket ─────────────────────────────────────────────────
 
@@ -1097,14 +1008,14 @@ function undoCricket(){
   renderCricketUI(gameState);
 }
 
-window.addEventListener('orientationchange',()=>setTimeout(()=>{if(gameState?.mode==='cricket')renderCricketUI(gameState);},300));
+window.addEventListener('orientationchange',()=>setTimeout(()=>{if(gameState?.mode==='cricket')renderCricketUI(gameState);else if(gameState)renderGame01UI(gameState);},300));
 // resize csak akkor ha valóban orientáció váltás volt (szélesség/magasság arány megváltozott)
 let _lastLandscape=isLandscape();
 window.addEventListener('resize',()=>{
   const nowLandscape=isLandscape();
   if(nowLandscape!==_lastLandscape){
     _lastLandscape=nowLandscape;
-    setTimeout(()=>{if(gameState?.mode==='cricket')renderCricketUI(gameState);},150);
+    setTimeout(()=>{if(gameState?.mode==='cricket')renderCricketUI(gameState);else if(gameState)renderGame01UI(gameState);},150);
   }
 });
 
@@ -1153,10 +1064,12 @@ const CHECKOUTS={
 
 function showCheckout(score){
   const div=document.getElementById('checkout-hint');
-  const combos=document.getElementById('checkout-combos');
-  if(score>170||score<=1||!CHECKOUTS[score]){div.style.display='none';return;}
+  if(!div)return;
+  const combo=CHECKOUTS[score];
+  if(!combo||score>170||score<2){div.style.display='none';return;}
   div.style.display='block';
-  combos.textContent=CHECKOUTS[score];
+  const cc=document.getElementById('checkout-combos');
+  if(cc)cc.textContent=combo;
 }
 
 // ── Input mode toggle ──────────────────────────────────────
@@ -1166,22 +1079,11 @@ let roundHistory=[]; // [{round, scores:{pid:score}}]
 
 function toggleInputMode(){
   manualInputMode=!manualInputMode;
-  const numpadEl=document.getElementById('numpad-mode');
-  const manualEl=document.getElementById('manual-mode');
-  const actionsEl=document.getElementById('numpad-actions');
-  if(numpadEl){numpadEl.style.display=manualInputMode?'none':'flex';}
-  if(manualEl){manualEl.style.display=manualInputMode?'flex':'none';}
-  if(actionsEl){actionsEl.style.display=manualInputMode?'none':'flex';}
-  const btn=document.getElementById('input-mode-btn');
-  if(btn){
-    btn.textContent=manualInputMode?'🔢 Gombok':'✏️ Kézi';
-    btn.classList.toggle('active',manualInputMode);
-  }
-  if(manualInputMode){
-    currentThrows=[];updateThrowDisplay();updateLiveScore();
-    phoneBuffer='';updatePhoneDisplay();
-  }
+  currentThrows=[];
+  phoneBuffer='';
+  renderGame01UI(gameState);
 }
+
 
 function phoneKey(k){
   if(!gameState||gameState.currentPlayer!==myId)return;
@@ -1197,15 +1099,13 @@ function phoneKey(k){
   updateLiveScoreManual(parseInt(phoneBuffer)||0);
 }
 
-function updatePhoneDisplay(){
-  const el=document.getElementById('manual-display');
-  if(!el)return;
-  el.textContent=phoneBuffer||'—';
-  el.style.color=phoneBuffer?'#f0f0f0':'#444';
-}
+function updatePhoneDisplay(){ renderGame01UI(gameState); }
+
 
 async function submitManual(){
-  if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Nem a te köröd!');return;}
+  if(!gameState)return;
+  const _isLocal=offlineMode||(localPlayerIds.length>0&&isLocalPlayer(gameState.currentPlayer));
+  if(gameState.currentPlayer!==myId&&!_isLocal)return;
   // Ha üres a bevitel, 0-nak számít (nem dobott semmit)
   const val=parseInt(phoneBuffer)||0;
   if(val<0||val>180){setErr('game01-error','Érvénytelen pontszám (0–180)!');return;}
@@ -1261,41 +1161,20 @@ function saveRoundScore(pid, scored){
 
 // Kör história renderelése — online módban a Firebase scoreHistory-ból rekonstruál
 function renderRoundHistoryFromRoom(room){
-  const div=document.getElementById('round-history');
-  const list=document.getElementById('round-history-list');
-  if(!list||!room)return;
-
+  if(!room)return;
   if(!offlineMode){
-    // Rekonstruáljuk a roundHistory-t a scoreHistory tömbökből
-    // Minden játékosnál: scoreHistory[i] = az i+1. körben dobott pontszám
     roundHistory=[];
     (room.playerOrder||[]).forEach(pid=>{
       const p=room.players[pid];
       const hist=p.scoreHistory||[];
       hist.forEach((s,i)=>{
-        const roundNum=i+1;
-        let entry=roundHistory.find(r=>r.round===roundNum);
-        if(!entry){entry={round:roundNum,scores:{}};roundHistory.push(entry);}
-        entry.scores[pid]=s;
+        const rn=i+1;
+        let e=roundHistory.find(r=>r.round===rn);
+        if(!e){e={round:rn,scores:{}};roundHistory.push(e);}
+        e.scores[pid]=s;
       });
     });
   }
-
-  if(!roundHistory.length){div.style.display='none';return;}
-  div.style.display='block';
-  const pOrder=room.playerOrder||[];
-  const html=[...roundHistory].sort((a,b)=>b.round-a.round).map(entry=>{
-    const scores=pOrder.map(pid=>{
-      const p=room.players[pid];
-      if(!p)return '';
-      const s=entry.scores[pid];
-      return s!=null
-        ?`<span class="round-name">${uc(p.name)}</span><span class="round-score">${s}</span>`
-        :'';
-    }).filter(Boolean).join('<span style="color:#333;margin:0 6px">|</span>');
-    return scores?`<div class="round-row"><span class="round-num">${entry.round}.</span>${scores}</div>`:'';
-  }).filter(Boolean).join('');
-  list.innerHTML=html;
 }
 
 // Update just the avg badge of one player without full redraw
@@ -1309,75 +1188,36 @@ function updateAvgDisplay(pid){
 }
 
 // ── Live score preview during dart entry ───────────────────
-function updateLiveScore(){
-  if(!gameState)return;
-  const thrown=currentThrows.reduce((s,t)=>s+t.points,0);
-  const base=gameState.players[myId].score;
-  const remaining=base-thrown;
-  const card=document.getElementById('pscard-'+myId);
-  if(!card)return;
-  card.querySelector('.score-big').textContent=base;
-  let prev=card.querySelector('.score-preview');
-  if(!prev){
-    prev=document.createElement('div');
-    prev.className='score-preview';
-    card.querySelector('.score-big').after(prev);
-  }
-  if(thrown===0){
-    prev.innerHTML='';
-    showCheckout(base);
-  } else if(remaining<0||remaining===1){
-    prev.innerHTML=`<span style="color:#e74c3c;font-size:12px;font-weight:600">Túllövés!</span>`;
-  } else {
-    prev.innerHTML=`<span style="color:#1D9E75;font-size:clamp(13px,3vw,18px);font-weight:700">→${remaining}</span>`;
-    showCheckout(remaining);
-  }
-}
+function updateLiveScore(){ renderGame01UI(gameState); }
 
-function updateLiveScoreManual(typed){
-  if(!gameState)return;
-  const base=gameState.players[myId].score;
-  const remaining=base-typed;
-  const card=document.getElementById('pscard-'+myId);
-  if(!card)return;
-  let prev=card.querySelector('.score-preview');
-  if(!prev){
-    prev=document.createElement('div');
-    prev.className='score-preview';
-    card.querySelector('.score-big').after(prev);
-  }
-  if(typed===0||isNaN(typed)){
-    prev.innerHTML='';
-    showCheckout(base);
-  } else if(remaining<0||remaining===1){
-    prev.innerHTML=`<span style="color:#e74c3c;font-size:12px;font-weight:600">Túllövés!</span>`;
-  } else {
-    prev.innerHTML=`<span style="color:#1D9E75;font-size:clamp(13px,3vw,18px);font-weight:700">→${remaining}</span>`;
-    showCheckout(remaining);
-  }
-}
+function updateLiveScoreManual(typed){ renderGame01UI(gameState); }
 
 function addThrow(val){
-  if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Nem a te köröd!');return;}
+  if(!gameState)return;
+  const isLocal=offlineMode||(localPlayerIds.length>0&&isLocalPlayer(gameState.currentPlayer));
+  if(gameState.currentPlayer!==myId&&!isLocal)return;
   if(currentThrows.length>=3)return;
-  currentThrows.push({val,mult:currentMult,points:val*currentMult});
-  updateThrowDisplay();
-  updateLiveScore();
-  setErr('game01-error','');
-}
-function undoThrow(){currentThrows.pop();updateThrowDisplay();updateLiveScore();}
-function updateThrowDisplay(){
-  for(let i=0;i<3;i++){
-    const el=document.getElementById('t'+i);
-    if(currentThrows[i]){
-      const t=currentThrows[i];const pfx=t.mult===3?'T':t.mult===2?'D':'';
-      el.textContent=t.val===25?(t.mult===2?'Bull':pfx+'25'):pfx+t.val;el.classList.add('filled');
-    }else{el.textContent='—';el.classList.remove('filled');}
+  let points, target;
+  if(val==='B'){
+    if(currentMult===3)return;
+    points=currentMult===2?50:50;
+    target='B';
+  } else {
+    points=val*currentMult;
+    target=val;
   }
+  currentThrows.push({val:target,target:target,mult:currentMult,points:points});
+  renderGame01UI(gameState);
 }
+function pressNum(n){ addThrow(n); }
+function undoThrow(){ if(currentThrows.length){currentThrows.pop();} renderGame01UI(gameState); }
+function updateThrowDisplay(){ renderGame01UI(gameState); }
+
 
 async function submitTurn(){
-  if(!gameState||gameState.currentPlayer!==myId){setErr('game01-error','Nem a te köröd!');return;}
+  if(!gameState)return;
+  const _isLocal=offlineMode||(localPlayerIds.length>0&&isLocalPlayer(gameState.currentPlayer));
+  if(gameState.currentPlayer!==myId&&!_isLocal)return;
   // Ha nincs dobás: 0-nak számít, stats és história frissül
   if(!currentThrows.length){
     saveSnapshot();
@@ -1455,36 +1295,283 @@ async function passTurnOnline(){
   await fbUpdate('rooms/'+roomId,{currentPlayer:next});
 }
 
-function updateGame01UI(room){
-  const isMyTurn=room.currentPlayer===myId;
-  const el=document.getElementById('game01-status');
-  el.className='status-mini '+(isMyTurn?'myturn':'');
-  const curName=uc(room.players[room.currentPlayer]?.name||'?');
-  const maxRounds=Math.max(...(room.playerOrder||[]).map(pid=>room.players[pid]?.rounds||0));
-  const roundNum=maxRounds+1;
-  el.textContent=isMyTurn?`🎯 A te köröd · ${roundNum}. kör`:`⏳ ${curName} köre · ${roundNum}. kör`;
+// ── 301/501 UI ─────────────────────────────────
 
-  document.getElementById('game01-players').innerHTML=(room.playerOrder||[]).map(pid=>{
-    const p=room.players[pid];
-    const avg=p.rounds>0?((p.totalThrown||0)/p.rounds).toFixed(1):null;
-    const avgTxt=avg!=null?`<span class="avg-lbl" style="font-size:11px;color:#666">Átl: ${avg}</span>`:`<span class="avg-lbl" style="font-size:11px;color:#444">—</span>`;
-    return `<div class="pscard ${pid===room.currentPlayer?'active-turn':''}" id="pscard-${pid}">
-      <div style="font-size:15px;font-weight:700;text-transform:uppercase;margin-bottom:2px">${uc(p.name)}${winsBadge(p.name)}</div>
-      <div style="margin-bottom:4px">${avgTxt}</div>
-      <div class="score-big">${p.score}</div>
-      ${pid===room.currentPlayer?'<div class="score-lbl" style="color:#1D9E75;margin-top:2px">🎯</div>':''}
-    </div>`;
-  }).join('');
-  if(isMyTurn) showCheckout(room.players[myId].score);
-  else document.getElementById('checkout-hint').style.display='none';
-  if(!offlineMode){
-    const np=document.getElementById('numpad01');
-    np.style.opacity=isMyTurn?'1':'0.3';np.style.pointerEvents=isMyTurn?'auto':'none';
-    document.querySelectorAll('#screen-game01 .mult-row .mult-btn').forEach(b=>{b.style.opacity=isMyTurn?'1':'0.3';b.style.pointerEvents=isMyTurn?'auto':'none';});
-  }
-  renderRoundHistoryFromRoom(room);
-  refreshUndoBtn();
+function _g01Header(curName, portrait){
+  const fs = portrait ? '17px' : '14px';
+  const pad = portrait ? '9px 16px' : '7px 12px';
+  return `<div style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;padding:${pad};text-align:center;font-size:${fs};font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px">🎯 ${curName} KÖRE</div>`;
 }
+
+function _g01Cards(room, portrait){
+  const pO = room.playerOrder||[];
+  const cur = room.currentPlayer;
+  const thrown = currentThrows.reduce((s,t)=>s+t.points,0);
+  const manualVal = manualInputMode ? (parseInt(phoneBuffer)||0) : 0;
+  const pendingTotal = manualInputMode ? manualVal : thrown;
+
+  const nameFs = portrait ? 'clamp(13px,3.6vw,18px)' : 'clamp(11px,2.4vh,16px)';
+  const avgFs  = portrait ? 'clamp(9px,2.4vw,12px)' : 'clamp(8px,1.6vh,11px)';
+  const scoreFs= portrait ? 'clamp(20px,7vw,34px)' : 'clamp(16px,4.4vh,30px)';
+  const prevFs = portrait ? 'clamp(12px,3.4vw,17px)' : 'clamp(10px,2.2vh,15px)';
+
+  return `<div style="display:grid;grid-template-columns:repeat(${pO.length},1fr);gap:6px">` + pO.map(pid=>{
+    const p = room.players[pid];
+    const active = pid===cur;
+    const avg = p.rounds>0 ? ((p.totalThrown||0)/p.rounds).toFixed(1) : null;
+    const bg = active
+      ? 'background:linear-gradient(160deg,#2ecf9b,#12a171)'
+      : 'background:#1e1e1e';
+    const nameCol = active ? '#fff' : '#f0f0f0';
+    const avgCol  = active ? 'rgba(255,255,255,0.75)' : '#777';
+    let preview = '';
+    if(active && pendingTotal>0){
+      const rem = p.score - pendingTotal;
+      if(rem<0||rem===1){
+        preview = `<div style="font-size:${prevFs};font-weight:700;color:#ffdddd">BüNTETÉS</div>`;
+      } else {
+        preview = `<div style="font-size:${prevFs};font-weight:700;color:#0a3d2c">→${rem}</div>`;
+      }
+    }
+    return `<div style="${bg};border-radius:12px;padding:${portrait?'8px 4px':'6px 3px'};text-align:center;overflow:hidden;min-width:0">
+      <div style="font-size:${nameFs};font-weight:700;color:${nameCol};text-transform:uppercase;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${uc(p.name)}${winsBadge(p.name)}</div>
+      <div style="font-size:${avgFs};color:${avgCol};line-height:1.3">${avg!=null?'Átl: '+avg:'—'}</div>
+      <div style="font-size:${scoreFs};font-weight:700;color:#fff;line-height:1.05">${p.score}</div>
+      ${preview}
+    </div>`;
+  }).join('') + `</div>`;
+}
+
+function _g01History(room, portrait){
+  const pO = room.playerOrder||[];
+  const rows = [...roundHistory].sort((a,b)=>b.round-a.round);
+  const lblFs = portrait ? '13px' : '11px';
+  const rowFs = portrait ? 'clamp(10px,2.6vw,13px)' : 'clamp(9px,1.7vh,12px)';
+  const rowH  = portrait ? 34 : 26;
+  const boxH  = rowH*4 + 12;
+
+  let inner = '';
+  if(!rows.length){
+    inner = `<div style="color:#3a3a3a;font-size:${rowFs};text-align:center;padding:8px">—</div>`;
+  } else {
+    inner = rows.map(entry=>{
+      const cells = pO.map(pid=>{
+        const p = room.players[pid];
+        if(!p) return '';
+        const s = entry.scores[pid];
+        return `<span style="color:#666;font-weight:700;white-space:nowrap">${uc(p.name)}</span><span style="color:#888;font-weight:700;margin-left:6px">${s!=null?s:'—'}</span>`;
+      }).filter(Boolean).join('<span style="color:#2a2a2a;margin:0 6px">|</span>');
+      return `<div style="display:flex;align-items:center;gap:6px;background:#1a1a1a;border-radius:8px;padding:0 8px;height:${rowH-4}px;margin-bottom:4px;font-size:${rowFs};overflow:hidden">
+        <span style="color:#444;font-weight:600;min-width:16px">${entry.round}.</span>
+        <div style="display:flex;align-items:center;flex:1;min-width:0;overflow:hidden">${cells}</div>
+      </div>`;
+    }).join('');
+  }
+  return `<div>
+    <div style="font-size:${lblFs};font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">KÖRÖK</div>
+    <div id="g01-hist-box" style="height:${boxH}px;overflow-y:auto;-webkit-overflow-scrolling:touch">${inner}</div>
+  </div>`;
+}
+
+function _g01Slots(portrait){
+  const h = portrait ? '46px' : '34px';
+  const fs = portrait ? '16px' : '13px';
+  const btnFs = portrait ? '13px' : '11px';
+  const slots = [0,1,2].map(i=>{
+    const t = currentThrows[i];
+    const txt = t ? ((t.mult===3?'T':t.mult===2?'D':'')+(t.target==='B'?'BULL':t.target)) : '';
+    return `<div style="border:1px dashed #4a4a4a;border-radius:10px;height:${h};display:flex;align-items:center;justify-content:center;font-size:${fs};font-weight:700;color:#f0f0f0">${txt}</div>`;
+  }).join('');
+  return `<div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:center">
+    ${slots}
+    <button id="g01-mode-btn" style="border:1px solid #4a4a4a;border-radius:10px;height:${h};padding:0 12px;background:transparent;color:#ddd;font-size:${btnFs};cursor:pointer;white-space:nowrap">✏️ Kézi bevitel</button>
+  </div>`;
+}
+
+function _g01ManualDisplay(portrait){
+  const h = portrait ? '58px' : '40px';
+  const fs = portrait ? '26px' : '20px';
+  const btnFs = portrait ? '13px' : '11px';
+  return `<div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center">
+    <div style="background:#242424;border-radius:10px;height:${h};display:flex;align-items:center;justify-content:center;font-size:${fs};font-weight:700;color:#f0f0f0">${phoneBuffer||''}</div>
+    <button id="g01-mode-btn" style="border:1px solid #4a4a4a;border-radius:10px;height:${h};padding:0 12px;background:transparent;color:#ddd;font-size:${btnFs};cursor:pointer;white-space:nowrap">✏️ Kézi bevitel</button>
+  </div>`;
+}
+
+function _g01MultRow(portrait){
+  const h = portrait ? '46px' : '36px';
+  const fs = portrait ? 'clamp(14px,4vw,20px)' : 'clamp(12px,2.4vh,17px)';
+  const mk=(m,lbl)=>{
+    const on = currentMult===m;
+    const bg = on ? 'background:linear-gradient(160deg,#2ecf9b,#12a171);border:none;color:#fff;font-weight:700'
+                  : 'background:transparent;border:1px solid #3a3a3a;color:#f0f0f0;font-weight:400';
+    return `<button class="g01-mult" data-m="${m}" style="${bg};border-radius:10px;height:${h};font-size:${fs};cursor:pointer;width:100%">${lbl}</button>`;
+  };
+  return `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:${portrait?'14px':'10px'}">${mk(1,'Szimpla')}${mk(2,'Dupla')}${mk(3,'Tripla')}</div>`;
+}
+
+function _g01NumBtn(n, portrait, cols){
+  const val = n==='B' ? (currentMult===2?50:currentMult===3?0:50) : n*currentMult;
+  const lbl = n==='B' ? 'BULL' : n;
+  const nFs = portrait ? 'clamp(11px,3vw,15px)' : 'clamp(10px,1.9vh,14px)';
+  const vFs = portrait ? 'clamp(10px,2.8vw,14px)' : 'clamp(9px,1.7vh,13px)';
+  const dis = (n==='B' && currentMult===3);
+  return `<button class="g01-num" data-n="${n}" ${dis?'disabled':''} style="width:100%;height:100%;min-height:0;overflow:hidden;border:none;border-radius:8px;background:linear-gradient(180deg,#3d3d3d,#282828);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px;opacity:${dis?'0.3':'1'};-webkit-tap-highlight-color:transparent">
+    <span style="font-size:${nFs};font-weight:700;color:#fff;line-height:1.1">${lbl}</span>
+    <span style="font-size:${vFs};font-weight:700;color:#1fd18c;line-height:1">(${val})</span>
+  </button>`;
+}
+
+function _g01PhoneBtn(k, portrait){
+  const fs = portrait ? 'clamp(18px,5vw,30px)' : 'clamp(15px,3.4vh,26px)';
+  let bg='linear-gradient(180deg,#2a2a2a,#1e1e1e)', col='#fff', lbl=k;
+  if(k==='del'){ bg='linear-gradient(160deg,#e91e63,#c62828)'; lbl='⌫'; }
+  if(k==='ok'){ bg='linear-gradient(160deg,#2ecf9b,#12a171)'; lbl='OK'; }
+  return `<button class="g01-phone" data-k="${k}" style="width:100%;height:100%;min-height:0;border:none;border-radius:10px;background:${bg};color:${col};font-size:${fs};font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">${lbl}</button>`;
+}
+
+function renderGame01UI(room){
+  if(!room) return;
+  const el = document.getElementById('screen-game01');
+  if(!el) return;
+  const portrait = !isLandscape();
+  const curName = uc(room.players[room.currentPlayer]?.name||'?');
+  const isMyTurn = room.currentPlayer===myId;
+  const isLocal = offlineMode||(localPlayerIds.length>0&&isLocalPlayer(room.currentPlayer));
+  const canAct = isMyTurn||isLocal;
+  const inputOp = canAct ? '1' : '0.35';
+  const inputPe = canAct ? 'auto' : 'none';
+
+  const nums = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+
+  if(portrait){
+    let inputBlock;
+    if(manualInputMode){
+      const keys = ['1','2','3','4','5','6','7','8','9','del','0','ok'];
+      inputBlock = `
+        <div style="opacity:${inputOp};pointer-events:${inputPe}">${_g01ManualDisplay(true)}</div>
+        <div id="g01-keys" style="opacity:${inputOp};pointer-events:${inputPe};overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:repeat(4,minmax(0,1fr));gap:8px;height:100%">
+            ${keys.map(k=>_g01PhoneBtn(k,true)).join('')}
+          </div>
+        </div>`;
+    } else {
+      const cells = nums.map(n=>_g01NumBtn(n,true,3)).join('') + _g01NumBtn('B',true,3);
+      inputBlock = `
+        <div style="opacity:${inputOp};pointer-events:${inputPe}">${_g01Slots(true)}</div>
+        <div style="opacity:${inputOp};pointer-events:${inputPe}">${_g01MultRow(true)}</div>
+        <div id="g01-keys" style="opacity:${inputOp};pointer-events:${inputPe};overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:repeat(7,minmax(0,1fr));gap:6px;height:100%">${cells}</div>
+        </div>`;
+    }
+
+    const actions = manualInputMode ? `
+        <button id="g01-undo-btn" ${turnHistory.length>0?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:10px;padding:9px;color:#e67e22;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:6px;opacity:${turnHistory.length>0?'1':'0.35'}">Visszavonás</button>
+        <button id="g01-leave-btn" style="width:100%;background:transparent;border:1px solid #2f2f2f;border-radius:10px;padding:8px;color:#666;font-size:13px;cursor:pointer">Kilépés a játékból</button>`
+      : `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px">
+          <button id="g01-del-btn" style="background:linear-gradient(160deg,#e91e63,#c62828);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">Törlés</button>
+          <button id="g01-sub-btn" style="background:linear-gradient(160deg,#2ecf9b,#12a171);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">Beküldés</button>
+        </div>
+        <button id="g01-undo-btn" ${turnHistory.length>0?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:10px;padding:9px;color:#e67e22;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:6px;opacity:${turnHistory.length>0?'1':'0.35'}">Visszavonás</button>
+        <button id="g01-leave-btn" style="width:100%;background:transparent;border:1px solid #2f2f2f;border-radius:10px;padding:8px;color:#666;font-size:13px;cursor:pointer">Kilépés a játékból</button>`;
+
+    el.innerHTML = `<div id="g01-wrap" style="display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;padding:6px 10px;box-sizing:border-box;gap:6px">
+      <div id="g01-top" style="flex:0 0 auto;display:flex;flex-direction:column;gap:6px">
+        ${_g01Header(curName,true)}
+        ${_g01Cards(room,true)}
+        ${_g01History(room,true)}
+      </div>
+      ${inputBlock}
+      <div id="g01-actions" style="flex:0 0 auto">${actions}</div>
+    </div>`;
+  } else {
+    // LANDSCAPE
+    let rightBlock;
+    if(manualInputMode){
+      const keys = ['1','2','3','4','5','6','7','8','9','del','0','ok'];
+      rightBlock = `
+        <div style="flex:0 0 auto;opacity:${inputOp};pointer-events:${inputPe};margin-bottom:6px">${_g01ManualDisplay(false)}</div>
+        <div id="g01-keys" style="flex:1;min-height:0;opacity:${inputOp};pointer-events:${inputPe};overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:repeat(4,minmax(0,1fr));gap:6px;height:100%">
+            ${keys.map(k=>_g01PhoneBtn(k,false)).join('')}
+          </div>
+        </div>`;
+    } else {
+      const cells = nums.map(n=>_g01NumBtn(n,false,4)).join('');
+      rightBlock = `
+        <div style="flex:0 0 auto;opacity:${inputOp};pointer-events:${inputPe};margin-bottom:6px">${_g01MultRow(false)}</div>
+        <div id="g01-keys" style="flex:1;min-height:0;opacity:${inputOp};pointer-events:${inputPe};overflow:hidden">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(5,minmax(0,1fr));gap:6px;height:100%">${cells}</div>
+        </div>
+        <div style="flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px">
+          <button id="g01-del-btn" style="background:linear-gradient(160deg,#e91e63,#c62828);border:none;border-radius:10px;padding:11px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Törlés</button>
+          <button class="g01-num" data-n="B" style="border:none;border-radius:10px;background:linear-gradient(180deg,#3d3d3d,#282828);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;opacity:${currentMult===3?'0.3':'1'}" ${currentMult===3?'disabled':''}>
+            <span style="font-size:12px;font-weight:700;color:#fff;line-height:1.1">BULL</span>
+            <span style="font-size:11px;font-weight:700;color:#1fd18c;line-height:1">(${currentMult===2?50:currentMult===3?0:50})</span>
+          </button>
+          <button id="g01-sub-btn" style="background:linear-gradient(160deg,#2ecf9b,#12a171);border:none;border-radius:10px;padding:11px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Beküldés</button>
+        </div>`;
+    }
+
+    el.innerHTML = `<div id="g01-wrap" style="display:flex;flex-direction:row;width:100%;height:100%;overflow:hidden;padding:5px 10px;box-sizing:border-box;gap:10px">
+      <!-- LEFT -->
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;gap:5px">
+        <div style="flex:0 0 auto">${_g01Header(curName,false)}</div>
+        <div style="flex:0 0 auto">${_g01Cards(room,false)}</div>
+        <div style="flex:1;min-height:0;overflow:hidden">${_g01History(room,false)}</div>
+        <div style="flex:0 0 auto;opacity:${inputOp};pointer-events:${inputPe}">${manualInputMode?_g01ManualDisplay(false):_g01Slots(false)}</div>
+        <div style="flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button id="g01-undo-btn" ${turnHistory.length>0?'':'disabled'} style="background:transparent;border:1px solid #e67e22;border-radius:10px;padding:9px;color:#e67e22;font-size:12px;font-weight:700;cursor:pointer;opacity:${turnHistory.length>0?'1':'0.35'}">Visszavonás</button>
+          <button id="g01-leave-btn" style="background:transparent;border:1px solid #2f2f2f;border-radius:10px;padding:9px;color:#666;font-size:12px;cursor:pointer">Kilépés a játékból</button>
+        </div>
+      </div>
+      <!-- RIGHT -->
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">${rightBlock}</div>
+    </div>`;
+  }
+
+  // ── Event listeners ──
+  document.getElementById('g01-mode-btn')?.addEventListener('click',()=>toggleInputMode());
+  document.getElementById('g01-del-btn')?.addEventListener('click',()=>{undoThrow();});
+  document.getElementById('g01-sub-btn')?.addEventListener('click',()=>submitTurn());
+  document.getElementById('g01-undo-btn')?.addEventListener('click',()=>undoLastTurn01());
+  document.getElementById('g01-leave-btn')?.addEventListener('click',()=>confirmLeave());
+  el.querySelectorAll('.g01-mult').forEach(b=>{
+    b.addEventListener('click',()=>{ currentMult=parseInt(b.dataset.m); renderGame01UI(gameState); });
+  });
+  el.querySelectorAll('.g01-num').forEach(b=>{
+    b.addEventListener('click',()=>{ if(!b.disabled) pressNum(b.dataset.n==='B'?'B':parseInt(b.dataset.n)); });
+  });
+  el.querySelectorAll('.g01-phone').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const k=b.dataset.k;
+      if(k==='ok') submitManual();
+      else phoneKey(k);
+    });
+  });
+
+  // ── Fit the key grid into remaining space (portrait only) ──
+  if(portrait){
+    const fit=()=>{
+      const wrap=document.getElementById('g01-wrap');
+      const keys=document.getElementById('g01-keys');
+      const acts=document.getElementById('g01-actions');
+      if(!wrap||!keys||!acts)return;
+      let used=acts.offsetHeight;
+      Array.from(wrap.children).forEach(ch=>{ if(ch!==keys && ch!==acts) used+=ch.offsetHeight; });
+      used += 6*(wrap.children.length-1) + 14;
+      const avail=Math.max(120, wrap.clientHeight-used);
+      keys.style.height=avail+'px';
+      keys.style.maxHeight=avail+'px';
+    };
+    requestAnimationFrame(fit);
+    setTimeout(fit,60);
+    setTimeout(fit,220);
+  }
+}
+
+function updateGame01UI(room){ renderGame01UI(room); }
 
 // ── Cricket ────────────────────────────────────────────────
 function buildCricketBtns(){
@@ -1830,6 +1917,9 @@ async function leaveGame(){
   // Clear cricket screen content
   const crEl=document.getElementById('screen-cricket');
   if(crEl)crEl.innerHTML='';
+  const g1El=document.getElementById('screen-game01');
+  if(g1El)g1El.innerHTML='';
+  manualInputMode=false;currentMult=2;
   show('home');checkConn();
 }
 
