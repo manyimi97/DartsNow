@@ -1324,15 +1324,14 @@ function _g01Cards(room, portrait){
       : 'background:#1e1e1e';
     const nameCol = active ? '#fff' : '#f0f0f0';
     const avgCol  = active ? 'rgba(255,255,255,0.75)' : '#777';
-    let preview = '';
+    // A hely MINDIG fenn van tartva minden kártyán, hogy semmi ne csússzon
+    let previewTxt='&nbsp;', previewCol='transparent';
     if(active && pendingTotal>0){
       const rem = p.score - pendingTotal;
-      if(rem<0||rem===1){
-        preview = `<div style="font-size:${prevFs};font-weight:700;color:#ffdddd">BüNTETÉS</div>`;
-      } else {
-        preview = `<div style="font-size:${prevFs};font-weight:700;color:#0a3d2c">→${rem}</div>`;
-      }
+      if(rem<0||rem===1){ previewTxt='BÜNTETÉS'; previewCol='#ffdddd'; }
+      else { previewTxt='→'+rem; previewCol='#0a3d2c'; }
     }
+    const preview = `<div style="font-size:${prevFs};font-weight:700;color:${previewCol};line-height:1.25;height:1.25em;overflow:hidden">${previewTxt}</div>`;
     return `<div style="${bg};border-radius:12px;padding:${portrait?'8px 4px':'6px 3px'};text-align:center;overflow:hidden;min-width:0">
       <div style="font-size:${nameFs};font-weight:700;color:${nameCol};text-transform:uppercase;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${uc(p.name)}${winsBadge(p.name)}</div>
       <div style="font-size:${avgFs};color:${avgCol};line-height:1.3">${avg!=null?'Átl: '+avg:'—'}</div>
