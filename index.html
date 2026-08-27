@@ -723,19 +723,44 @@ function showTurnBanner(){
 async function undoLastTurn01(){
   if(!turnHistory.length)return;
   const snap=turnHistory.pop();
-  // restore all player data and whose turn it was
+  const undonePid=snap.currentPlayer;
+
+  // Teljes visszaállítás: pontszám, kör, dobásszám, összeg, dobás-lista
   gameState.players=snap.players;
   gameState.currentPlayer=snap.currentPlayer;
+  currentThrows=[];
+  phoneBuffer='';
+
+  // A visszavont kör kiszedése a history-ból is
+  const undoneRounds=(snap.players[undonePid]&&snap.players[undonePid].rounds)||0;
+  const targetRound=undoneRounds+1;
+  const entry=roundHistory.find(r=>r.round===targetRound);
+  if(entry){
+    delete entry.scores[undonePid];
+    if(!Object.keys(entry.scores).length){
+      roundHistory=roundHistory.filter(r=>r.round!==targetRound);
+    }
+  }
+
   if(offlineMode){
     myId=gameState.currentPlayer;
-    currentThrows=[];updateThrowDisplay();
-    updateGame01UI(gameState);
-    showTurnBanner();
+    _g01Sig=null;
+    renderGame01UI(gameState,true);
   }else{
-    // push restored state to Firebase
+    // Minden érintett mező visszaírása a Firebase-be
     const updates={currentPlayer:snap.currentPlayer};
-    Object.keys(snap.players).forEach(pid=>{updates['players/'+pid+'/score']=snap.players[pid].score;});
+    Object.keys(snap.players).forEach(pid=>{
+      const p=snap.players[pid];
+      updates['players/'+pid+'/score']=p.score;
+      updates['players/'+pid+'/rounds']=p.rounds||0;
+      updates['players/'+pid+'/totalThrown']=p.totalThrown||0;
+      updates['players/'+pid+'/lastScore']=p.lastScore!==undefined?p.lastScore:null;
+      updates['players/'+pid+'/scoreHistory']=p.scoreHistory||[];
+    });
     await fbUpdate('rooms/'+roomId,updates);
+    lastSig=null;
+    _g01Sig=null;
+    renderGame01UI(gameState,true);
   }
   refreshUndoBtn();
   setErr('game01-error','');
@@ -832,7 +857,7 @@ function _scoreboardHTML(room, portrait){
     const bg=active
       ?'background:linear-gradient(135deg,#1aaa7a,#0f7a55);color:#fff;font-weight:700'
       :'background:#1c1c1c;color:#ccc;font-weight:600';
-    h+=`<td style="${bg};text-align:center;font-size:${ns};text-transform:uppercase;padding:clamp(5px,1.2vh,9px) 2px;border-right:1px solid #2a2a2a;border-bottom:2px solid #333">${uc(room.players[pid].name)}</td>`;
+    h+=`<td style="${bg};text-align:center;font-size:${ns};text-transform:uppercase;padding:clamp(5px,1.2vh,9px) 2px;border-right:1px solid #2a2a2a;border-bottom:2px solid #333">${uc(room.players[pid].name)}${winsBadge(room.players[pid].name)}</td>`;
   });
   h+=`<td style="background:#111;color:#666;font-size:clamp(8px,1.8vw,11px);font-weight:700;text-transform:uppercase;text-align:center;padding:4px 5px;border-bottom:2px solid #333;white-space:nowrap">CÉLPONT</td>`;
   h+='</tr></thead><tbody>';
@@ -946,6 +971,11 @@ function renderCricketUI(room,force){
   const portrait=!isLandscape();
   const curName=uc(room.players[room.currentPlayer]?.name||'?');
   const hdr=`background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;text-align:center;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;flex-shrink:0`;
+  const _crMyTurn = room.currentPlayer===myId;
+  const _crLocal = offlineMode||(localPlayerIds.length>0&&isLocalPlayer(room.currentPlayer));
+  const crAct = _crMyTurn||_crLocal;
+  const crOp = crAct?'1':'0.35';
+  const crPe = crAct?'auto':'none';
 
   if(portrait){
     el.innerHTML=`<div id="cr-portrait-wrap" style="display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;padding:4px 8px 4px;box-sizing:border-box">
@@ -958,7 +988,7 @@ function renderCricketUI(room,force){
       </div>
       <div id="cr-btns-wrap" style="flex:0 0 auto;overflow:hidden">${_buttonsHTML(room,true)}</div>
       <div id="cr-actions" style="flex:0 0 auto;padding-top:4px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;opacity:${crOp};pointer-events:${crPe}">
           <button id="cr-del-btn" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:10px;padding:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;width:100%">Törlés</button>
           <button id="cr-sub-btn" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:10px;padding:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;width:100%">Beküldés</button>
         </div>
@@ -998,14 +1028,14 @@ function renderCricketUI(room,force){
         <button id="cr-leave-btn-ls" style="flex-shrink:0;width:100%;background:transparent;border:1px solid #333;border-radius:8px;padding:5px;color:#555;font-size:10px;cursor:pointer;margin-top:4px">Kilépés a játékból</button>
       </div>
       <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:3px;flex-shrink:0">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:3px;flex-shrink:0;border-top:1px solid #2a2a2a;padding-top:3px">
           <div style="text-align:center;font-size:14px;font-weight:700;color:#fff">S</div>
           <div style="text-align:center;font-size:14px;font-weight:700;color:#fff">D</div>
           <div style="text-align:center;font-size:14px;font-weight:700;color:#fff">T</div>
         </div>
         ${_buttonsHTML(room,false)}
         <div style="flex-shrink:0;margin-top:5px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:4px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:4px;opacity:${crOp};pointer-events:${crPe}">
             <button id="cr-del-btn-ls" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:8px;padding:9px;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Törlés</button>
             <button id="cr-sub-btn-ls" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:8px;padding:9px;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Beküldés</button>
           </div>
@@ -1552,7 +1582,7 @@ function renderGame01UI(room, force){
         <button id="g01-undo-btn" ${turnHistory.length>0?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:10px;padding:9px;color:#e67e22;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:6px;opacity:${turnHistory.length>0?'1':'0.35'}">Visszavonás</button>
         <button id="g01-leave-btn" style="width:100%;background:transparent;border:1px solid #2f2f2f;border-radius:10px;padding:8px;color:#666;font-size:13px;cursor:pointer">Kilépés a játékból</button>`
       : `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px;opacity:${inputOp};pointer-events:${inputPe}">
           <button id="g01-del-btn" style="background:linear-gradient(160deg,#e91e63,#c62828);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">Törlés</button>
           <button id="g01-sub-btn" style="background:linear-gradient(160deg,#2ecf9b,#12a171);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">Beküldés</button>
         </div>
@@ -1586,7 +1616,7 @@ function renderGame01UI(room, force){
         <div id="g01-keys" style="flex:1;min-height:0;opacity:${inputOp};pointer-events:${inputPe};overflow:hidden">
           <div style="display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(5,minmax(0,1fr));gap:6px;height:100%">${cells}</div>
         </div>
-        <div style="flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px">
+        <div style="flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px;opacity:${inputOp};pointer-events:${inputPe}">
           <button id="g01-del-btn" style="background:linear-gradient(160deg,#e91e63,#c62828);border:none;border-radius:10px;padding:11px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Törlés</button>
           <button class="g01-num" data-n="B" style="border:none;border-radius:10px;background:linear-gradient(180deg,#3d3d3d,#282828);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;opacity:${currentMult===3?'0.3':'1'}" ${currentMult===3?'disabled':''}>
             <span style="font-size:12px;font-weight:700;color:#fff;line-height:1.1">BULL</span>
