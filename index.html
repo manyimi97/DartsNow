@@ -468,7 +468,7 @@ function startPolling(code){
     if(sig===lastSig)return;
     lastSig=sig;
     onRoomUpdate(room,code);
-  },1200);
+  },600);
 }
 function stopPolling(){if(pollTimer){clearInterval(pollTimer);pollTimer=null;}lastSig=null;}
 
@@ -1150,7 +1150,7 @@ async function submitManual(){
   if(bust){
     setErr('game01-error','Túllövés! A pontszám marad: '+pd.score);
     if(offlineMode){offlinePassTurn();}
-    else{await fbUpdate('rooms/'+roomId+'/players/'+myId,Object.assign({score:pd.score},statsUpdate));await passTurnOnline();}
+    else{await passTurnOnline({pid:myId,data:Object.assign({score:pd.score},statsUpdate)});}
     return;
   }
   if(newScore===0){
@@ -1159,7 +1159,7 @@ async function submitManual(){
     return;
   }
   if(offlineMode){updateGame01UI(gameState);offlinePassTurn();}
-  else{await fbUpdate('rooms/'+roomId+'/players/'+myId,Object.assign({score:newScore},statsUpdate));await passTurnOnline();}
+  else{await passTurnOnline({pid:myId,data:Object.assign({score:newScore},statsUpdate)});}
 }
 
 // ── Round history — Firebase alapú, online is szinkron ─────
@@ -1246,7 +1246,7 @@ async function submitTurn(){
     const statsUpdate={lastScore:0,totalThrown:gameState.players[myId].totalThrown,rounds:gameState.players[myId].rounds,scoreHistory:gameState.players[myId].scoreHistory||[]};
     currentThrows=[];updateThrowDisplay();resetMults();updateLiveScore();
     if(offlineMode){offlinePassTurn();}
-    else{await fbUpdate('rooms/'+roomId+'/players/'+myId,statsUpdate);await passTurnOnline();}
+    else{await passTurnOnline({pid:myId,data:statsUpdate});}
     return;
   }
   const thrown=currentThrows.reduce((s,t)=>s+t.points,0);
@@ -1280,7 +1280,7 @@ async function submitTurn(){
     setErr('game01-error','Túllövés! A pontszám marad: '+pd.score);
     currentThrows=[];updateThrowDisplay();resetMults();updateLiveScore();
     if(offlineMode){offlinePassTurn();}
-    else{await fbUpdate('rooms/'+roomId+'/players/'+myId,Object.assign({score:pd.score},statsUpdate));await passTurnOnline();}
+    else{await passTurnOnline({pid:myId,data:Object.assign({score:pd.score},statsUpdate)});}
     return;
   }
   if(newScore===0){
@@ -1292,22 +1292,31 @@ async function submitTurn(){
   currentThrows=[];updateThrowDisplay();resetMults();updateLiveScore();
   if(offlineMode){updateGame01UI(gameState);offlinePassTurn();}
   else{
-    await fbUpdate('rooms/'+roomId+'/players/'+myId,Object.assign({score:newScore},statsUpdate));
-    await passTurnOnline();
+    await passTurnOnline({pid:myId,data:Object.assign({score:newScore},statsUpdate)});
   }
 }
 
-async function passTurnOnline(){
+async function passTurnOnline(extraUpdates){
   const order=gameState.playerOrder;
-  const next=order[(order.indexOf(gameState.currentPlayer)+1)%order.length];
-  // Multi-join: ha a következő játékos is helyi, frissítsük a myId-t
-  if(localPlayerIds.length>1 && isLocalPlayer(next)){
-    myId=next;
-    gameState.currentPlayer=next;
-    updateGameUI(gameState);
-    showTurnBanner();
+  const prev=gameState.currentPlayer;
+  const next=order[(order.indexOf(prev)+1)%order.length];
+
+  // Egyetlen Firebase írás: pontszám + soron következő játékos
+  const payload={currentPlayer:next};
+  if(extraUpdates&&extraUpdates.pid&&extraUpdates.data){
+    Object.keys(extraUpdates.data).forEach(k=>{
+      payload['players/'+extraUpdates.pid+'/'+k]=extraUpdates.data[k];
+    });
   }
-  await fbUpdate('rooms/'+roomId,{currentPlayer:next});
+
+  // Azonnali helyi frissítés — ne várjunk a pollingra
+  gameState.currentPlayer=next;
+  if(localPlayerIds.length>1 && isLocalPlayer(next)) myId=next;
+  if(gameState.mode==='cricket'){_crSig=null;renderCricketUI(gameState,true);}
+  else {_g01Sig=null;renderGame01UI(gameState,true);}
+
+  await fbUpdate('rooms/'+roomId,payload);
+  lastSig=null; // következő polling biztosan lefusson
 }
 
 // ── 301/501 UI ─────────────────────────────────
@@ -1706,7 +1715,7 @@ async function submitCricketTurn(){
     return;
   }
   if(offlineMode){offlinePassTurn();}
-  else{await fbUpdate('rooms/'+roomId+'/players/'+myId,{marks:myMarks,score:myScore});await passTurnOnline();}
+  else{await passTurnOnline({pid:myId,data:{marks:myMarks,score:myScore}});}
 }
 
 function markStr(m, pending){
