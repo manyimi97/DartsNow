@@ -499,12 +499,27 @@ function onRoomUpdate(room,code){
       turnHistory=[];roundHistory=[];currentThrows=[];cricketThrows=[];phoneBuffer='';
       lastSig=null;
     }
+    const prevCur = gameState ? gameState.currentPlayer : null;
+    const turnChanged = prevCur !== room.currentPlayer;
     gameState=room;
     if(!offlineMode&&localPlayerIds.length>1&&isLocalPlayer(room.currentPlayer)){
       myId=room.currentPlayer;
     }
+    // Online: szinkronizáljuk a kör históriát a Firebase adatokból
+    if(!offlineMode && room.mode!=='cricket') renderRoundHistoryFromRoom(room);
+    // Körváltáskor a saját dobásaink törlődnek és KÖTELEZŐ az újrarajzolás
+    if(turnChanged){
+      currentThrows=[];
+      phoneBuffer='';
+      _g01Sig=null;
+      _crSig=null;
+    }
     const onLobby=document.getElementById('screen-lobby').classList.contains('active');
     if(onLobby||wasOnWinner) startGameUI(room);
+    else if(turnChanged){
+      if(room.mode==='cricket'){cricketThrows=[];renderCricketUI(room,true);}
+      else renderGame01UI(room,true);
+    }
     else updateGameUI(room);
   }
   if(room.status==='winner') showWinner(room);
