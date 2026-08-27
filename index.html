@@ -847,8 +847,9 @@ function _scoreboardHTML(room, portrait){
       if(pid===activePid&&pending&&conf<3){
         const pm=pending.marks[t]||0;
         if(pm>conf){
-          const added=markSymbol(pm).slice(markSymbol(conf).length);
-          cell=`<span style="color:#fff">${markSymbol(conf)}</span><span style="color:#4a9eff">${added}</span>`;
+          // A jelek nem fűzhetők össze (/ = 1, X = 2, ⊗ = 3), ezért a teljes
+          // új jelet mutatjuk kékkel — így 1→2 és 2→3 lépés is látszik
+          cell=`<span style="color:#4a9eff">${markSymbol(pm)}</span>`;
         }
       }
       h+=`<td style="text-align:center;font-size:${ms};padding:clamp(2px,0.9vh,7px) 2px;border-top:1px solid #2a2a2a;border-right:1px solid #2a2a2a">${cell}</td>`;
