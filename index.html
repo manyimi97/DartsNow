@@ -396,7 +396,7 @@ const CTGTS = ['15','16','17','18','19','20','B'];
 
 let myId = 'p_' + Math.random().toString(36).slice(2,9);
 let roomId=null, gameState=null, myName='', selectedMode='501';
-let currentThrows=[], currentMult=2, cricketMult=1, cricketThrows=[];
+let currentThrows=[], currentMult=1, cricketMult=1, cricketThrows=[];
 let isHost=false, pollTimer=null, lastSig=null;
 let offlineMode=false, selectedOfflineMode='501';
 let localPlayerIds=[];
@@ -700,6 +700,7 @@ function offlinePassTurn(){
   const order=gameState.playerOrder;
   const next=order[(order.indexOf(gameState.currentPlayer)+1)%order.length];
   gameState.currentPlayer=next;myId=next;
+  if(gameState.mode==='cricket'&&gameState.players[next]) delete gameState.players[next].prevMarks;
   if(gameState.mode==='cricket') renderCricketUI(gameState);
   else renderGame01UI(gameState);
 }
@@ -846,8 +847,8 @@ function calcPendingMarks(){
 function _scoreboardHTML(room, portrait){
   const pO=room.playerOrder||[];
   const pending=calcPendingMarks();
-  const ns=portrait?'clamp(11px,3vw,16px)':'clamp(9px,1.6vh,13px)';
-  const ms=portrait?'clamp(15px,4vw,22px)':'clamp(12px,2.3vh,18px)';
+  const ns=portrait?'clamp(11px,3vw,24px)':'clamp(10px,2.4vh,22px)';
+  const ms=portrait?'clamp(15px,4vw,32px)':'clamp(13px,3.4vh,30px)';
 
   let h='<table style="width:100%;border-collapse:collapse;table-layout:fixed">';
   // Header
@@ -866,15 +867,21 @@ function _scoreboardHTML(room, portrait){
     const allClosed=pO.every(pid=>((room.players[pid]?.marks||{})[t]||0)>=3);
     h+='<tr>';
     pO.forEach(pid=>{
-      const conf=(room.players[pid].marks||{})[t]||0;
-      let cell=markSymbol(conf);
+      const pl=room.players[pid];
+      const conf=(pl.marks||{})[t]||0;
       const activePid=room.currentPlayer;
-      if(pid===activePid&&pending&&conf<3){
-        const pm=pending.marks[t]||0;
-        if(pm>conf){
-          // A jelek nem fűzhetők össze (/ = 1, X = 2, ⊗ = 3), ezért a teljes
-          // új jelet mutatjuk kékkel — így 1→2 és 2→3 lépés is látszik
-          cell=`<span style="color:#4a9eff">${markSymbol(pm)}</span>`;
+      let cell=markSymbol(conf);
+      if(pid===activePid){
+        // Saját, még be nem küldött dobás — kék
+        if(pending&&conf<3){
+          const pm=pending.marks[t]||0;
+          if(pm>conf) cell=`<span style="color:#4a9eff">${markSymbol(pm)}</span>`;
+        }
+      } else {
+        // Előző köre — sárga, amíg újra sorra nem kerül
+        const prev=(pl.prevMarks||null);
+        if(prev && conf>((prev[t]||0))) {
+          cell=`<span style="color:#f5c518">${markSymbol(conf)}</span>`;
         }
       }
       h+=`<td style="text-align:center;font-size:${ms};padding:clamp(2px,0.9vh,7px) 2px;border-top:1px solid #2a2a2a;border-right:1px solid #2a2a2a">${cell}</td>`;
@@ -895,8 +902,8 @@ function _buttonsHTML(room, portrait){
   const canAct=isMyTurn||isLocal;
   const pe=canAct?'auto':'none';
   const mainOp=canAct?'1':'0.4';
-  const ns=portrait?'clamp(11px,3vw,15px)':'clamp(10px,1.8vh,14px)';
-  const ds=portrait?'clamp(7px,1.6vw,9px)':'clamp(6px,1.1vh,9px)';
+  const ns=portrait?'clamp(11px,3vw,26px)':'clamp(11px,3.2vh,32px)';
+  const ds=portrait?'clamp(7px,1.6vw,15px)':'clamp(7px,1.8vh,18px)';
   const gap=portrait?'3px':'3px';
 
   function closed(t,m){
@@ -954,7 +961,8 @@ function _crSignature(room){
   const players=(room.playerOrder||[]).map(pid=>{
     const p=room.players[pid]||{};
     const m=p.marks||{};
-    return pid+':'+p.score+':'+CTGTS.map(t=>m[t]||0).join('');
+    const pv=p.prevMarks||{};
+    return pid+':'+p.score+':'+CTGTS.map(t=>m[t]||0).join('')+':'+CTGTS.map(t=>pv[t]!=null?pv[t]:'-').join('');
   }).join('|');
   const throws=cricketThrows.map(t=>t.target+'x'+t.mult).join(',');
   return [room.currentPlayer,myId,players,throws,turnHistory.length,
@@ -1029,9 +1037,9 @@ function renderCricketUI(room,force){
       </div>
       <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:3px;flex-shrink:0;border-top:1px solid #2a2a2a;padding-top:3px">
-          <div style="text-align:center;font-size:14px;font-weight:700;color:#fff">S</div>
-          <div style="text-align:center;font-size:14px;font-weight:700;color:#fff">D</div>
-          <div style="text-align:center;font-size:14px;font-weight:700;color:#fff">T</div>
+          <div style="text-align:center;font-size:clamp(14px,2.6vh,24px);font-weight:700;color:#fff">S</div>
+          <div style="text-align:center;font-size:clamp(14px,2.6vh,24px);font-weight:700;color:#fff">D</div>
+          <div style="text-align:center;font-size:clamp(14px,2.6vh,24px);font-weight:700;color:#fff">T</div>
         </div>
         ${_buttonsHTML(room,false)}
         <div style="flex-shrink:0;margin-top:5px">
@@ -1349,6 +1357,11 @@ async function passTurnOnline(extraUpdates){
 
   // Egyetlen Firebase írás: pontszám + soron következő játékos
   const payload={currentPlayer:next};
+  // A soron következő játékos sárga jelzése törlődik
+  if(gameState.mode==='cricket'){
+    payload['players/'+next+'/prevMarks']=null;
+    if(gameState.players[next]) delete gameState.players[next].prevMarks;
+  }
   if(extraUpdates&&extraUpdates.pid&&extraUpdates.data){
     Object.keys(extraUpdates.data).forEach(k=>{
       payload['players/'+extraUpdates.pid+'/'+k]=extraUpdates.data[k];
@@ -1380,10 +1393,10 @@ function _g01Cards(room, portrait){
   const manualVal = manualInputMode ? (parseInt(phoneBuffer)||0) : 0;
   const pendingTotal = manualInputMode ? manualVal : thrown;
 
-  const nameFs = portrait ? 'clamp(13px,3.6vw,18px)' : 'clamp(11px,2.4vh,16px)';
-  const avgFs  = portrait ? 'clamp(9px,2.4vw,12px)' : 'clamp(8px,1.6vh,11px)';
-  const scoreFs= portrait ? 'clamp(20px,7vw,34px)' : 'clamp(16px,4.4vh,30px)';
-  const prevFs = portrait ? 'clamp(12px,3.4vw,17px)' : 'clamp(10px,2.2vh,15px)';
+  const nameFs = portrait ? 'clamp(13px,3.6vw,26px)' : 'clamp(12px,3vh,26px)';
+  const avgFs  = portrait ? 'clamp(9px,2.4vw,17px)' : 'clamp(9px,2vh,17px)';
+  const scoreFs= portrait ? 'clamp(20px,7vw,48px)' : 'clamp(18px,5.6vh,48px)';
+  const prevFs = portrait ? 'clamp(12px,3.4vw,24px)' : 'clamp(11px,2.8vh,24px)';
 
   return `<div style="display:grid;grid-template-columns:repeat(${pO.length},1fr);gap:6px">` + pO.map(pid=>{
     const p = room.players[pid];
@@ -1420,9 +1433,9 @@ function _g01Checkout(room, portrait){
   const live = p ? p.score - pending : 0;
   const combo = (live>=2 && live<=170) ? CHECKOUTS[live] : null;
 
-  const lblFs = portrait ? 'clamp(9px,2.3vw,11px)' : 'clamp(8px,1.5vh,10px)';
-  const txtFs = portrait ? 'clamp(12px,3.2vw,16px)' : 'clamp(10px,2vh,14px)';
-  const h = portrait ? '38px' : '30px';
+  const lblFs = portrait ? 'clamp(9px,2.3vw,15px)' : 'clamp(9px,1.8vh,15px)';
+  const txtFs = portrait ? 'clamp(12px,3.2vw,22px)' : 'clamp(11px,2.4vh,22px)';
+  const h = portrait ? 'clamp(38px,6vh,54px)' : 'clamp(30px,6vh,48px)';
 
   const border = combo ? '1px solid rgba(46,207,155,0.45)' : '1px solid #232323';
   const bg = combo ? 'rgba(46,207,155,0.10)' : '#141414';
@@ -1437,9 +1450,9 @@ function _g01Checkout(room, portrait){
 function _g01History(room, portrait){
   const pO = room.playerOrder||[];
   const rows = [...roundHistory].sort((a,b)=>b.round-a.round);
-  const lblFs = portrait ? '13px' : '11px';
-  const rowFs = portrait ? 'clamp(10px,2.6vw,13px)' : 'clamp(9px,1.7vh,12px)';
-  const rowH  = portrait ? 34 : 26;
+  const lblFs = portrait ? 'clamp(13px,2.8vw,18px)' : 'clamp(11px,2vh,16px)';
+  const rowFs = portrait ? 'clamp(10px,2.6vw,18px)' : 'clamp(10px,2vh,17px)';
+  const rowH  = portrait ? 34 : 32;
   const boxH  = rowH*4 + 12;
 
   let inner = '';
@@ -1469,9 +1482,9 @@ function _g01History(room, portrait){
 }
 
 function _g01Slots(portrait){
-  const h = portrait ? '46px' : '34px';
-  const fs = portrait ? '16px' : '13px';
-  const btnFs = portrait ? '13px' : '11px';
+  const h = portrait ? 'clamp(46px,7vh,64px)' : 'clamp(34px,7vh,58px)';
+  const fs = portrait ? 'clamp(16px,4vw,24px)' : 'clamp(13px,2.8vh,22px)';
+  const btnFs = portrait ? 'clamp(13px,3vw,18px)' : 'clamp(11px,2.2vh,17px)';
   const slots = [0,1,2].map(i=>{
     const t = currentThrows[i];
     const txt = t ? ((t.mult===3?'T':t.mult===2?'D':'')+(t.target==='B'?'BULL':t.target)) : '';
@@ -1484,9 +1497,9 @@ function _g01Slots(portrait){
 }
 
 function _g01ManualDisplay(portrait){
-  const h = portrait ? '58px' : '40px';
-  const fs = portrait ? '26px' : '20px';
-  const btnFs = portrait ? '13px' : '11px';
+  const h = portrait ? 'clamp(58px,9vh,80px)' : 'clamp(40px,9vh,70px)';
+  const fs = portrait ? 'clamp(26px,6vw,42px)' : 'clamp(20px,5vh,40px)';
+  const btnFs = portrait ? 'clamp(13px,3vw,18px)' : 'clamp(11px,2.2vh,17px)';
   return `<div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center">
     <div style="background:#242424;border-radius:10px;height:${h};display:flex;align-items:center;justify-content:center;font-size:${fs};font-weight:700;color:#f0f0f0">${phoneBuffer||''}</div>
     <button id="g01-mode-btn" style="border:1px solid #4a4a4a;border-radius:10px;height:${h};padding:0 12px;background:transparent;color:#ddd;font-size:${btnFs};cursor:pointer;white-space:nowrap">🔢 Gombok</button>
@@ -1494,8 +1507,8 @@ function _g01ManualDisplay(portrait){
 }
 
 function _g01MultRow(portrait){
-  const h = portrait ? '46px' : '36px';
-  const fs = portrait ? 'clamp(14px,4vw,20px)' : 'clamp(12px,2.4vh,17px)';
+  const h = portrait ? '46px' : 'clamp(36px,7vh,58px)';
+  const fs = portrait ? 'clamp(14px,4vw,24px)' : 'clamp(13px,3vh,24px)';
   const mk=(m,lbl)=>{
     const on = currentMult===m;
     const bg = on ? 'background:linear-gradient(160deg,#2ecf9b,#12a171);border:none;color:#fff;font-weight:700'
@@ -1509,8 +1522,8 @@ function _g01NumBtn(n, portrait, cols){
   // BULL: szimpla = 25, dupla = 50, tripla nincs
   const val = n==='B' ? (currentMult===2?50:currentMult===3?0:25) : n*currentMult;
   const lbl = n==='B' ? 'BULL' : n;
-  const nFs = portrait ? 'clamp(11px,3vw,15px)' : 'clamp(10px,1.9vh,14px)';
-  const vFs = portrait ? 'clamp(10px,2.8vw,14px)' : 'clamp(9px,1.7vh,13px)';
+  const nFs = portrait ? 'clamp(11px,3vw,26px)' : 'clamp(11px,3.4vh,30px)';
+  const vFs = portrait ? 'clamp(10px,2.8vw,20px)' : 'clamp(10px,2.6vh,24px)';
   const dis = (n==='B' && currentMult===3);
   // Szimplánál nem mutatjuk a zárójeles értéket (ugyanaz mint a szám), BULL-nál viszont igen
   const showVal = (currentMult!==1) || (n==='B');
@@ -1524,7 +1537,7 @@ function _g01NumBtn(n, portrait, cols){
 }
 
 function _g01PhoneBtn(k, portrait){
-  const fs = portrait ? 'clamp(18px,5vw,30px)' : 'clamp(15px,3.4vh,26px)';
+  const fs = portrait ? 'clamp(18px,5vw,44px)' : 'clamp(16px,5vh,48px)';
   let bg='linear-gradient(180deg,#2a2a2a,#1e1e1e)', col='#fff', lbl=k;
   if(k==='del'){ bg='linear-gradient(160deg,#e91e63,#c62828)'; lbl='⌫'; }
   if(k==='ok'){ bg='linear-gradient(160deg,#2ecf9b,#12a171)'; lbl='OK'; }
@@ -1731,6 +1744,7 @@ async function submitCricketTurn(){
 
   saveSnapshot(); // save BEFORE applying changes
 
+  const prevMarks=Object.assign({},gameState.players[myId].marks);
   const myMarks=Object.assign({},gameState.players[myId].marks);
   let myScore=gameState.players[myId].score;
   function allClosed(t){return(gameState.playerOrder||[]).every(pid=>(gameState.players[pid].marks[t]||0)>=3);}
@@ -1744,6 +1758,7 @@ async function submitCricketTurn(){
   }
   gameState.players[myId].marks=myMarks;
   gameState.players[myId].score=myScore;
+  gameState.players[myId].prevMarks=prevMarks;
 
   // Win condition: all 7 targets closed AND score >= all opponents
   // (score only matters if opponent also closed all — otherwise closing all = win)
@@ -1757,11 +1772,11 @@ async function submitCricketTurn(){
   cricketThrows=[];resetMults();
   if(won){
     if(offlineMode){gameState.status='winner';gameState.winner=myId;gameState.winnerName=gameState.players[myId].name;showWinner(gameState);}
-    else{await fbUpdate('rooms/'+roomId+'/players/'+myId,{marks:myMarks,score:myScore});await fbUpdate('rooms/'+roomId,{status:'winner',winner:myId,winnerName:gameState.players[myId].name});}
+    else{await fbUpdate('rooms/'+roomId+'/players/'+myId,{marks:myMarks,score:myScore,prevMarks:prevMarks});await fbUpdate('rooms/'+roomId,{status:'winner',winner:myId,winnerName:gameState.players[myId].name});}
     return;
   }
   if(offlineMode){offlinePassTurn();}
-  else{await passTurnOnline({pid:myId,data:{marks:myMarks,score:myScore}});}
+  else{await passTurnOnline({pid:myId,data:{marks:myMarks,score:myScore,prevMarks:prevMarks}});}
 }
 
 function markStr(m, pending){
@@ -2016,7 +2031,7 @@ async function leaveGame(){
   const g1El=document.getElementById('screen-game01');
   if(g1El)g1El.innerHTML='';
   _g01Sig=null;
-  manualInputMode=false;currentMult=2;
+  manualInputMode=false;currentMult=1;
   show('home');checkConn();
 }
 
