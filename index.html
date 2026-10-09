@@ -902,47 +902,35 @@ function _buttonsHTML(room, portrait){
   const canAct=isMyTurn||isLocal;
   const pe=canAct?'auto':'none';
   const mainOp=canAct?'1':'0.4';
-  const ns=portrait?'clamp(11px,3vw,26px)':'clamp(11px,3.2vh,32px)';
-  const ds=portrait?'clamp(7px,1.6vw,15px)':'clamp(7px,1.8vh,18px)';
-  const gap=portrait?'3px':'3px';
+  const ns=portrait?'clamp(22px,7vw,52px)':'clamp(20px,6vh,56px)';
+  const cs=portrait?'clamp(11px,3vw,20px)':'clamp(10px,2.6vh,22px)';
+  const gap=portrait?'8px':'6px';
 
-  function closed(t,m){
+  function closed(t){
     const activePid=room.currentPlayer;
     const myM=(gameState.players[activePid]?.marks||{})[t]||0;
-    const pend=cricketThrows.filter(th=>th.target===t).reduce((s,th)=>s+th.mult,0);
     const allC=(gameState.playerOrder||[]).every(pid=>((gameState.players[pid]?.marks||{})[t]||0)>=3);
-    return allC||(Math.min(3,myM+pend)>=3&&myM>=3);
+    return allC||myM>=3;
   }
 
-  function btn(t,m,lbl){
-    const c=closed(t,m);
+  function btn(t,lbl,wide){
+    const c=closed(t);
+    const pend=cricketThrows.filter(th=>th.target===t).length;
     const bg=c?'linear-gradient(180deg,#1e1e1e,#161616)':'linear-gradient(180deg,#3a3a3a,#252525)';
     const op=c?'0.3':'1';
     const ptr=c?'none':pe;
-    return `<button onclick="hitCricketDirect('${t}',${m})" id="cbt-${t}-${m}" style="width:100%;height:100%;min-height:0;overflow:hidden;border:none;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:2px;background:${bg};opacity:${op};pointer-events:${ptr};-webkit-tap-highlight-color:transparent">
-      <span style="font-size:${ns};color:#fff;font-weight:700;line-height:1.1">${lbl}</span>
-      <span style="font-size:${ds};color:#888;line-height:1">${'*'.repeat(m)}</span>
+    const span=wide?'grid-column:1 / -1;':'';
+    // A második sor (×N) mindig ott van, hogy a gomb tartalma ne ugráljon
+    return `<button onclick="hitCricketDirect('${t}',1)" id="cbt-${t}" style="${span}width:100%;height:100%;min-height:0;overflow:hidden;border:none;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px;background:${bg};opacity:${op};pointer-events:${ptr};-webkit-tap-highlight-color:transparent">
+      <span style="font-size:${ns};color:#fff;font-weight:700;line-height:1.05">${lbl}</span>
+      <span style="font-size:${cs};color:#4a9eff;font-weight:700;line-height:1.1;min-height:1.1em">${(pend>0&&!c)?'×'+pend:'&nbsp;'}</span>
     </button>`;
   }
 
-  const nums=['15','16','17','18','19','20'];
-  let rows='';
-  nums.forEach(t=>{
-    rows+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:${gap};min-height:0">
-      ${btn(t,1,t)}${btn(t,2,t)}${btn(t,3,t)}
-    </div>`;
-  });
-  // Bull: S az S oszlopban, D a D oszlopban, T üres
-  rows+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:${gap};min-height:0">
-    ${btn('B',1,'BULL')}
-    ${btn('B',2,'BULL')}
-    <div></div>
-  </div>`;
-
-  const containerStyle = portrait
-    ? `min-height:0;height:100%;display:grid;grid-template-rows:repeat(7,minmax(0,1fr));gap:${gap};overflow:hidden`
-    : `flex:1;min-height:0;display:grid;grid-template-rows:repeat(7,minmax(0,1fr));gap:${gap};overflow:hidden`;
-  return `<div style="${containerStyle};opacity:${mainOp};pointer-events:${pe}">${rows}</div>`;
+  const cells=['15','16','17','18','19','20'].map(t=>btn(t,t,false)).join('')+btn('B','BULL',true);
+  const base=`display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:${gap};overflow:hidden`;
+  const containerStyle=portrait?`min-height:0;height:100%;${base}`:`flex:1;min-height:0;${base}`;
+  return `<div style="${containerStyle};opacity:${mainOp};pointer-events:${pe}">${cells}</div>`;
 }
 
 function _actionHTML(portrait){
@@ -953,7 +941,7 @@ function _actionHTML(portrait){
       <button onclick="undoCricket()" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:${p?'10px':'8px'};padding:${p?'14px':'9px'};color:#fff;font-size:${p?'15px':'12px'};font-weight:700;cursor:pointer">Törlés</button>
       <button onclick="submitCricketTurn()" style="background:linear-gradient(135deg,#1aaa7a,#0f7a55);border:none;border-radius:${p?'10px':'8px'};padding:${p?'14px':'9px'};color:#fff;font-size:${p?'15px':'12px'};font-weight:700;cursor:pointer">Beküldés</button>
     </div>
-    <button id="undo-cr-btn" onclick="undoLastTurnCricket()" ${has?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:${p?'10px':'8px'};padding:${p?'9px':'6px'};color:#e67e22;font-size:${p?'13px':'11px'};font-weight:600;cursor:pointer;opacity:${has?'1':'0.3'}">↺ Visszavonás</button>`;
+    <button id="undo-cr-btn" ${has?'':'disabled'} style="width:100%;background:transparent;border:1px solid #e67e22;border-radius:${p?'10px':'8px'};padding:${p?'9px':'6px'};color:#e67e22;font-size:${p?'13px':'11px'};font-weight:600;cursor:pointer;opacity:${has?'1':'0.3'}">↺ Visszavonás</button>`;
 }
 
 let _crSig=null;
@@ -989,12 +977,7 @@ function renderCricketUI(room,force){
     el.innerHTML=`<div id="cr-portrait-wrap" style="display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;padding:4px 8px 4px;box-sizing:border-box">
       <div id="cr-hdr" style="flex:0 0 auto;background:linear-gradient(135deg,#1aaa7a,#0f7a55);border-radius:10px;padding:8px 16px;text-align:center;font-size:17px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">🎯 ${curName} KÖRE</div>
       <div id="cr-sb" style="flex:0 0 auto;margin-bottom:3px">${_scoreboardHTML(room,true)}</div>
-      <div id="cr-sdt" style="flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:3px">
-        <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">S</div>
-        <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">D</div>
-        <div style="text-align:center;font-size:15px;font-weight:700;color:#fff">T</div>
-      </div>
-      <div id="cr-btns-wrap" style="flex:0 0 auto;overflow:hidden">${_buttonsHTML(room,true)}</div>
+      <div id="cr-btns-wrap" style="flex:0 0 auto;overflow:hidden;border-top:1px solid #2a2a2a;padding-top:6px">${_buttonsHTML(room,true)}</div>
       <div id="cr-actions" style="flex:0 0 auto;padding-top:4px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;opacity:${crOp};pointer-events:${crPe}">
           <button id="cr-del-btn" style="background:linear-gradient(135deg,#d4145a,#a00040);border:none;border-radius:10px;padding:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;width:100%">Törlés</button>
@@ -1006,19 +989,18 @@ function renderCricketUI(room,force){
     </div>`;
     document.getElementById('cr-del-btn')?.addEventListener('click', ()=>undoCricket());
     document.getElementById('cr-sub-btn')?.addEventListener('click', ()=>submitCricketTurn());
-    document.getElementById('undo-cr-btn')?.addEventListener('click', ()=>undoLastTurnCricket());
+    document.getElementById('undo-cr-btn')?.addEventListener('click', ()=>confirmUndo('cricket'));
     document.getElementById('cr-leave-btn')?.addEventListener('click', ()=>confirmLeave());
     // JS-ből számoljuk ki a gomb grid pontos magasságát
     const fitButtons=()=>{
       const wrap=document.getElementById('cr-portrait-wrap');
       const hdr=document.getElementById('cr-hdr');
       const sb=document.getElementById('cr-sb');
-      const sdt=document.getElementById('cr-sdt');
       const act=document.getElementById('cr-actions');
       const btns=document.getElementById('cr-btns-wrap');
-      if(!wrap||!hdr||!sb||!sdt||!act||!btns)return;
+      if(!wrap||!hdr||!sb||!act||!btns)return;
       const total=wrap.clientHeight;
-      const used=hdr.offsetHeight+sb.offsetHeight+sdt.offsetHeight+act.offsetHeight+18;
+      const used=hdr.offsetHeight+sb.offsetHeight+act.offsetHeight+18;
       const available=Math.max(100,total-used);
       btns.style.height=available+'px';
       btns.style.maxHeight=available+'px';
@@ -1036,11 +1018,6 @@ function renderCricketUI(room,force){
         <button id="cr-leave-btn-ls" style="flex-shrink:0;width:100%;background:transparent;border:1px solid #333;border-radius:8px;padding:5px;color:#555;font-size:10px;cursor:pointer;margin-top:4px">Kilépés a játékból</button>
       </div>
       <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:3px;flex-shrink:0;border-top:1px solid #2a2a2a;padding-top:3px">
-          <div style="text-align:center;font-size:clamp(14px,2.6vh,24px);font-weight:700;color:#fff">S</div>
-          <div style="text-align:center;font-size:clamp(14px,2.6vh,24px);font-weight:700;color:#fff">D</div>
-          <div style="text-align:center;font-size:clamp(14px,2.6vh,24px);font-weight:700;color:#fff">T</div>
-        </div>
         ${_buttonsHTML(room,false)}
         <div style="flex-shrink:0;margin-top:5px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:4px;opacity:${crOp};pointer-events:${crPe}">
@@ -1055,7 +1032,7 @@ function renderCricketUI(room,force){
     document.getElementById('cr-leave-btn-ls')?.addEventListener('click', ()=>confirmLeave());
     document.getElementById('cr-del-btn-ls')?.addEventListener('click', ()=>undoCricket());
     document.getElementById('cr-sub-btn-ls')?.addEventListener('click', ()=>submitCricketTurn());
-    document.getElementById('undo-cr-btn-ls')?.addEventListener('click', ()=>undoLastTurnCricket());
+    document.getElementById('undo-cr-btn-ls')?.addEventListener('click', ()=>confirmUndo('cricket'));
   }
 }
 
@@ -1065,8 +1042,9 @@ function hitCricketDirect(target,mult){
   if(!gameState)return;
   const isLocal=offlineMode||(localPlayerIds.length>0&&isLocalPlayer(gameState.currentPlayer));
   if(gameState.currentPlayer!==myId&&!isLocal)return;
-  if(cricketThrows.length>=3)return;
-  cricketThrows.push({target,mult});
+  // 3 nyíl × max 3 jelölés = 9 gombnyomás egy körben
+  if(cricketThrows.length>=9)return;
+  cricketThrows.push({target,mult:mult||1});
   renderCricketUI(gameState);
 }
 
@@ -1661,7 +1639,7 @@ function renderGame01UI(room, force){
   document.getElementById('g01-mode-btn')?.addEventListener('click',()=>toggleInputMode());
   document.getElementById('g01-del-btn')?.addEventListener('click',()=>{undoThrow();});
   document.getElementById('g01-sub-btn')?.addEventListener('click',()=>submitTurn());
-  document.getElementById('g01-undo-btn')?.addEventListener('click',()=>undoLastTurn01());
+  document.getElementById('g01-undo-btn')?.addEventListener('click',()=>confirmUndo('01'));
   document.getElementById('g01-leave-btn')?.addEventListener('click',()=>confirmLeave());
   el.querySelectorAll('.g01-mult').forEach(b=>{
     b.addEventListener('click',()=>{ currentMult=parseInt(b.dataset.m); renderGame01UI(gameState); });
@@ -1682,36 +1660,6 @@ function renderGame01UI(room, force){
 function updateGame01UI(room){ renderGame01UI(room); }
 
 // ── Cricket ────────────────────────────────────────────────
-function buildCricketBtns(){
-  const grid=document.getElementById('cricket-btn-grid');
-  if(!grid)return;
-  const dots=m=>m===1?'•':m===2?'• •':'• • •';
-  // Számok: 3 oszlop (S/D/T)
-  const numbers=CTGTS.filter(t=>t!=='B');
-  const numRows=numbers.map(t=>`
-    <div class="cbt-row">
-      <button class="cbt-new" id="cbt-${t}-1" onclick="hitCricketDirect('${t}',1)">
-        ${t}<br><span class="cbt-dots">${dots(1)}</span>
-      </button>
-      <button class="cbt-new" id="cbt-${t}-2" onclick="hitCricketDirect('${t}',2)">
-        ${t}<br><span class="cbt-dots">${dots(2)}</span>
-      </button>
-      <button class="cbt-new" id="cbt-${t}-3" onclick="hitCricketDirect('${t}',3)">
-        ${t}<br><span class="cbt-dots">${dots(3)}</span>
-      </button>
-    </div>`).join('');
-  // Bull: csak Szimpla + Dupla, középre igazítva
-  const bullRow=`
-    <div class="cbt-row-bull">
-      <button class="cbt-new" id="cbt-B-1" onclick="hitCricketDirect('B',1)">
-        Bull<br><span class="cbt-dots">${dots(1)}</span>
-      </button>
-      <button class="cbt-new" id="cbt-B-2" onclick="hitCricketDirect('B',2)">
-        Bull<br><span class="cbt-dots">${dots(2)}</span>
-      </button>
-    </div>`;
-  grid.innerHTML=numRows+bullRow;
-}
 
 
 
@@ -1960,6 +1908,29 @@ function showWinner(room){
   }
 
   show('winner');
+}
+
+function confirmUndo(kind){
+  document.getElementById('undo-popup')?.remove();
+  const popup=document.createElement('div');
+  popup.id='undo-popup';
+  popup.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  popup.innerHTML=`
+    <div style="background:#1e1e1e;border:1px solid #333;border-radius:16px;padding:24px;max-width:320px;width:100%;text-align:center">
+      <div style="font-size:36px;margin-bottom:12px;color:#e67e22">↺</div>
+      <div style="font-size:17px;font-weight:600;color:#f0f0f0;margin-bottom:6px">Biztos?</div>
+      <div style="font-size:13px;color:#888;margin-bottom:20px">Az előző kör visszavonódik.</div>
+      <div style="display:flex;gap:10px">
+        <button id="undo-yes" style="flex:1;padding:13px;background:#e67e22;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">Igen</button>
+        <button id="undo-no" style="flex:1;padding:13px;background:#1D9E75;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">Nem</button>
+      </div>
+    </div>`;
+  document.body.appendChild(popup);
+  document.getElementById('undo-yes').addEventListener('click',()=>{
+    popup.remove();
+    if(kind==='cricket') undoLastTurnCricket(); else undoLastTurn01();
+  });
+  document.getElementById('undo-no').addEventListener('click',()=>popup.remove());
 }
 
 function confirmLeave(){
