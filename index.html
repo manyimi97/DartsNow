@@ -307,22 +307,22 @@ input[type=text]:focus{border-color:#1D9E75}
         <button class="mode-btn mode-btn-full" data-mode="cricket" onclick="selectMode('cricket')">Cricket</button>
       </div>
     </div>
+    <!-- Több játékos egy eszközről: szoba létrehozásnál ÉS csatlakozásnál is érvényes -->
+    <div style="margin-bottom:10px">
+      <button class="btn btn-outline" id="multi-join-toggle" onclick="toggleMultiJoin()" style="padding:10px;font-size:13px">
+        👥 Többen vagyunk egy eszközön
+      </button>
+      <div id="multi-join-panel" style="display:none;margin-top:10px;background:#1a1a1a;border-radius:12px;padding:14px;border:1px solid #2a2a2a">
+        <p style="font-size:13px;color:#888;margin-bottom:10px">Add meg a többi játékos nevét ezen az eszközön — passz-és-dobj módban játsztok. Érvényes a szoba létrehozásánál és a csatlakozásnál is.</p>
+        <input type="text" id="join-name-2" placeholder="2. játékos neve" maxlength="16" autocomplete="off" style="margin-bottom:8px">
+        <input type="text" id="join-name-3" placeholder="3. játékos neve (opcionális)" maxlength="16" autocomplete="off">
+      </div>
+    </div>
     <button class="btn btn-primary" onclick="createRoom()">🆕 Szoba létrehozása &amp; meghívó</button>
     <div class="separator">vagy csatlakozz kóddal</div>
     <div style="display:flex;gap:8px;margin-top:10px">
       <input type="text" id="join-code" placeholder="SZOBAKÓD" maxlength="6" style="text-transform:uppercase;flex:1;letter-spacing:4px;font-weight:700;font-size:18px">
       <button class="btn btn-sm btn-primary" style="flex:0 0 auto" onclick="joinRoom()">Csatlakozás →</button>
-    </div>
-    <!-- Több játékos egy eszközről -->
-    <div style="margin-top:10px">
-      <button class="btn btn-outline" id="multi-join-toggle" onclick="toggleMultiJoin()" style="padding:10px;font-size:13px">
-        👥 Ketten csatlakozunk egy eszközről
-      </button>
-      <div id="multi-join-panel" style="display:none;margin-top:10px;background:#1a1a1a;border-radius:12px;padding:14px;border:1px solid #2a2a2a">
-        <p style="font-size:13px;color:#888;margin-bottom:10px">Add meg mindkét játékos nevét — passz-és-dobj módban játsztok</p>
-        <input type="text" id="join-name-2" placeholder="2. játékos neve" maxlength="16" autocomplete="off" style="margin-bottom:8px">
-        <input type="text" id="join-name-3" placeholder="3. játékos neve (opcionális)" maxlength="16" autocomplete="off">
-      </div>
     </div>
     <p id="home-error" class="error"></p>
   </div>
@@ -577,11 +577,31 @@ function copyCode(){
 async function createRoom(){
   myName=document.getElementById('player-name').value.trim();
   if(!myName){setErr('home-error','Előbb add meg a neved!');return;}
+
+  // Extra nevek (több játékos egy eszközről)
+  const extraNames=[
+    (document.getElementById('join-name-2')?.value||'').trim(),
+    (document.getElementById('join-name-3')?.value||'').trim()
+  ].filter(n=>n);
+
   setErr('home-error','Létrehozás...');
   const code=randomCode();roomId=code;isHost=true;offlineMode=false;
-  const room={host:myId,mode:selectedMode,status:'lobby',players:{[myId]:{name:myName,joined:Date.now()}}};
+
+  const players={[myId]:{name:myName,joined:Date.now()}};
+  localPlayerIds=[myId];
+  extraNames.forEach((n,i)=>{
+    const extraId='p_'+Math.random().toString(36).slice(2,9);
+    localPlayerIds.push(extraId);
+    players[extraId]={name:n,joined:Date.now()+(i+1)*10};
+  });
+
+  const room={host:myId,mode:selectedMode,status:'lobby',players};
   const ok=await fbSet('rooms/'+code,room);
-  if(!ok){setErr('home-error','Kapcsolódási hiba — próbáld a Helyi módot, vagy ellenőrizd a Netlify URL-t');return;}
+  if(!ok){
+    localPlayerIds=[];isHost=false;roomId=null;
+    setErr('home-error','Kapcsolódási hiba — próbáld a Helyi módot, vagy ellenőrizd a Netlify URL-t');
+    return;
+  }
   setErr('home-error','');show('lobby');
   document.getElementById('lobby-code').textContent=code;
   updateLobbyUI(room,code);startPolling(code);
@@ -635,11 +655,11 @@ function updateLobbyUI(room,code){
   const players=room.players||{};
   document.getElementById('lobby-players').innerHTML=Object.entries(players).map(([id,p])=>
     `<div class="player-row"><span style="font-weight:600">${uc(p.name)}</span>
-    <span class="badge ${id===myId?'you':''}">${id===myId?'Te':'Barát'}${id===room.host?' 👑':''}</span></div>`
+    <span class="badge ${isLocalPlayer(id)?'you':''}">${isLocalPlayer(id)?'Te':'Barát'}${id===room.host?' 👑':''}</span></div>`
   ).join('');
   const count=Object.keys(players).length;
   document.getElementById('lobby-status').textContent=count<2?'Várakozás a barátodra...':count+' játékos kész — indíthatsz!';
-  document.getElementById('start-btn').style.display=(room.host===myId&&count>=2)?'block':'none';
+  document.getElementById('start-btn').style.display=(isHost&&count>=2)?'block':'none';
 }
 
 async function startGame(){
@@ -1981,7 +2001,8 @@ async function leaveGame(){
         setTimeout(()=>fbDel('rooms/'+roomId),5000);
       } else {
         await fbUpdate('rooms/'+roomId,{leftPlayer:leavingName,leftAt:Date.now()});
-        await fbDel('rooms/'+roomId+'/players/'+myId);
+        const myIds=(localPlayerIds&&localPlayerIds.length)?localPlayerIds:[myId];
+        for(const id of myIds){ await fbDel('rooms/'+roomId+'/players/'+id); }
       }
     }
   }catch(e){console.warn('leaveGame firebase error',e);}
